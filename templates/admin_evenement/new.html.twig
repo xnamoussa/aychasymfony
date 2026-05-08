@@ -1,0 +1,24 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Créer un événement{% endblock %}
+
+{% block body %}
+    <h1 class="mt-4">Créer un Nouvel Événement</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ path('app_evenement_index') }}">Événements</a></li>
+        <li class="breadcrumb-item active">Ajouter</li>
+    </ol>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4 bg-dark text-white shadow-sm border-0">
+                <div class="card-header border-secondary border-bottom">
+                    <i class="fas fa-plus me-1"></i> Formulaire de création
+                </div>
+                <div class="card-body">
+                    {{ include('evenement/_form.html.twig', {'button_label': 'CRÉER'}) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

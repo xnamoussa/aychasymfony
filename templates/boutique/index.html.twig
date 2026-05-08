@@ -1,0 +1,428 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Boutique Équipements Camping — LAMMA{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .lamma-boutique { background: #0f172a; min-height: 100vh; color: #e5e7eb; padding: 6rem 0 4rem; margin-top: 0; width: 100%; max-width: 100%; overflow-x: hidden; }
+        
+        /* Navbar Styles */
+        .boutique-nav-header {
+            background: rgba(15, 23, 42, 0.98);
+            border-bottom: 2px solid rgba(249, 115, 22, 0.3);
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .boutique-navbar-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+        
+        .boutique-navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .boutique-navbar-brand:hover {
+            color: #F97316;
+            transform: scale(1.05);
+            text-decoration: none;
+        }
+        
+        .boutique-navbar-brand span {
+            font-size: 1.5rem;
+        }
+        
+        .boutique-navbar-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        
+        .boutique-btn {
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+        
+        .boutique-btn-primary {
+            background: #F97316;
+            color: #111827 !important;
+        }
+        
+        .boutique-btn-primary:hover {
+            background: #fb923c;
+            color: #111827 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+            text-decoration: none;
+        }
+        
+        .boutique-btn-secondary {
+            background: rgba(249, 115, 22, 0.1);
+            color: #F97316 !important;
+            border: 1px solid #F97316;
+        }
+        
+        .boutique-btn-secondary:hover {
+            background: rgba(249, 115, 22, 0.2);
+            border-color: #fb923c;
+            color: #fb923c !important;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
+            text-decoration: none;
+        }
+        
+        .boutique-btn-outline {
+            background: transparent;
+            color: #e5e7eb !important;
+            border: 1px solid rgba(229, 231, 235, 0.3);
+        }
+        
+        .boutique-btn-outline:hover {
+            background: rgba(229, 231, 235, 0.1);
+            border-color: #e5e7eb;
+            box-shadow: 0 2px 8px rgba(229, 231, 235, 0.1);
+            text-decoration: none;
+        }
+        
+        /* Sidebar Styles */
+        .boutique-layout {
+            display: flex;
+            gap: 2rem;
+            padding: 0 1.5rem;
+            min-height: 90vh;
+        }
+        
+        .boutique-sidebar {
+            flex: 0 0 280px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 1.5rem;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+        
+        .sidebar-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .sidebar-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #F97316;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(249, 115, 22, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .sidebar-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 6px;
+            background: transparent;
+            color: #e5e7eb;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .sidebar-item:hover {
+            background: rgba(249, 115, 22, 0.1);
+            color: #F97316;
+            padding-left: 1.25rem;
+        }
+        
+        .sidebar-item.active {
+            background: rgba(249, 115, 22, 0.15);
+            color: #F97316;
+            border-left: 3px solid #F97316;
+            padding-left: 0.75rem;
+        }
+        
+        .sidebar-item span {
+            font-size: 1.2rem;
+        }
+        
+        .sidebar-card {
+            background: rgba(249, 115, 22, 0.08);
+            border: 1px solid rgba(249, 115, 22, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .sidebar-card-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #F97316;
+            margin: 0.5rem 0;
+        }
+        
+        .sidebar-card-label {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        /* Main Content Styles */
+        .boutique-main {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .lamma-boutique .card-eq {
+            background: rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 1rem;
+            min-width: 200px;
+            max-width: 260px;
+            border: 1px solid rgba(255,255,255,0.06);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .lamma-boutique .card-eq:hover {
+            background: rgba(255,255,255,0.12);
+            border-color: rgba(249, 115, 22, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
+        }
+        
+        .lamma-boutique .card-eq h3 { color: #fff; font-size: 1rem; font-weight: 700; margin: 0 0 .35rem; }
+        .lamma-boutique .price { color: #F97316; font-weight: 700; font-size: 1.05rem; }
+        .lamma-boutique .meta { color: #94a3b8; font-size: .85rem; }
+        .lamma-boutique .toolbar { gap: .5rem; flex-wrap: wrap; }
+        .lamma-boutique input {
+            background: rgba(15,23,42,0.9); border: 1px solid rgba(255,255,255,0.12);
+            color: #e5e7eb; border-radius: 8px; padding: .4rem .75rem;
+        }
+        .lamma-boutique .weather-pill {
+            background: rgba(11, 18, 34, 0.9); border-radius: 14px; padding: .35rem .75rem;
+            font-size: .8rem; font-weight: 600; cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .boutique-layout {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+            .boutique-sidebar {
+                flex: 1;
+                position: static;
+                max-width: 100%;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block hero %}{% endblock %}
+
+{% block body %}
+<div class="lamma-boutique">
+    <div class="container-fluid px-lg-5">
+        <!-- Professional Sub-Navbar -->
+        <div class="boutique-nav-header mt-4">
+            <div class="boutique-navbar-content">
+                <a href="{{ path('app_boutique') }}" class="boutique-navbar-brand">
+                    <span>⛺</span>
+                    <div>Boutique Équipements</div>
+                </a>
+                
+                <div class="boutique-navbar-actions">
+                    <a href="{{ path('app_boutique_new') }}" class="boutique-btn boutique-btn-primary">
+                        <span>➕</span> Ajouter équipement
+                    </a>
+                    {% if app.user %}
+                        <a href="{{ path('app_my_deliveries') }}" class="boutique-btn boutique-btn-secondary">
+                            <span>📦</span> Mes livraisons
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="boutique-layout">
+            <!-- Sidebar -->
+            <aside class="boutique-sidebar">
+                <div class="sidebar-section">
+                    <div class="sidebar-card">
+                        <div class="sidebar-card-label">Équipements actifs</div>
+                        <div class="sidebar-card-value">{{ equipements|length }}</div>
+                    </div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <div class="sidebar-title">📂 Catégories</div>
+                    <div class="sidebar-content">
+                        {% for c in categories %}
+                            <div class="sidebar-item {% if c == current_categorie %}active{% endif %}" 
+                                 onclick="setCategory('{{ c }}')">
+                                <span>🏷️</span>
+                                <span>{{ c }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                {% if app.user %}
+                <div class="sidebar-section">
+                    <div class="sidebar-title">👤 Connecté en tant que</div>
+                    <div class="sidebar-card">
+                        <div style="font-size: 0.95rem; color: #F97316; font-weight: 600;">{{ app.user.name }}</div>
+                    </div>
+                </div>
+                {% endif %}
+            </aside>
+            
+            <!-- Main Content -->
+            <div class="boutique-main">
+                <div class="boutique-content">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+                        <div>
+                            <h2 class="h4 mb-0 text-white">Catalogue Streaming & Camping</h2>
+                            <p class="small text-muted mb-0">Matériel professionnel pour vos expéditions</p>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <div class="weather-pill text-white" id="lamma-weather">🌤 Météo: chargement…</div>
+                        </div>
+                    </div>
+
+                    <!-- Search Bar -->
+                    <div class="d-flex flex-wrap align-items-center toolbar mb-4" id="boutique-toolbar"
+                         data-search-url="{{ path('app_boutique_search') }}">
+                        <div class="d-flex flex-wrap align-items-center gap-2 ms-auto">
+                            <input type="search" id="boutique-q" name="q" value="{{ q }}" autocomplete="off"
+                                   placeholder="🔍 Rechercher un équipement…" style="min-width:300px; height: 45px;">
+                            <input type="hidden" id="boutique-categorie" name="categorie" value="{{ current_categorie }}">
+                        </div>
+                    </div>
+
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success border-0 shadow-sm">{{ message }}</div>
+                    {% endfor %}
+
+                    <div class="d-flex flex-wrap" style="gap:1.5rem;" id="boutique-cards">
+                        {% include 'boutique/_cards.html.twig' with { empty_message: 'Aucun équipement trouvé.' } %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+    function setCategory(cat) {
+        document.getElementById('boutique-categorie').value = cat;
+        // Trigger the search
+        const qInput = document.getElementById('boutique-q');
+        const event = new Event('input', { bubbles: true });
+        qInput.dispatchEvent(event);
+        
+        // Update active class in sidebar
+        document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+        event.target.closest('.sidebar-item').classList.add('active');
+    }
+
+    (function () {
+        const toolbar = document.getElementById('boutique-toolbar');
+        const qInput = document.getElementById('boutique-q');
+        const catHidden = document.getElementById('boutique-categorie');
+        const cardsEl = document.getElementById('boutique-cards');
+
+        if (!toolbar || !qInput || !cardsEl) return;
+
+        const searchUrl = toolbar.getAttribute('data-search-url');
+        let searchTimer = null;
+
+        function doSearch() {
+            const q = (qInput.value || '').trim();
+            const params = new URLSearchParams();
+            if (q) params.set('q', q);
+            if (catHidden.value && catHidden.value !== 'Toutes catégories') params.set('categorie', catHidden.value);
+            
+            fetch(searchUrl + '?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(r => r.json())
+                .then(data => {
+                    cardsEl.innerHTML = data.html;
+                    bindCardNav();
+                });
+        }
+
+        qInput.addEventListener('input', () => {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(doSearch, 300);
+        });
+
+        function bindCardNav() {
+            document.querySelectorAll('.card-eq').forEach(card => {
+                card.onclick = (e) => {
+                    if (e.target.closest('a, button')) return;
+                    window.location.href = card.getAttribute('data-detail-url');
+                };
+            });
+        }
+        bindCardNav();
+
+        // Weather
+        const el = document.getElementById('lamma-weather');
+        if (el) {
+            fetch('https://api.open-meteo.com/v1/forecast?latitude=36.80&longitude=10.18&current=temperature_2m,weather_code')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.current) {
+                        el.textContent = `🌤 Tunis: ${data.current.temperature_2m}°C`;
+                    }
+                }).catch(() => { el.textContent = 'Météo indisponible'; });
+            
+            el.onclick = () => window.location.href = "{{ path('app_weather') }}";
+        }
+    })();
+    </script>
+{% endblock %}

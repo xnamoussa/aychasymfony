@@ -1,0 +1,309 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nos Sponsors - LAMMA{% endblock %}
+{% block page_title %}Nos Partenaires{% endblock %}
+
+{% block body %}
+<section class="crud-section mt-5 mb-5">
+    <div class="row align-items-center mb-5">
+        <div class="col-md-8 text-center text-md-left">
+            <h2 style="font-family:'Anton',sans-serif; color:var(--scout-navy); text-transform:uppercase;">
+                <i class="fas fa-handshake" style="color:#e8c74a;"></i> Nos Sponsors
+            </h2>
+            <p style="color: #64748b;">Découvrez nos partenaires qui soutiennent nos événements.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        {% if sponsors is defined and sponsors|length > 0 %}
+            {% for sponsor in sponsors %}
+                <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+                    <div class="card glass-panel text-center" style="border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); padding: 20px;">
+                        <div style="height: 150px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+                            {% if sponsor.logo %}
+                                <img src="{{ asset('uploads/logos/' ~ sponsor.logo) }}" alt="{{ sponsor.nom }}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                            {% else %}
+                                <div style="color:#555; font-size:50px;"><i class="fas fa-image"></i></div>
+                            {% endif %}
+                        </div>
+                        <h4 style="font-family: 'Anton', sans-serif; margin-bottom: 5px;">{{ sponsor.nom }}</h4>
+                        <span class="badge bg-secondary">{{ sponsor.niveau is defined and sponsor.niveau ? sponsor.niveau : 'Partenaire' }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center">
+                <p style="color:#aaa;">Aucun sponsor pour le moment.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    {# SPONSOR FEEDBACK SECTION #}
+    <div class="row mt-5">
+        <div class="col-lg-12">
+            <h2 style="font-family:'Anton',sans-serif; color:var(--scout-navy); text-transform:uppercase; margin-bottom: 20px;">
+                <i class="fas fa-headset" style="color:#e8c74a;"></i> Espace Sponsors
+            </h2>
+            <p style="color:#aaa; margin-bottom: 30px;">Identifiez-vous pour laisser un feedback ou signaler un problème.</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-8">
+            {# PUBLIC FEEDBACKS DISPLAY #}
+            {% if feedbacks is defined and feedbacks|length > 0 %}
+            <div class="mb-5" id="feedbacks-display">
+                <h5 style="color:#e8c74a; margin-bottom:20px;"><i class="fas fa-comments"></i> Ce que disent nos sponsors</h5>
+                {% for fb in feedbacks %}
+                <div id="fb-card-{{ fb.id }}" style="background:#1a1a1a; border-left:3px solid #e8c74a; padding:15px 20px; margin-bottom:15px; border-radius:4px; position: relative;">
+                    <div id="fb-text-{{ fb.id }}">
+                        <p style="color:#fff; margin-bottom:5px;">{{ fb.contenu }}</p>
+                        <small style="color:#888;">&mdash; {{ fb.nom }} &middot; {{ fb.createdAt|date('d/m/Y') }}</small>
+                    </div>
+                    
+                    {# Hidden actions for owner #}
+                    <div class="fb-actions" data-email="{{ fb.email }}" style="display:none; position:absolute; top:15px; right:20px; gap:10px;">
+                        <button onclick="editFeedback({{ fb.id }})" class="btn btn-sm" style="color:#e8c74a; background:rgba(232,199,74,0.1); border:none;"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteFeedback({{ fb.id }})" class="btn btn-sm" style="color:#e74c3c; background:rgba(231,76,60,0.1); border:none;"><i class="fas fa-trash"></i></button>
+                    </div>
+
+                    {# Hidden edit form #}
+                    <div id="fb-edit-{{ fb.id }}" style="display:none; margin-top:10px;">
+                        <textarea id="edit-text-{{ fb.id }}" style="width:100%; padding:10px; background:#111; border:1px solid #333; color:#fff; border-radius:4px; outline:none; resize:vertical; margin-bottom:10px;">{{ fb.contenu }}</textarea>
+                        <div class="d-flex gap-2">
+                            <button onclick="updateFeedback({{ fb.id }})" class="btn btn-sm" style="background:#27ae60; color:#fff; font-weight:bold;">Sauvegarder</button>
+                            <button onclick="cancelEdit({{ fb.id }})" class="btn btn-sm btn-secondary">Annuler</button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {# STEP 1: IDENTITY VERIFICATION #}
+            <div id="step-verify" style="background:#1a1a1a; border:1px solid #333; border-radius:8px; padding:35px;">
+                <h5 style="color:#fff; margin-bottom:25px;"><i class="fas fa-lock" style="color:#e8c74a;"></i> Vérification Sponsor</h5>
+                <div class="form-group mb-3">
+                    <label style="color:#aaa; font-size:13px;">Votre Nom (tel qu'enregistré)</label>
+                    <input type="text" id="verify-nom" placeholder="Nom du sponsor" style="width:100%; padding:12px 15px; background:#111; border:1px solid #333; color:#fff; border-radius:4px; margin-top:6px; outline:none;">
+                </div>
+                <div class="form-group mb-4">
+                    <label style="color:#aaa; font-size:13px;">Votre Email</label>
+                    <input type="email" id="verify-email" placeholder="email@sponsor.com" style="width:100%; padding:12px 15px; background:#111; border:1px solid #333; color:#fff; border-radius:4px; margin-top:6px; outline:none;">
+                </div>
+                <div id="verify-error" style="color:#e74c3c; font-size:13px; margin-bottom:15px; display:none;"></div>
+                <button onclick="verifySponsor()" class="btn w-100" style="background:#e8c74a; color:#000; font-weight:bold;">
+                    Vérifier mon identité
+                </button>
+            </div>
+
+            {# STEP 2: CHOOSE ACTION #}
+            <div id="step-choice" style="display:none; background:#1a1a1a; border:1px solid #333; border-radius:8px; padding:35px;">
+                <h5 style="color:#fff; margin-bottom:10px;"><i class="fas fa-check-circle" style="color:#27ae60;"></i> Identité vérifiée !</h5>
+                <p style="color:#aaa; margin-bottom:25px;">Que souhaitez-vous faire ?</p>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <button onclick="showForm('feedback')" class="btn w-100 py-3" style="background:#27ae60; color:#fff; font-size:15px; font-weight:bold;">
+                            <i class="fas fa-comment fa-2x d-block mb-2"></i> Laisser un Feedback
+                        </button>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <button onclick="showForm('report')" class="btn w-100 py-3" style="background:#c0392b; color:#fff; font-size:15px; font-weight:bold;">
+                            <i class="fas fa-flag fa-2x d-block mb-2"></i> Signaler un problème
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {# STEP 3: FORM #}
+            <div id="step-form" style="display:none; background:#1a1a1a; border:1px solid #333; border-radius:8px; padding:35px;">
+                <h5 id="form-title" style="color:#fff; margin-bottom:20px;"></h5>
+                <textarea id="form-contenu" rows="5" placeholder="Écrivez ici..." style="width:100%; padding:12px 15px; background:#111; border:1px solid #333; color:#fff; border-radius:4px; outline:none; resize:vertical;"></textarea>
+                <div id="form-error" style="color:#e74c3c; font-size:13px; margin-top:10px; display:none;"></div>
+                <div class="d-flex gap-2 mt-3">
+                    <button onclick="submitForm()" class="btn flex-grow-1" style="background:#e8c74a; color:#000; font-weight:bold;">Envoyer</button>
+                    <button onclick="goBack()" class="btn btn-secondary">Retour</button>
+                </div>
+            </div>
+
+            {# STEP 4: SUCCESS #}
+            <div id="step-success" style="display:none; background:#1a1a1a; border:1px solid #27ae60; border-radius:8px; padding:35px; text-align:center;">
+                <i class="fas fa-check-circle" style="color:#27ae60; font-size:50px; margin-bottom:15px;"></i>
+                <h5 id="success-message" style="color:#fff;"></h5>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    var currentSponsorId = null;
+    var currentNom = null;
+    var currentEmail = null;
+    var currentType = null;
+    var checkUrl = "{{ path('front_sponsor_check') }}";
+    var submitUrl = "{{ path('front_sponsor_feedback') }}";
+    var updateUrl = "{{ path('front_sponsor_feedback_update') }}";
+    var deleteUrl = "{{ path('front_sponsor_feedback_delete') }}";
+
+    function show(id) { document.getElementById(id).style.display = 'block'; }
+    function hide(id) { document.getElementById(id).style.display = 'none'; }
+    function err(id, msg) {
+        var el = document.getElementById(id);
+        el.textContent = msg;
+        el.style.display = msg ? 'block' : 'none';
+    }
+
+    function verifySponsor() {
+        var nom = document.getElementById('verify-nom').value.trim();
+        var email = document.getElementById('verify-email').value.trim();
+
+        if (!nom || !email) { err('verify-error', 'Veuillez remplir les deux champs.'); return; }
+
+        var formData = new FormData();
+        formData.append('nom', nom);
+        formData.append('email', email);
+
+        fetch(checkUrl, { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    currentSponsorId = data.sponsorId;
+                    currentNom = nom;
+                    currentEmail = email;
+                    hide('step-verify');
+                    show('step-choice');
+                    err('verify-error', '');
+                    
+                    // Show actions for this sponsor
+                    document.querySelectorAll('.fb-actions').forEach(el => {
+                        if (el.dataset.email === currentEmail) {
+                            el.style.display = 'flex';
+                        }
+                    });
+                } else {
+                    err('verify-error', data.message);
+                }
+            })
+            .catch(() => err('verify-error', 'Erreur de connexion, réessayez.'));
+    }
+
+    function showForm(type) {
+        currentType = type;
+        hide('step-choice');
+        document.getElementById('form-title').innerHTML = type === 'feedback' ? '<i class="fas fa-comment"></i> Votre Feedback' : '<i class="fas fa-flag"></i> Signaler un problème';
+        document.getElementById('form-contenu').value = '';
+        err('form-error', '');
+        show('step-form');
+    }
+
+    function goBack() { hide('step-form'); show('step-choice'); }
+
+    function submitForm() {
+        var contenu = document.getElementById('form-contenu').value.trim();
+        if (!contenu) { err('form-error', 'Veuillez écrire quelque chose.'); return; }
+
+        var formData = new FormData();
+        formData.append('sponsorId', currentSponsorId);
+        formData.append('type', currentType);
+        formData.append('contenu', contenu);
+        formData.append('nom', currentNom);
+        formData.append('email', currentEmail);
+
+        fetch(submitUrl, { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    hide('step-form');
+                    document.getElementById('success-message').textContent = data.message;
+                    show('step-success');
+
+                    if (data.type === 'feedback') {
+                        var display = document.getElementById('feedbacks-display');
+                        if (!display) {
+                            display = document.createElement('div');
+                            display.id = 'feedbacks-display';
+                            display.classList.add('mb-5');
+                            display.innerHTML = '<h5 style="color:#e8c74a; margin-bottom:20px;"><i class="fas fa-comments"></i> Ce que disent nos sponsors</h5>';
+                            document.getElementById('step-verify').parentNode.insertBefore(display, document.getElementById('step-verify'));
+                        }
+                        var today = new Date();
+                        var dateStr = today.getDate().toString().padStart(2,'0') + '/' + (today.getMonth()+1).toString().padStart(2,'0') + '/' + today.getFullYear();
+                        var card = document.createElement('div');
+                        card.id = 'fb-card-' + data.feedbackId;
+                        card.style.cssText = 'background:#1a1a1a; border-left:3px solid #e8c74a; padding:15px 20px; margin-bottom:15px; border-radius:4px; position:relative;';
+                        card.innerHTML = `
+                            <div id="fb-text-${data.feedbackId}">
+                                <p style="color:#fff; margin-bottom:5px;">${contenu}</p>
+                                <small style="color:#888;">&mdash; ${currentNom} &middot; ${dateStr}</small>
+                            </div>
+                            <div class="fb-actions" style="display:flex; position:absolute; top:15px; right:20px; gap:10px;">
+                                <button onclick="editFeedback(${data.feedbackId})" class="btn btn-sm" style="color:#e8c74a; background:rgba(232,199,74,0.1); border:none;"><i class="fas fa-edit"></i></button>
+                                <button onclick="deleteFeedback(${data.feedbackId})" class="btn btn-sm" style="color:#e74c3c; background:rgba(231,76,60,0.1); border:none;"><i class="fas fa-trash"></i></button>
+                            </div>
+                            <div id="fb-edit-${data.feedbackId}" style="display:none; margin-top:10px;">
+                                <textarea id="edit-text-${data.feedbackId}" style="width:100%; padding:10px; background:#111; border:1px solid #333; color:#fff; border-radius:4px; outline:none; resize:vertical; margin-bottom:10px;">${contenu}</textarea>
+                                <div class="d-flex gap-2">
+                                    <button onclick="updateFeedback(${data.feedbackId})" class="btn btn-sm" style="background:#27ae60; color:#fff; font-weight:bold;">Sauvegarder</button>
+                                    <button onclick="cancelEdit(${data.feedbackId})" class="btn btn-sm btn-secondary">Annuler</button>
+                                </div>
+                            </div>
+                        `;
+                        display.appendChild(card);
+                    }
+                } else {
+                    err('form-error', data.message);
+                }
+            })
+            .catch(() => err('form-error', 'Erreur de connexion, réessayez.'));
+    }
+
+    function editFeedback(id) {
+        hide('fb-text-' + id);
+        show('fb-edit-' + id);
+    }
+
+    function cancelEdit(id) {
+        hide('fb-edit-' + id);
+        show('fb-text-' + id);
+    }
+
+    function updateFeedback(id) {
+        var text = document.getElementById('edit-text-' + id).value.trim();
+        if (!text) return;
+
+        var formData = new FormData();
+        formData.append('feedbackId', id);
+        formData.append('contenu', text);
+        formData.append('email', currentEmail);
+
+        fetch(updateUrl, { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    document.querySelector('#fb-text-' + id + ' p').textContent = text;
+                    cancelEdit(id);
+                } else {
+                    alert(data.message);
+                }
+            });
+    }
+
+    function deleteFeedback(id) {
+        if (!confirm('Voulez-vous vraiment supprimer ce feedback ?')) return;
+
+        var formData = new FormData();
+        formData.append('feedbackId', id);
+        formData.append('email', currentEmail);
+
+        fetch(deleteUrl, { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('fb-card-' + id).remove();
+                } else {
+                    alert(data.message);
+                }
+            });
+    }
+</script>
+{% endblock %}

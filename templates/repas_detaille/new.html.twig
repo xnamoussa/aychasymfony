@@ -1,0 +1,550 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Repas - LAMMA{% endblock %}
+{% block page_title %}Nouveau Plat / Repas IA{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .scout-window {
+            background-color: #2b2e3a;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            color: #d1d5db;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            border: 1px solid #4b5563;
+            max-width: 1000px;
+            margin: 40px auto;
+        }
+
+        .scout-window-header {
+            background-color: #374151;
+            padding: 10px 20px;
+            font-size: 0.85rem;
+            color: #9ca3af;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #4b5563;
+        }
+
+        .scout-window-body {
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .pane-left {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .pane-right {
+            flex: 1;
+            background: #333745;
+            border: 1px solid #4b5563;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .section-box {
+            background: #333745;
+            border: 1px solid #4b5563;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .title-blue { color: #60a5fa; }
+        .title-yellow { color: #facc15; }
+        .title-green { color: #4ade80; }
+        .title-purple { color: #a78bfa; justify-content: space-between; }
+        .title-orange { color: #fb923c; }
+
+        .form-control-scout {
+            background-color: #1f222e;
+            border: 1px solid #4b5563;
+            color: #fff;
+            border-radius: 6px;
+            padding: 10px 15px;
+            width: 100%;
+            font-size: 0.85rem;
+            transition: border-color 0.2s;
+        }
+        .form-control-scout:focus {
+            outline: none;
+            border-color: #60a5fa;
+        }
+        select.form-control-scout {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239ca3af%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px top 50%;
+            background-size: 10px auto;
+        }
+
+        .scout-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .scout-col { flex: 1; }
+
+        .btn-auto-generate {
+            background: transparent;
+            border: 1px solid #a78bfa;
+            color: #a78bfa;
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-auto-generate:hover {
+            background: #a78bfa;
+            color: #fff;
+        }
+
+        .textarea-scout {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .file-upload-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #1f222e;
+            border: 1px solid #4b5563;
+            border-radius: 6px;
+            padding: 5px 10px;
+        }
+        .btn-files {
+            background: #4b5563;
+            color: white;
+            border: none;
+            padding: 6px 15px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        .live-status { color: #4ade80; font-weight: bold; font-size: 0.8rem; }
+
+        /* Window Footer */
+        .scout-window-footer {
+            background: #333745;
+            padding: 15px 20px;
+            border-top: 1px solid #4b5563;
+            display: flex;
+            justify-content: flex-start;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn-confirm {
+            background-color: #fb923c;
+            color: #fff;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        .btn-confirm:hover { background-color: #ea580c; }
+        
+        .btn-abort {
+            background-color: transparent;
+            color: #9ca3af;
+            border: 1px solid #6b7280;
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn-abort:hover { background: #4b5563; color: #fff; }
+
+        /* Right Pane Stats */
+        .trend-card {
+            background: #1f222e;
+            border: 1px solid #4b5563;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .trend-title { font-size: 0.8rem; font-weight: bold; color: #e5e7eb; display:flex; justify-content:space-between; }
+        .trend-badge { color: #4ade80; font-size: 0.75rem; }
+        .trend-desc { font-size: 0.7rem; color: #9ca3af; margin-top: 5px; }
+
+        .fuel-box {
+            display: flex;
+            gap: 20px;
+        }
+        .fuel-val {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #fff;
+        }
+        .fuel-label {
+            font-size: 0.65rem;
+            color: #9ca3af;
+            text-transform: uppercase;
+        }
+
+        /* Hide symfony default forms visually where needed */
+        .hidden-symfony-field { position: absolute; opacity: 0; pointer-events: none; }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="scout-window">
+        <div class="scout-window-header">
+            <i class="fa fa-terminal mr-2"></i> Assistant Scout v2.0 • Optimizing expedition calories
+        </div>
+        
+        {# Flash Messages Display #}
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'danger' ? 'danger' : 'success' }} alert-dismissible fade show m-3" role="alert" style="border-radius: 8px;">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+        
+        {{ form_start(form, {'attr': {'id': 'ration_form'}}) }}
+        <div class="scout-window-body">
+            
+            <!-- LEFT PANE -->
+            <div class="pane-left">
+                
+                <!-- RATION IDENTIFICATION -->
+                <div class="section-box">
+                    <div class="section-title title-blue">
+                        <i class="fa fa-crosshairs"></i> RATION IDENTIFICATION
+                    </div>
+                    <div class="scout-row">
+                        <div class="scout-col">
+                            {{ form_widget(form.nom, {'attr': {'class': 'form-control-scout', 'placeholder': 'Nom du Plat'}}) }}
+                        </div>
+                    </div>
+                    <div class="scout-row">
+                        <div class="scout-col">
+                            <select class="form-control-scout" name="repas_detaille[restaurantId]">
+                                <option value="">-- Choisir un Restaurant --</option>
+                                {% for r in restaurants %}
+                                    <option value="{{ r.id }}">{{ r.nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="scout-col">
+                            <select class="form-control-scout" name="repas_detaille[menuId]">
+                                <option value="">-- Choisir un Menu --</option>
+                                {% for m in menus %}
+                                    <option value="{{ m.id }}">{{ m.titre ?? m.id }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EXPLOITATION METRICS -->
+                <div class="section-box">
+                    <div class="section-title title-yellow">
+                        <i class="fa fa-bar-chart"></i> EXPLOITATION METRICS
+                    </div>
+                    <div class="scout-row">
+                        <div class="scout-col">
+                            <label style="font-size:0.7rem; color:#9ca3af;">Scout Classification:</label>
+                            {{ form_widget(form.typeRepas, {'attr': {'class': 'form-control-scout'}}) }}
+                        </div>
+                        <div class="scout-col">
+                            <label style="font-size:0.7rem; color:#9ca3af;">Mission Logistics:</label>
+                            {{ form_widget(form.prix, {'attr': {'class': 'form-control-scout', 'placeholder': 'Price (€)'}}) }}
+                        </div>
+                    </div>
+                    <div class="scout-row">
+                        <div class="scout-col">
+                            <select class="form-control-scout" id="serving-type-select">
+                                <option value="">Type de Portion (Régime)</option>
+                                <option value="standard">Standard</option>
+                                <option value="vegetarien">Végétarien</option>
+                                <option value="vegan">Vegan</option>
+                                <option value="sansGluten">Sans Gluten</option>
+                                <option value="halal">Halal</option>
+                            </select>
+                        </div>
+                        <div class="scout-col">
+                            <input type="number" name="repas_detaille[tempsPreparation]" class="form-control-scout" placeholder="Temps de Préparation (min)" value="">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RATION COMPOSITION -->
+                <div class="section-box">
+                    <div class="section-title title-green">
+                        <i class="fa fa-leaf"></i> RATION COMPOSITION (INGRÉDIENTS)
+                    </div>
+                    <p style="font-size:0.75rem; color:#9ca3af; margin:0 0 10px 0;">Selected Ingredients (click to remove):</p>
+                    <div id="selected-ingredients-list" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:15px;">
+                        <!-- JS injected badgs -->
+                    </div>
+                    <div class="scout-row align-items-center">
+                        <div class="scout-col w-100">
+                            <select class="form-control-scout" id="ingredient-select">
+                                <option value="">-- Ajouter un Ingrédient --</option>
+                                {% for ing in ingredients %}
+                                    <option value="{{ ing.nom }}">{{ ing.nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="button" id="btn-add-ingredient" class="btn-auto-generate" style="border-color:#4ade80; color:#4ade80;">+ ADD</button>
+                    </div>
+                </div>
+
+                <!-- SCOUT IA INTEL -->
+                <div class="section-box">
+                    <div class="section-title title-purple">
+                        <span><i class="fa fa-magic"></i> SCOUT IA INTEL</span>
+                        <button type="button" id="gemini_analyze_btn" class="btn-auto-generate">AUTO-GENERATE</button>
+                    </div>
+                    {{ form_widget(form.description, {'attr': {'class': 'form-control-scout textarea-scout', 'placeholder': 'Description générée ou saisie manuelle...'}}) }}
+                    <span id="gemini_status" class="small mt-2 d-block"></span>
+                </div>
+
+                <!-- VISUAL FEED -->
+                <div class="section-box">
+                    <div class="section-title title-orange">
+                        <i class="fa fa-camera"></i> VISUAL FEED
+                    </div>
+                    <div class="file-upload-wrapper">
+                        {{ form_widget(form.imageUrl, {'attr': {'class': 'form-control-scout', 'style': 'display:none;'}}) }}
+                        <input type="text" id="visual_filename_preview" class="form-control-scout" placeholder="Aucun fichier sélectionné" readonly>
+                        
+                        <button type="button" class="btn-files" onclick="document.getElementById('{{ form.imageUrl.vars.id }}').click()"><i class="fa fa-folder"></i> FILES</button>
+                        <div class="live-status"><i class="fa fa-check-square"></i> LIVE</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT PANE -->
+            <div class="pane-right">
+                <div>
+                    <div style="font-size:0.8rem; font-weight:800; color:#fff; margin-bottom:15px; letter-spacing:1px;">MISSION TRENDS</div>
+                    <div style="font-size:0.65rem; color:#9ca3af; margin-bottom:10px; text-transform:uppercase;">Expedition Demand</div>
+                    
+                    <div class="trend-card">
+                        <div class="trend-title"><span><i class="fa fa-fire"></i> Energy Bowl</span><span class="trend-badge">+22%</span></div>
+                        <div class="trend-desc">High-protein fuel popular among summit hikers.</div>
+                    </div>
+                    <div class="trend-card">
+                        <div class="trend-title"><span><i class="fa fa-cutlery"></i> Trail Taco</span><span class="trend-badge">+15%</span></div>
+                        <div class="trend-desc">Efficient quick-grab ration for base camp.</div>
+                    </div>
+                </div>
+
+                <div style="border-top: 1px solid #4b5563; padding-top: 20px;">
+                    <div style="font-size:0.8rem; font-weight:800; color:#fb923c; margin-bottom:10px; letter-spacing:1px;">LIVE SCOUT INTEL</div>
+                    <p style="font-size:0.75rem; color:#9ca3af; font-style:italic;">
+                        <i class="fa fa-bolt mr-1"></i> Potentiel détecté : Ce plat pourrait plaire à 78% de vos abonnés si vous activez le tag 'Protéiné'.
+                    </p>
+                </div>
+
+                <div style="border-top: 1px solid #4b5563; padding-top: 20px;">
+                    <div style="font-size:0.8rem; font-weight:800; color:#4ade80; margin-bottom:10px; letter-spacing:1px;">FUEL VALUES</div>
+                    <div class="fuel-box">
+                        <div>
+                            <div class="fuel-label">Calories</div>
+                            <div class="fuel-val"><span id="display-kcal">---</span> <span style="font-size:0.8rem;font-weight:normal;">kcal</span></div>
+                        </div>
+                        <div>
+                            <div class="fuel-label">Proteins</div>
+                            <div class="fuel-val"><span id="display-proteins">---</span> <span style="font-size:0.8rem;font-weight:normal;">g</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- FOOTER -->
+        <div class="scout-window-footer">
+            <button type="submit" class="btn-confirm"><i class="fa fa-check mr-2"></i> CONFIRM RATION</button>
+            <a href="{{ path('app_repas_detaille_index') }}" class="btn-abort"><i class="fa fa-times mr-2"></i> ABORT</a>
+            <span id="gemini_loading" class="spinner-border spinner-border-sm text-primary d-none ml-3" role="status"></span>
+            <span style="margin-left:auto; font-size:0.7rem; color:#6b7280;">Génération contrôlée IA ✨</span>
+        </div>
+        
+        {# Hidden necessary form fields to keep symfony happy #}
+        <div class="hidden-symfony-field">
+            {{ form_widget(form.vegetarien) }}{{ form_widget(form.vegan) }}
+            {{ form_widget(form.sansGluten) }}{{ form_widget(form.halal) }}
+            {{ form_widget(form.actif) }}{{ form_widget(form.notes) }}
+            {{ form_widget(form.calories) }}
+            <input type="hidden" name="repas_detaille[proteines]" id="hidden_proteines_field" value="">
+        </div>
+        
+        <input type="hidden" name="repas_detaille[ingredients]" id="hidden_ingredients_field" value="[]">
+        {{ form_end(form) }}
+
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Dynamic calories updater
+        const calInput = document.getElementById('{{ form.calories.vars.id }}');
+        const calDisplay = document.getElementById('display-kcal');
+        const protDisplay = document.getElementById('display-proteins');
+        const hiddenProtField = document.getElementById('hidden_proteines_field');
+        
+        if(calInput && calDisplay) {
+            if(calInput.value) calDisplay.innerText = calInput.value;
+        }
+
+        // Serving Type Toggle logic
+        const servingSelect = document.getElementById('serving-type-select');
+        servingSelect.addEventListener('change', (e) => {
+            const val = e.target.value;
+            document.getElementById('{{ form.vegetarien.vars.id }}').checked = (val === 'vegetarien');
+            document.getElementById('{{ form.vegan.vars.id }}').checked = (val === 'vegan');
+            document.getElementById('{{ form.sansGluten.vars.id }}').checked = (val === 'sansGluten');
+            document.getElementById('{{ form.halal.vars.id }}').checked = (val === 'halal');
+        });
+
+        // Gemini AI Logic
+        const analyzeBtn = document.getElementById('gemini_analyze_btn');
+        const fileInput = document.getElementById('{{ form.imageUrl.vars.id }}');
+        const filenamePreview = document.getElementById('visual_filename_preview');
+        const statusSpan = document.getElementById('gemini_status');
+        const loadingSpinner = document.getElementById('gemini_loading');
+        
+        // Allow clicking auto-generate to trigger file dialogue if no file selected
+        analyzeBtn.addEventListener('click', function() {
+            if (!fileInput.files.length) {
+                fileInput.click();
+            } else {
+                runAI();
+            }
+        });
+
+        // Run AI automatically when file is selected
+        fileInput.addEventListener('change', function() {
+            if (this.files.length) {
+                filenamePreview.value = this.files[0].name;
+                runAI();
+            }
+        });
+
+        function runAI() {
+            const formData = new FormData();
+            formData.append('image', fileInput.files[0]);
+
+            loadingSpinner.classList.remove('d-none');
+            analyzeBtn.innerText = 'WAIT...';
+            statusSpan.innerText = 'Extraction IA en cours...';
+            statusSpan.style.color = '#a78bfa';
+            analyzeBtn.disabled = true;
+
+            fetch('{{ path("app_repas_detaille_analyze_image") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadingSpinner.classList.add('d-none');
+                analyzeBtn.innerText = 'AUTO-GENERATE';
+                analyzeBtn.disabled = false;
+
+                if (data.error) {
+                    statusSpan.innerText = 'Erreur: ' + data.error;
+                    statusSpan.style.color = '#ef4444';
+                } else {
+                    statusSpan.innerText = '✓ Analyse réussie : Propriétés de ration extraites.';
+                    statusSpan.style.color = '#4ade80';
+                    
+                    if(data.nom) document.getElementById('{{ form.nom.vars.id }}').value = data.nom;
+                    if(data.description) document.getElementById('{{ form.description.vars.id }}').value = data.description;
+                    if(data.prix) document.getElementById('{{ form.prix.vars.id }}').value = data.prix;
+                    
+                    if(data.calories !== undefined) {
+                        document.getElementById('{{ form.calories.vars.id }}').value = data.calories;
+                        calDisplay.innerText = data.calories;
+                    }
+                    if (data.proteines !== undefined) {
+                        protDisplay.innerText = data.proteines;
+                        hiddenProtField.value = data.proteines;
+                    }
+                    
+                    if(data.tags && data.tags.length > 0) {
+                        let currentNotes = document.getElementById('{{ form.notes.vars.id }}').value;
+                        document.getElementById('{{ form.notes.vars.id }}').value = currentNotes + (currentNotes ? '\n\n' : '') + 'Tags IA: ' + data.tags.join(', ');
+                    }
+                }
+            })
+            .catch(error => {
+                loadingSpinner.classList.add('d-none');
+                analyzeBtn.innerText = 'AUTO-GENERATE';
+                analyzeBtn.disabled = false;
+                statusSpan.innerText = 'Erreur réseau de l\'IA.';
+                statusSpan.style.color = '#ef4444';
+            });
+        }
+        
+        // Ingredients Logic
+        let selectedIngredients = [];
+        const ingSelect = document.getElementById('ingredient-select');
+        const btnAddIng = document.getElementById('btn-add-ingredient');
+        const listDiv = document.getElementById('selected-ingredients-list');
+        const hiddenField = document.getElementById('hidden_ingredients_field');
+
+        function renderIngredients() {
+            listDiv.innerHTML = '';
+            selectedIngredients.forEach((ing, index) => {
+                let badge = document.createElement('span');
+                badge.style.cssText = 'background: #1f222e; border: 1px solid #4ade80; color: #4ade80; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; cursor: pointer;';
+                badge.innerHTML = ing + ' &times;';
+                badge.title = 'Remove';
+                badge.onclick = function() {
+                    selectedIngredients.splice(index, 1);
+                    renderIngredients();
+                };
+                listDiv.appendChild(badge);
+            });
+            hiddenField.value = JSON.stringify(selectedIngredients);
+        }
+
+        btnAddIng.addEventListener('click', function() {
+            let val = ingSelect.value;
+            if (val && !selectedIngredients.includes(val)) {
+                selectedIngredients.push(val);
+                renderIngredients();
+                ingSelect.value = '';
+            }
+        });
+    });
+    </script>
+{% endblock %}

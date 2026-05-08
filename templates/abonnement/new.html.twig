@@ -1,0 +1,148 @@
+{% extends is_granted('ROLE_ADMIN') ? 'admin/base_admin.html.twig' : 'base.html.twig' %}
+
+{% block title %}Nouvel Abonnement - LAMMA{% endblock %}
+{% block page_title %}Nouvel Abonnement{% endblock %}
+{% block page_subtitle %}Planifiez votre abonnement avec une validation en temps réel{% endblock %}
+
+{% block body %}
+<section class="crud-section" style="padding: 60px 0;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-11">
+                <div class="glass-panel" style="padding: 40px; background: #fff; border-radius: 15px;">
+                    <!-- Header Section -->
+                    <div class="scout-header" style="border-bottom: 3px solid var(--scout-blue);">
+                        <div class="scout-icon-stack" style="background: var(--scout-navy);">✨</div>
+                        <div class="scout-title-group">
+                            <h2>Configuration Master • <span style="color: var(--scout-blue);">Abonnement</span></h2>
+                            <div class="scout-subtitle">EventCon Professional System • Synchronizing Master Intel</div>
+                        </div>
+                        <div class="ml-auto">
+                            <span class="scout-badge" style="background: var(--scout-orange);">VALIDATION ACTIVE</span>
+                        </div>
+                    </div>
+
+                    <!-- Global Error Display (Contrôle de saisie) -->
+                    {% if not form.vars.valid %}
+                    <div class="alert alert-danger mb-4" style="border-left: 5px solid var(--scout-orange); background: #fff5f5;">
+                        <h5 style="color: var(--scout-orange); font-weight: 900;"><i class="fa fa-exclamation-triangle"></i> ERREUR DE SAISIE</h5>
+                        <p style="color: #666; font-size: 0.9rem;">Certains champs obligatoires sont manquants ou invalides. Veuillez vérifier les informations ci-dessous.</p>
+                        {{ form_errors(form) }}
+                    </div>
+                    {% endif %}
+
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                    <div class="row mt-4">
+                        <!-- LEFT: CORE FORM -->
+                        <div class="col-lg-8">
+                            <!-- Pass Identification -->
+                            <div class="scout-card mb-4" style="background: #f8fbff;">
+                                <div class="scout-input-label" style="color: var(--scout-blue); font-size: 0.9rem;">🛡️ Pass Identification</div>
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        {{ form_label(form.nom, null, {'label_attr': {'class': 'scout-input-label'}}) }}
+                                        {{ form_widget(form.nom, {'attr': {'placeholder': 'Nom de l\'abonnement...', 'class': 'form-control ' ~ (form.nom.vars.errors|length > 0 ? 'is-invalid' : '')}}) }}
+                                        {{ form_errors(form.nom) }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form_label(form.type, null, {'label_attr': {'class': 'scout-input-label'}}) }}
+                                        {{ form_widget(form.type, {'attr': {'class': 'form-control ' ~ (form.type.vars.errors|length > 0 ? 'is-invalid' : '')}}) }}
+                                        {{ form_errors(form.type) }}
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-12">
+                                        {{ form_label(form.generateType, null, {'label_attr': {'class': 'scout-input-label'}}) }}
+                                        {{ form_widget(form.generateType, {'attr': {'class': 'form-control ' ~ (form.generateType.vars.errors|length > 0 ? 'is-invalid' : '')}}) }}
+                                        {{ form_errors(form.generateType) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Exploitation Metrics -->
+                            <div class="scout-card mb-4">
+                                <div class="scout-input-label" style="color: var(--scout-green); font-size: 0.9rem;">📊 Exploitation Metrics</div>
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        {{ form_label(form.statut, null, {'label_attr': {'class': 'scout-input-label'}}) }}
+                                        {{ form_widget(form.statut, {'attr': {'class': 'form-control ' ~ (form.statut.vars.errors|length > 0 ? 'is-invalid' : '')}}) }}
+                                        {{ form_errors(form.statut) }}
+                                        
+                                        <div class="mt-3">
+                                            {{ form_label(form.prix, null, {'label_attr': {'class': 'scout-input-label'}}) }}
+                                            {{ form_widget(form.prix, {'attr': {'placeholder': 'Tarification (€)', 'class': 'form-control ' ~ (form.prix.vars.errors|length > 0 ? 'is-invalid' : '')}}) }}
+                                            {{ form_errors(form.prix) }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="metric-card" style="background: #001D38; border-radius: 10px;">
+                                            <div class="scout-input-label" style="color: #fff;">Mission Logistics</div>
+                                            <div class="mt-2 d-flex align-items-center">
+                                                {{ form_widget(form.autoRenew) }}
+                                                <span class="ml-2" style="font-size: 0.85rem; font-weight: 700; color: #fff;">RENOUVELLEMENT AUTOMATIQUE</span>
+                                            </div>
+                                            <p style="font-size: 0.75rem; color: #aab1b7; margin-top: 10px;">L'abonnement sera reconduit systématiquement à la date de fin.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Temporality -->
+                            <div class="scout-card mb-4" style="background: #fffcf8;">
+                                <div class="scout-input-label" style="color: var(--scout-orange); font-size: 0.9rem;">⏳ Mission Temporality</div>
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        {{ form_label(form.dateDebut, null, {'label_attr': {'class': 'scout-input-label'}}) }}
+                                        {{ form_widget(form.dateDebut, {'attr': {'class': 'form-control ' ~ (form.dateDebut.vars.errors|length > 0 ? 'is-invalid' : '')}}) }}
+                                        {{ form_errors(form.dateDebut) }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form_label(form.dateFin, null, {'label_attr': {'class': 'scout-input-label'}}) }}
+                                        {{ form_widget(form.dateFin, {'attr': {'class': 'form-control ' ~ (form.dateFin.vars.errors|length > 0 ? 'is-invalid' : '')}}) }}
+                                        {{ form_errors(form.dateFin) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-5 d-flex align-items-center gap-3">
+                                <button type="submit" class="btn btn-scout-confirm">💾 ENREGISTRER L'ABONNEMENT</button>
+                                <a href="{{ path('app_abonnement_index') }}" class="btn btn-scout-abort">❌ ANNULER</a>
+                            </div>
+                        </div>
+
+                        <!-- RIGHT: IA TRENDS / SIDEBAR -->
+                        <div class="col-lg-4">
+                            <div class="metric-card mb-4" style="background: var(--scout-navy);">
+                                <div class="scout-input-label" style="color: #fff;"></div>
+                                <div class="mt-3">
+                                    <div class="scout-card mb-2" style="padding: 15px; background: rgba(255,255,255,0.05); border: none;">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span style="font-weight: 800; font-size: 1rem; color: #fff;"></span>
+                                            <i class="fa fa-shield text-success"></i>
+                                        </div>
+                                        <div class="scout-subtitle mt-2" style="color: #aab1b7;">.</div>
+                                    </div>
+                                    
+                                    <div class="scout-card" style="padding: 15px; background: rgba(255,255,255,0.05); border: none;">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span style="font-weight: 800; font-size: 1rem; color: #fff;"></span>
+                                            <div class="spinner-grow spinner-grow-sm text-info"></div>
+                                        </div>
+                                        <div class="scout-subtitle mt-2" style="color: #aab1b7;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="metric-card" style="background: #fff; border: 1px solid var(--scout-blue); color: var(--scout-navy);">
+                                <div class="scout-input-label" style="color: var(--scout-blue);"></div>
+                                <p style="font-size: 0.85rem; line-height: 1.6;"></p>
+                            </div>
+                        </div>
+                    </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

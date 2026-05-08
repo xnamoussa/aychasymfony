@@ -1,0 +1,67 @@
+<!-- Admin Sidebar -->
+<div class="scout-sidebar" style="width: 280px; min-height: 100vh; background: var(--scout-navy); color: #fff; padding: 30px 0; position: fixed; left: 0; top: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.1);">
+    <div class="sidebar-header px-4 mb-5 text-center">
+        <img src="{{ asset('img/logo_lamma.png') }}" alt="LAMMA" style="height: 60px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2));" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3069/3069172.png'">
+        <div class="mt-2" style="font-family: 'Anton', sans-serif; font-size: 1.2rem; color: #fff;">EXPÉDITION PANEL</div>
+        <div class="scout-badge mt-2" style="background: var(--scout-blue);">MASTER ADMIN</div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <ul style="list-style: none; padding: 0; margin: 0;">
+            <!-- Group 1: EXPEDITION -->
+            <li class="px-4 mb-2" style="font-size: 0.75rem; color: var(--scout-blue); font-weight: 900; text-transform: uppercase; letter-spacing: 1px;">Expédition Core</li>
+            <li><a href="{{ path('app_evenement_index') }}" class="nav-link-scout"><i class="fa fa-map-marker"></i> Activités & Events</a></li>
+            <li><a href="{{ path('app_abonnement_index') }}" class="nav-link-scout"><i class="fa fa-id-card"></i> Abonnements</a></li>
+            <li><a href="{{ path('app_abonnement_plans_admin') }}" class="nav-link-scout" style="padding-left:40px;font-size:0.82rem;color:#64748b;"><i class="fa fa-cubes"></i> Plans d'Abonnement</a></li>
+            <li><a href="{{ path('app_participation_index') }}" class="nav-link-scout"><i class="fa fa-users"></i> Inscriptions</a></li>
+            <li><a href="{{ path('app_ticket_index') }}" class="nav-link-scout"><i class="fa fa-qrcode"></i> Badges & QRC</a></li>
+
+            <!-- Group 2: LOGISTICS -->
+            <li class="px-4 mt-4 mb-2" style="font-size: 0.75rem; color: var(--scout-green); font-weight: 900; text-transform: uppercase; letter-spacing: 1px;">Camp de Base</li>
+            <li><a href="{{ path('app_menu_planner_index') }}" class="nav-link-scout"><i class="fa fa-calendar"></i> Planner (Drag & Drop)</a></li>
+            <li><a href="{{ path('app_restaurant_index') }}" class="nav-link-scout"><i class="fa fa-cutlery"></i> Restaurants</a></li>
+            <li><a href="{{ path('app_menu_index') }}" class="nav-link-scout"><i class="fa fa-book"></i> Menus & Cartes</a></li>
+            <li><a href="{{ path('app_repas_detaille_index') }}" class="nav-link-scout"><i class="fa fa-cutlery"></i> Gestion des Repas</a></li>
+            <li><a href="{{ path('app_ingredient_index') }}" class="nav-link-scout"><i class="fa fa-archive"></i> Stocks Ingrédients</a></li>
+            <li><a href="{{ path('app_admin_promo_codes_index') }}" class="nav-link-scout"><i class="fa fa-gift"></i> Codes Promo</a></li>
+
+            <!-- Group 3: SYSTEM -->
+            <li class="px-4 mt-4 mb-2" style="font-size: 0.75rem; color: var(--scout-orange); font-weight: 900; text-transform: uppercase; letter-spacing: 1px;">Maintenance</li>
+            <li><a href="/repair_db.php" class="nav-link-scout"><i class="fa fa-terminal"></i> Database Repair</a></li>
+            <li><a href="{{ path('app_home') }}" class="nav-link-scout"><i class="fa fa-home"></i> Retour Site</a></li>
+        </ul>
+    </nav>
+</div>
+
+<style>
+    .nav-link-scout {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 12px 25px;
+        color: #aab1b7;
+        text-decoration: none !important;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+    }
+
+    .nav-link-scout i {
+        font-size: 1.1rem;
+        width: 25px;
+        text-align: center;
+    }
+
+    .nav-link-scout:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: #fff;
+        border-left: 4px solid var(--scout-blue);
+        padding-left: 21px;
+    }
+
+    .nav-link-scout.active {
+        background: rgba(93, 178, 255, 0.1);
+        color: #fff;
+        border-left: 4px solid var(--scout-blue);
+    }
+</style>

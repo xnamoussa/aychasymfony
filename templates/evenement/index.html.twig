@@ -1,0 +1,482 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Explorez nos Événements - LAMMA{% endblock %}
+{% block hero %}{% endblock %}
+
+{% block stylesheets %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800&display=swap');
+
+    .events-page {
+        background-color: #050505;
+        min-height: 100vh;
+        padding: 160px 0 100px 0;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .section-title {
+        font-family: 'Anton', sans-serif;
+        font-size: 4rem;
+        background: linear-gradient(135deg, #fff 30%, #ff3c36 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        line-height: 1;
+    }
+
+    /* Premium Search Bar */
+    .filter-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 30px;
+        margin-bottom: 60px;
+        position: relative;
+        z-index: 1000;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .form-control-custom {
+        background: rgba(255,255,255,0.05) !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        color: white !important;
+        border-radius: 12px !important;
+        padding: 12px 20px !important;
+        transition: all 0.3s ease;
+    }
+
+    .form-control-custom:focus {
+        background: rgba(255,255,255,0.08) !important;
+        border-color: #ff3c36 !important;
+        box-shadow: 0 0 15px rgba(232, 57, 44, 0.2) !important;
+    }
+
+    /* Event Card Redesign */
+    .event-card {
+        background: #111;
+        border-radius: 28px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        position: relative;
+        z-index: 10;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .event-card:hover {
+        transform: translateY(-12px);
+        border-color: rgba(232, 57, 44, 0.3);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 40px rgba(232, 57, 44, 0.1);
+    }
+
+    .event-image-wrapper {
+        position: relative;
+        height: 280px;
+        overflow: hidden;
+    }
+
+    .event-image-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s ease;
+    }
+
+    .event-card:hover .event-image-wrapper img {
+        transform: scale(1.1);
+    }
+
+    .view-badge {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(10px);
+        padding: 8px 16px;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #fff;
+        border: 1px solid rgba(255,255,255,0.1);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 5;
+    }
+
+    .view-badge i { color: #ff3c36; }
+
+    .live-dot {
+        width: 6px;
+        height: 6px;
+        background: #00ff88;
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0 10px #00ff88;
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.5); opacity: 0.5; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    .event-content {
+        padding: 30px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        background: linear-gradient(180deg, rgba(17,17,17,0) 0%, rgba(17,17,17,1) 100%);
+    }
+
+    .event-type {
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #ff3c36;
+        letter-spacing: 2px;
+        margin-bottom: 12px;
+        display: inline-block;
+    }
+
+    .event-title {
+        font-family: 'Anton', sans-serif;
+        font-size: 1.8rem;
+        color: #fff;
+        margin-bottom: 20px;
+        line-height: 1.2;
+        letter-spacing: 0.5px;
+    }
+
+    .event-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #aaa;
+        font-size: 0.95rem;
+        margin-bottom: 15px;
+    }
+
+    .event-info i {
+        color: #ff3c36;
+        width: 18px;
+        text-align: center;
+    }
+
+    .btn-premium {
+        background: #ff3c36;
+        color: white;
+        border: none;
+        padding: 14px 28px;
+        border-radius: 14px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-premium:hover {
+        background: #e8392c;
+        transform: scale(1.05);
+        color: white;
+        box-shadow: 0 10px 25px rgba(232, 57, 44, 0.4);
+    }
+
+    .btn-outline-premium {
+        background: transparent;
+        color: white;
+        border: 1px solid rgba(255,255,255,0.2);
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-outline-premium:hover {
+        background: rgba(255,255,255,0.05);
+        border-color: white;
+        color: white;
+    }
+
+    /* Nice Select Overrides */
+    .nice-select.bg-transparent {
+        background-color: rgba(255,255,255,0.05) !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        border-radius: 12px !important;
+        color: white !important;
+        height: 52px;
+        line-height: 50px;
+    }
+    .nice-select .list {
+        background-color: #111 !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        border-radius: 12px !important;
+        z-index: 9999 !important;
+    }
+    .nice-select .option:hover {
+        background-color: #ff3c36 !important;
+    }
+
+    /* Stretched Link Fallback */
+    .stretched-link::after {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1;
+        content: "";
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="events-page">
+    <div class="container">
+        
+        <div class="row align-items-end mb-5">
+            <div class="col-lg-7">
+                <span class="text-danger fw-bold text-uppercase mb-2 d-block" style="letter-spacing: 3px;">Expériences Exclusives</span>
+                <h2 class="section-title mb-0">Événements</h2>
+            </div>
+            <div class="col-lg-5 text-lg-end mt-4 mt-lg-0">
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_evenement_new') }}" class="btn-premium">
+                        <i class="fa fa-plus"></i> Créer un Événement
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Smart AI Recommendations Section -->
+        {% if recommendations is defined and recommendations is not empty %}
+            <div class="ai-section mb-5">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="ai-icon me-3">
+                        <i class="fas fa-brain fa-2x text-danger animate-pulse"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-white fw-bold mb-0" style="letter-spacing: 1px;">SMART RECOMMENDATIONS</h4>
+                        <p class="text-muted small mb-0">Basé sur vos préférences et les tendances actuelles</p>
+                    </div>
+                </div>
+                <div class="row g-4">
+                    {% for rec in recommendations %}
+                        <div class="col-lg-4">
+                            <div class="rec-card p-3 rounded-4 d-flex align-items-center" style="background: rgba(255,60,54,0.08); border: 1px solid rgba(255,60,54,0.15);">
+                                <div class="rec-img me-3" style="width: 60px; height: 60px; overflow: hidden; border-radius: 12px;">
+                                    <img src="{{ (rec.event.image starts with 'http') ? rec.event.image : asset('uploads/' ~ rec.event.image) }}" class="w-100 h-100 object-fit-cover" alt="">
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="text-white mb-1 text-truncate" style="font-size: 0.9rem;">{{ rec.event.titre }}</h6>
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <span class="badge bg-danger rounded-pill" style="font-size: 0.6rem;">{{ (rec.score * 100)|round }}% Match</span>
+                                        <span class="badge bg-{{ rec.popularity.class }} rounded-pill" style="font-size: 0.6rem;">{{ rec.popularity.label }}</span>
+                                    </div>
+                                </div>
+                                <a href="{{ path('app_evenement_show', {'id': rec.event.id_event}) }}" class="btn btn-sm btn-outline-danger border-0 ms-2"><i class="fas fa-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Filter Area -->
+        <div class="filter-card">
+            <form method="get" action="{{ path('app_evenement_index') }}">
+                <div class="row g-4 align-items-center">
+                    <div class="col-md-5">
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-0 ps-0 text-muted"><i class="fa fa-search"></i></span>
+                            <input type="text" name="search" class="form-control form-control-custom" placeholder="Rechercher par titre ou lieu..." value="{{ app.request.query.get('search') }}">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <select name="sortBy" class="form-control bg-transparent text-white">
+                            <option value="">Trier par...</option>
+                            <option value="date_debut" {% if app.request.query.get('sortBy') == 'date_debut' %}selected{% endif %}>📅 Date de début</option>
+                            <option value="titre" {% if app.request.query.get('sortBy') == 'titre' %}selected{% endif %}>🔤 Titre</option>
+                            <option value="nb_vues" {% if app.request.query.get('sortBy') == 'nb_vues' %}selected{% endif %}>📂 Nombre de Vues</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn-premium w-100 justify-content-center">
+                            Rechercher
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Events Grid -->
+        <div class="row g-5">
+            {% for evenement in evenements %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="event-card position-relative">
+                        <!-- REQUIREMENT: Single click to show details (Stretched link for professional behavior) -->
+                        <a href="{{ path('app_evenement_show', {'id': evenement.id_event}) }}" class="stretched-link"></a>
+                        
+                        <div class="event-image-wrapper">
+                            <div class="view-badge">
+                                <span class="live-dot"></span>
+                                <i class="fa fa-eye"></i> 
+                                <span class="view-count" data-event-id="{{ evenement.id_event }}">{{ evenement.nb_vues }}</span>
+                            </div>
+                            
+                            {% if evenement.image is not empty %}
+                                <img src="{{ (evenement.image starts with 'http') ? evenement.image : asset('uploads/' ~ evenement.image) }}" alt="{{ evenement.titre }}" onerror="this.onerror=null; this.src='{{ asset('uploads/logo.png') }}';">
+                            {% else %}
+                                <div class="d-flex align-items-center justify-content-center w-100 h-100" style="background: #1a1a1a;">
+                                    <i class="fa fa-image fa-3x text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="event-content">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="event-type m-0">{{ evenement.type }}</span>
+                                
+                                {# AI Dynamic Popularity Label #}
+                                {% set insight = aiInsights[evenement.id_event]|default(null) %}
+                                {% if insight %}
+                                    <div class="d-flex flex-column align-items-end">
+                                        <span class="badge bg-{{ insight.popularity.class }} rounded-pill px-2 py-1 mb-1" style="font-size: 0.6rem;">
+                                            <i class="fas fa-fire me-1"></i>{{ insight.popularity.label }}
+                                        </span>
+                                        <div class="d-flex gap-1">
+                                            {% for tag in insight.analysis.tags %}
+                                                <span class="text-muted" style="font-size: 0.6rem;">#{{ tag }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <span class="badge bg-opacity-25 rounded-pill px-2 py-1" style="font-size: 0.6rem; border: 1px solid rgba(255,255,255,0.1);">
+                                        <i class="fas fa-chart-line me-1"></i>Analysing...
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <h3 class="event-title">{{ evenement.titre }}</h3>
+                            
+                            <div class="event-info">
+                                <i class="fa fa-calendar-alt"></i> 
+                                <span>{{ evenement.date_debut ? evenement.date_debut|date('d M Y') : 'À venir' }}</span>
+                            </div>
+                            
+                            <div class="event-info">
+                                <i class="fa fa-map-marker-alt"></i> 
+                                <span class="flex-grow-1">{{ evenement.lieu }}</span>
+                                <div class="weather-container" data-lieu="{{ evenement.lieu }}" style="color: #ffbc00; font-size: 0.9rem; font-weight: 700;">
+                                    <span class="weather-text-small">...</span>
+                                </div>
+                            </div>
+
+                            <div class="mt-auto pt-4 d-flex justify-content-between align-items-center" style="border-top: 1px solid rgba(255,255,255,0.05);">
+                                {% if evenement.spotify_url %}
+                                    <a href="{{ evenement.spotify_url }}" target="_blank" class="btn-outline-premium" style="position: relative; z-index: 5;">
+                                        <i class="fab fa-spotify me-2"></i> Playlist
+                                    </a>
+                                {% else %}
+                                    <span></span>
+                                {% endif %}
+                                
+                                <span class="btn-outline-premium" style="border: none; color: #ff3c36; position: relative; z-index: 5;">
+                                    Savoir Plus <i class="fa fa-arrow-right ms-2" style="font-size: 0.7rem;"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-12 py-5 text-center">
+                    <div class="p-5" style="background: rgba(255,255,255,0.02); border: 2px dashed rgba(255,255,255,0.05); border-radius: 30px;">
+                        <i class="fa fa-calendar-times fa-4x text-muted mb-4"></i>
+                        <h3 class="text-white">Aucun événement disponible</h3>
+                        <p class="text-muted">Revenez bientôt ou modifiez vos critères de recherche.</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="d-flex justify-content-center mt-5">
+            {{ knp_pagination_render(evenements) }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Weather Logic
+    const weatherContainers = document.querySelectorAll('.weather-container');
+    weatherContainers.forEach(container => {
+        const lieu = container.getAttribute('data-lieu');
+        if (!lieu) return;
+        const textField = container.querySelector('.weather-text-small');
+
+        fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(lieu)}&count=1&format=json`)
+          .then(res => res.json())
+          .then(geo => {
+            if (geo.results && geo.results.length > 0) {
+                const { latitude, longitude } = geo.results[0];
+                return fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+            }
+          })
+          .then(res => res ? res.json() : null)
+          .then(data => {
+            if (data && data.current_weather) {
+                const temp = Math.round(data.current_weather.temperature);
+                const code = data.current_weather.weathercode;
+                const icons = {0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️', 45: '🌫️', 51: '🌦️', 61: '🌧️', 71: '❄️', 95: '⛈️'};
+                textField.innerHTML = `${icons[code] || '🌡️'} ${temp}°C`;
+            }
+          })
+          .catch(() => { textField.innerText = ''; });
+    });
+
+    // 2. Auto-Refresh View Counts
+    function refreshViews() {
+        const viewElements = document.querySelectorAll('.view-count');
+        viewElements.forEach(el => {
+            const id = el.getAttribute('data-event-id');
+            // Fetch the new count from our API endpoint
+            fetch(`/evenement/api/views/${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.views !== undefined) {
+                        const currentVal = parseInt(el.innerText);
+                        if (currentVal !== data.views) {
+                            // Subtle animation on change
+                            el.style.transition = 'all 0.3s ease';
+                            el.style.transform = 'scale(1.3)';
+                            el.style.color = '#00ff88';
+                            el.innerText = data.views;
+                            setTimeout(() => {
+                                el.style.transform = 'scale(1)';
+                                el.style.color = '#fff';
+                            }, 500);
+                        }
+                    }
+                })
+                .catch(err => console.error("View refresh failed:", err));
+        });
+    }
+
+    // Refresh every 5 seconds for a "live" feel
+    setInterval(refreshViews, 5000);
+});
+</script>
+{% endblock %}

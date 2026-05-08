@@ -1,0 +1,135 @@
+{# templates/partials/word_predictor.html.twig
+   Reusable AI Word Predictor — works on every <textarea> on the page.
+   Include with: {% include 'partials/word_predictor.html.twig' %}
+#}
+<script>
+(function() {
+    const wordBank = {
+        'bon': 'bonjour', 'bonj': 'bonjour',
+        'comm': 'comment', 'merc': 'merci',
+        'sym': 'symfony', 'symf': 'symfony',
+        'doc': 'doctrine', 'doct': 'doctrine',
+        'cont': 'controller', 'ent': 'entity',
+        'repo': 'repository', 'art': 'article',
+        'blo': 'blog', 'tit': 'titre',
+        'con': 'contenu', 'auj': "aujourd'hui",
+        'dem': 'demain', 'tr': 'très',
+        'bea': 'beau', 'gra': 'grand',
+        'pet': 'petit', 'aim': 'aimer',
+        'ador': 'adorer', 'vou': 'vouloir',
+        'pou': 'pouvoir', 'sav': 'savoir',
+        'fair': 'faire', 'dir': 'dire',
+        'voir': 'voir', 'ven': 'venir',
+        'all': 'aller'
+    };
+
+    let suggestionBox = null;
+
+    function getOrCreateBox() {
+        if (suggestionBox) return suggestionBox;
+        suggestionBox = document.createElement('div');
+        suggestionBox.id = 'globalSuggestionBox';
+        suggestionBox.style.cssText = `
+            position: absolute;
+            background: white;
+            border: 2px solid #f09000;
+            border-radius: 8px;
+            padding: 8px 15px;
+            display: none;
+            font-size: 13px;
+            z-index: 99999;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            cursor: pointer;
+            font-family: 'DM Sans', Arial, sans-serif;
+        `;
+        document.body.appendChild(suggestionBox);
+        return suggestionBox;
+    }
+
+    function getLastWord(text) {
+        let words = text.trim().split(/\s+/);
+        return words.length > 0 ? words[words.length - 1] : '';
+    }
+
+    function getSuggestion(word) {
+        if (word.length < 2) return null;
+        let lowerWord = word.toLowerCase();
+        for (let [prefix, fullWord] of Object.entries(wordBank)) {
+            if (lowerWord.startsWith(prefix)) return fullWord;
+        }
+        return null;
+    }
+
+    function showSuggestion(textarea, suggestion) {
+        let box  = getOrCreateBox();
+        let rect = textarea.getBoundingClientRect();
+        box.style.top   = (rect.bottom + window.scrollY + 5) + 'px';
+        box.style.left  = (rect.left   + window.scrollX) + 'px';
+        box.style.width = (rect.width  - 30) + 'px';
+        box.innerHTML   = '💡 <strong>Tab</strong> pour accepter : <span style="color:#f09000;font-weight:bold;">' + suggestion + '</span>';
+        box.style.display = 'block';
+        box.currentSuggestion = suggestion;
+        box.currentTextarea   = textarea;
+    }
+
+    function hideSuggestion() {
+        if (suggestionBox) suggestionBox.style.display = 'none';
+    }
+
+    function applySuggestion(textarea, suggestion) {
+        let words = textarea.value.trim().split(/\s+/);
+        if (words.length > 0) words.pop();
+        words.push(suggestion);
+        textarea.value = words.join(' ') + ' ';
+        hideSuggestion();
+        textarea.focus();
+    }
+
+    function initTextarea(textarea) {
+        if (!textarea || textarea.hasAttribute('data-predictor-initialized')) return;
+        textarea.setAttribute('data-predictor-initialized', 'true');
+        textarea.setAttribute('autocomplete', 'off');
+
+        let typingTimer;
+        textarea.addEventListener('input', function() {
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(() => {
+                let suggestion = getSuggestion(getLastWord(this.value));
+                suggestion ? showSuggestion(this, suggestion) : hideSuggestion();
+            }, 300);
+        });
+
+        textarea.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab' && suggestionBox && suggestionBox.style.display === 'block') {
+                e.preventDefault();
+                if (suggestionBox.currentSuggestion && suggestionBox.currentTextarea === this) {
+                    applySuggestion(this, suggestionBox.currentSuggestion);
+                }
+            }
+            if (e.key === 'Escape') hideSuggestion();
+        });
+
+        textarea.addEventListener('blur', () => setTimeout(hideSuggestion, 200));
+    }
+
+    function initAllTextareas() {
+        document.querySelectorAll('textarea').forEach(initTextarea);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAllTextareas);
+    } else {
+        initAllTextareas();
+    }
+
+    // Watch for dynamically-added textareas (comment forms, etc.)
+    new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+                if (node.nodeName === 'TEXTAREA') initTextarea(node);
+                if (node.querySelectorAll) node.querySelectorAll('textarea').forEach(initTextarea);
+            });
+        });
+    }).observe(document.body, { childList: true, subtree: true });
+})();
+</script>

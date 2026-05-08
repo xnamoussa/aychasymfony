@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Facture {{ invoiceNumber }}</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333333;
+            background-color: #ffffff;
+        }
+        /* Header Sombre */
+        .header {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            padding: 40px;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        .header table {
+            width: 100%;
+            border-collapse: collapse;
+            border: none;
+        }
+        .header td {
+            vertical-align: top;
+            border: none;
+        }
+        .logo-box {
+            width: 45px;
+            height: 45px;
+            background-color: #f97316; /* Orange */
+            border-radius: 8px;
+            display: inline-block;
+            text-align: center;
+            line-height: 45px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            border: 2px solid rgba(255,255,255,0.2);
+            float: left;
+            margin-right: 15px;
+        }
+        .brand-info {
+            float: left;
+        }
+        .brand-title {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin: 0 0 5px 0;
+            text-transform: uppercase;
+        }
+        .brand-subtitle {
+            font-size: 14px;
+            color: #f97316;
+            margin: 0;
+        }
+        .invoice-info {
+            text-align: right;
+        }
+        .invoice-number {
+            font-size: 14px;
+            font-weight: bold;
+            margin: 0 0 5px 0;
+        }
+        .invoice-date {
+            font-size: 13px;
+            color: #a3a3a3;
+            margin: 0;
+        }
+
+        /* Section Client & Méthode */
+        .info-section {
+            padding: 40px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: none;
+        }
+        .info-table td {
+            width: 50%;
+            vertical-align: top;
+            border: none;
+        }
+        .info-label {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        .info-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+        .info-sub {
+            font-size: 13px;
+            color: #64748b;
+        }
+        .text-right {
+            text-align: right;
+        }
+
+        /* Status Badge */
+        .status-paid {
+            color: #10b981; /* Green */
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+
+        /* Lignes de facture */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .items-header td {
+            background-color: #f8fafc;
+            padding: 15px 40px;
+            font-size: 11px;
+            font-weight: bold;
+            color: #64748b;
+            text-transform: uppercase;
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .items-row td {
+            padding: 25px 40px;
+            vertical-align: top;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .item-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+        .item-desc {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+        .item-qty {
+            text-align: center;
+            font-size: 15px;
+            color: #334155;
+        }
+        .item-total {
+            text-align: right;
+            font-size: 16px;
+            font-weight: bold;
+            color: #1e293b;
+        }
+
+        /* Totaux */
+        .totals-section {
+            padding: 30px 40px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .totals-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: none;
+        }
+        .totals-table td {
+            border: none;
+        }
+        .totals-box {
+            width: 300px;
+            float: right;
+        }
+        .totals-row td {
+            padding: 8px 0;
+            font-size: 14px;
+            color: #64748b;
+        }
+        .totals-val {
+            text-align: right;
+            color: #334155 !important;
+        }
+        .totals-line {
+            border-top: 1px solid #e2e8f0;
+            margin: 15px 0;
+        }
+        .grand-total td {
+            font-size: 20px !important;
+            font-weight: 900 !important;
+            color: #0f172a !important;
+            padding-top: 15px;
+            text-transform: uppercase;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 60px;
+            text-align: center;
+            font-size: 13px;
+            color: #94a3b8;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER SOMBRE -->
+    <div class="header">
+        <table>
+            <tr>
+                <td style="width: 60%;">
+                    <div class="logo-box">☐</div>
+                    <div class="brand-info">
+                        <div class="brand-title">LAMMA EXPÉDITION</div>
+                        <div class="brand-subtitle">Facture Intelligente</div>
+                    </div>
+                </td>
+                <td class="invoice-info" style="width: 40%;">
+                    <div class="invoice-number">{{ invoiceNumber }}</div>
+                    {# Filtre date en francais si possible, sinon format dd mm YYYY #}
+                    <div class="invoice-date">{{ generatedAt|date('d/m/Y') }}</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- INFO CLIENT & METHODE -->
+    <div class="info-section">
+        <table class="info-table">
+            <tr>
+                <td>
+                    <div class="info-label">Facturé à</div>
+                    <div class="info-value">{{ participantName }}</div>
+                    <div class="info-sub">ID: {{ abonnement.userId }}</div>
+                </td>
+                <td class="text-right">
+                    <div class="info-label">Méthode</div>
+                    <div class="info-value" style="font-size: 15px; font-weight: normal;">Paiement Sécurisé Stripe</div>
+                    <div class="status-paid">Statut: PAYÉ</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- LIGNES DE FACTURE -->
+    <table class="items-table">
+        <tr class="items-header">
+            <td style="width: 60%;">Description</td>
+            <td style="width: 15%; text-align: center;">Quantité</td>
+            <td style="width: 25%; text-align: right;">Total</td>
+        </tr>
+        <tr class="items-row">
+            <td>
+                <div class="item-title">{{ abonnement.nom }}</div>
+                <div class="item-desc">L'expérience ultime avec avantages exclusifs. (Type: {{ abonnement.type }})</div>
+            </td>
+            <td class="item-qty">1</td>
+            <td class="item-total">{{ abonnement.prix|number_format(2, ',', ' ') }} €</td>
+        </tr>
+    </table>
+
+    <!-- SECTION TOTAUX -->
+    <div class="totals-section">
+        <table style="width: 100%; border:none;">
+            <tr>
+                <td style="width: 50%;"></td> <!-- Spacer -->
+                <td style="width: 50%;">
+                    <table class="totals-table">
+                        <tr class="totals-row">
+                            <td>Sous-total</td>
+                            <td class="totals-val">{{ abonnement.prix|number_format(2, ',', ' ') }} €</td>
+                        </tr>
+                        <tr class="totals-row">
+                            <td>TVA (0%)</td>
+                            <td class="totals-val">0,00 €</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><div class="totals-line"></div></td>
+                        </tr>
+                        <tr class="totals-row grand-total">
+                            <td>TOTAL</td>
+                            <td class="totals-val">{{ abonnement.prix|number_format(2, ',', ' ') }} €</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- FOOTER MESSAGE -->
+    <div class="footer">
+        Merci de choisir LAMMA pour vos aventures !
+    </div>
+
+</body>
+</html>

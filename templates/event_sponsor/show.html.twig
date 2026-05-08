@@ -1,0 +1,73 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Détail Event Sponsor{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Détail Event Sponsor</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{{ path('app_event_sponsor_index') }}">Event Sponsors</a></li>
+        <li class="breadcrumb-item active">Détail</li>
+    </ol>
+
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div><i class="fas fa-calendar-alt me-1"></i> Association #{{ event_sponsor.id }}</div>
+            <div>
+                <a href="{{ path('app_event_sponsor_edit', {'id': event_sponsor.id}) }}" class="btn btn-warning btn-sm">
+                    <i class="fas fa-edit me-1"></i> Modifier
+                </a>
+                <a href="{{ path('app_event_sponsor_index') }}" class="btn btn-secondary btn-sm ms-1">
+                    <i class="fas fa-arrow-left me-1"></i> Retour
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th class="table-light" width="35%">ID</th>
+                            <td>{{ event_sponsor.id }}</td>
+                        </tr>
+                        <tr>
+                            <th class="table-light">Événement</th>
+                            <td>{{ event_sponsor.event.titre }}</td>
+                        </tr>
+                        <tr>
+                            <th class="table-light">Sponsor</th>
+                            <td>{{ event_sponsor.sponsor.nom }}</td>
+                        </tr>
+                        <tr>
+                            <th class="table-light">Niveau</th>
+                            <td>
+                                {% if event_sponsor.niveau == 'GOLD' %}
+                                    <span class="badge bg-warning text-dark">GOLD</span>
+                                {% elseif event_sponsor.niveau == 'SILVER' %}
+                                    <span class="badge bg-secondary">SILVER</span>
+                                {% elseif event_sponsor.niveau == 'BRONZE' %}
+                                    <span class="badge" style="background-color:#cd7f32">BRONZE</span>
+                                {% else %}
+                                    <span class="badge bg-info">PARTENAIRE</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="table-light">Montant</th>
+                            <td>{{ event_sponsor.montant }} DT</td>
+                        </tr>
+                        <tr>
+                            <th class="table-light">Date Association</th>
+                            <td>{{ event_sponsor.dateAssociation ? event_sponsor.dateAssociation|date('d/m/Y H:i') : '-' }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            {{ include('event_sponsor/_delete_form.html.twig') }}
+        </div>
+    </div>
+</div>
+{% endblock %}

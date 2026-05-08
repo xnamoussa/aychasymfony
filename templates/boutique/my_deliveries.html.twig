@@ -1,0 +1,83 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes livraisons — LAMMA{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .lamma-my-deliveries { background: #0f172a; min-height: 100vh; color: #e5e7eb; padding: 6rem 0 4rem; }
+        .delivery-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 1.5rem; transition: all 0.3s; height: 100%; border-left: 4px solid #F97316; }
+        .delivery-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.06); }
+        .status-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 6px; font-size: 0.8rem; font-weight: 700; background: rgba(249, 115, 22, 0.15); color: #F97316; border: 1px solid rgba(249, 115, 22, 0.3); }
+        .btn-lamma-detail { background: #334155; color: #fff !important; border-radius: 6px; padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600; text-decoration: none; transition: all 0.3s; border: 1px solid rgba(255,255,255,0.1); }
+        .btn-lamma-detail:hover { background: #475569; text-decoration: none; }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="lamma-my-deliveries">
+    <div class="container-fluid px-lg-5">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb bg-transparent p-0">
+                <li class="breadcrumb-item"><a href="{{ path('app_boutique') }}" class="text-prm">Boutique</a></li>
+                <li class="breadcrumb-item active text-white-50">Mes Commandes & Livraisons</li>
+            </ol>
+        </nav>
+
+        <div class="d-flex align-items-center justify-content-between mb-5">
+            <div>
+                <h1 class="h2 text-white mb-1" style="font-family:'Anton', sans-serif;">SUIVI DES LIVRAISONS</h1>
+                <p class="text-white-50 small mb-0">Retrouvez l'historique de vos acquisitions et le suivi logistique en temps réel.</p>
+            </div>
+            <a href="{{ path('app_boutique') }}" class="btn btn-outline-light rounded-pill px-4 btn-sm">Boutique catalogue</a>
+        </div>
+
+        <div class="row g-4">
+            {% for livraison in livraisons %}
+                <div class="col-xl-4 col-md-6">
+                    <div class="delivery-card">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="text-white mb-0" style="font-family:'Anton', sans-serif;">{{ livraison.equipement.nom }}</h5>
+                            <div class="status-badge">
+                                {{ livraison.statut|replace({'en_attente': 'En attente', 'confirmee': 'Confirmée', 'preparation': 'Préparation', 'expediee': 'Expédiée', 'en_cours': 'En cours', 'livree': 'Livrée', 'annulee': 'Annulée'}) }}
+                            </div>
+                        </div>
+
+                        <div class="small text-white-50 mb-4">
+                            {% if livraison.equipement.statut == 'VENDU' %}
+                                <div class="text-success mb-2"><i class="fa fa-check-circle me-2"></i>Paiement validé</div>
+                            {% endif %}
+                            
+                            {% if livraison.estimation %}
+                                <div class="mb-1"><i class="fa fa-clock me-2"></i>Estimation : <strong>{{ livraison.estimation|date('d/m/Y') }}</strong></div>
+                            {% endif %}
+                            
+                            {% if livraison.dateLivraison %}
+                                <div class="mb-1"><i class="fa fa-calendar-check me-2"></i>Livré le : {{ livraison.dateLivraison|date('d/m/Y') }}</div>
+                            {% endif %}
+
+                            {% if livraison.rue %}
+                                <div class="mb-1"><i class="fa fa-map-marker-alt me-2"></i>{{ livraison.ville }}, {{ livraison.pays }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mt-auto d-flex justify-content-between align-items-center">
+                            <span class="text-prm fw-bold">{{ livraison.equipement.prix|number_format(2, ',', ' ') }} TND</span>
+                            <a href="{{ path('app_boutique_delivery', {id: livraison.equipement.id}) }}" class="btn-lamma-detail">
+                                <i class="fa fa-search me-1"></i> Détails
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-12 py-5 text-center">
+                    <div class="mb-4" style="font-size: 4rem; opacity: 0.2;">🚚</div>
+                    <h4 class="text-white-50">Aucune commande ou livraison trouvée.</h4>
+                    <p class="text-muted">C'est le moment de vous équiper !</p>
+                    <a href="{{ path('app_boutique') }}" class="btn-lamma-prm mt-3 d-inline-flex w-auto mx-auto px-5">Voir la boutique</a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

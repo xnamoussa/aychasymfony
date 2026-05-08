@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer un événement{% endblock %}
+{% block hero %}{% endblock %}
+
+{% block body %}
+<div style="background-color: #000; min-height: 100vh; padding: 180px 0 60px 0;">
+    <div class="container pb-5">
+        <div class="d-flex justify-content-between align-items-end mb-5 border-bottom border-secondary pb-3">
+            <h2 class="text-white mb-0" style="font-family: impact, sans-serif; font-weight: normal; letter-spacing: 1px; font-size: 2.5rem;">CRÉER UN ÉVÉNEMENT</h2>
+            <a href="{{ path('app_evenement_index') }}" class="btn btn-outline-light rounded-0 px-4"><i class="fa fa-arrow-left"></i> RETOUR</a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                {{ include('evenement/_form.html.twig', {'button_label': 'CRÉER'}) }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

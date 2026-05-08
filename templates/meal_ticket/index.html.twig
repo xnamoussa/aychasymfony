@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+{% import '_macros.html.twig' as macros %}
+
+{% block title %}Meal Tickets - LAMMA{% endblock %}
+{% block page_title %}Meal Tickets{% endblock %}
+{% block page_subtitle %}Gestion des tickets repas et QR codes{% endblock %}
+
+{% block body %}
+<section class="crud-section">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 style="font-family:'Anton',sans-serif;color:#333;">Tickets Repas</h2>
+            <a href="{{ path('app_meal_ticket_new') }}" class="btn btn-add"><i class="fa fa-plus"></i> Nouveau Ticket</a>
+        </div>
+        <div class="card card-detail">
+            <div class="card-body p-0">
+                {% set columns = [
+                    {label: 'ID', field: 'id'},
+                    {label: 'Utilisateur', field: 'userId'},
+                    {label: 'Participation', field: 'participationId'},
+                    {label: 'Créneau', field: 'timeSlot', datetime: true},
+                    {label: 'Utilisé', field: 'used', bool: true}
+                ] %}
+                {{ macros.crud_table(items, columns, 'MealTicket', 'app_meal_ticket') }}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

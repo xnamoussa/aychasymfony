@@ -1,0 +1,124 @@
+{% extends is_granted('ROLE_ADMIN') ? 'admin/base_admin.html.twig' : 'base.html.twig' %}
+
+{% block title %}Détails Menu - LAMMA{% endblock %}
+
+{% block stylesheets %}
+<style>
+    body { background-color: #0b0f19 !important; }
+    .poesie-container {
+        max-width: 800px;
+        margin: 40px auto;
+        background: #fcfaf7;
+        border-radius: 8px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        color: #1e293b;
+        padding: 60px;
+        font-family: 'Inter', sans-serif;
+    }
+    .poesie-header { text-align: center; margin-bottom: 50px; }
+    .title-braces { font-family: 'Anton', sans-serif; font-size: 3.5rem; color: #164e33; letter-spacing: 2px; }
+    .subtitle-poesie { font-weight: 800; color: #164e33; font-size: 1.1rem; margin-top: 10px; text-transform: uppercase; }
+    
+    .poesie-section-title {
+        font-family: 'Anton', sans-serif;
+        font-size: 1.3rem;
+        color: #164e33;
+        text-transform: uppercase;
+        margin: 40px 0 20px 0;
+        text-align: center;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 30px;
+    }
+    
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 15px 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .detail-label { font-family: 'Anton', sans-serif; color: #164e33; font-size: 0.9rem; }
+    .detail-value { font-weight: 600; color: #334155; }
+
+    .poesie-footer {
+        margin-top: 50px; display: flex; justify-content: center; gap: 20px;
+        border-top: 1px solid #e2e8f0; padding-top: 30px;
+    }
+    .btn-poesie {
+        padding: 12px 30px; border-radius: 40px; font-weight: 800; font-size: 0.85rem;
+        text-transform: uppercase; cursor: pointer; transition: 0.3s;
+        text-decoration: none !important;
+    }
+    .btn-edit-p { background: #164e33; color: white; border: none; }
+    .btn-exit-p { background: white; color: #64748b; border: 1px solid #e2e8f0; }
+    
+    .decoration-wavy {
+        height: 10px;
+        background-image: radial-gradient(circle at 10px 10px, transparent 10px, #164e33 10px, #164e33 11px, transparent 11px);
+        background-size: 20px 20px;
+        margin: 20px 0;
+        opacity: 0.2;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="poesie-container">
+    <!-- Header -->
+    <div class="poesie-header">
+        <div class="title-braces">{{ item.nom }}</div>
+        <div class="subtitle-poesie">Fiche Technique Menu</div>
+        <div class="decoration-wavy"></div>
+    </div>
+
+    <!-- Info Section -->
+    <div class="poesie-section-title">{CARACTÉRISTIQUES}</div>
+    
+    <div class="detail-row">
+        <span class="detail-label">RESTAURANT :</span>
+        <span class="detail-value">{{ item.restaurantNom|default('Non assigné') }}</span>
+    </div>
+    
+    <div class="detail-row">
+        <span class="detail-label">TARIF UNITAIRE :</span>
+        <span class="detail-value" style="font-size: 1.2rem; color: #164e33;">{{ item.prix|number_format(2, ',', ' ') }} €</span>
+    </div>
+
+    <div class="detail-row">
+        <span class="detail-label">STATUT :</span>
+        <span class="badge {{ item.actif ? 'bg-success' : 'bg-secondary' }}" style="border-radius:20px; padding: 5px 15px;">
+            {{ item.actif ? 'ACTIF' : 'INACTIF' }}
+        </span>
+    </div>
+
+    <div class="poesie-section-title">{VALIDITÉ}</div>
+    
+    <div class="detail-row">
+        <span class="detail-label">DU :</span>
+        <span class="detail-value">{{ item.dateDebut ? item.dateDebut|date('d/m/Y') : 'Non spécifié' }}</span>
+    </div>
+    
+    <div class="detail-row">
+        <span class="detail-label">AU :</span>
+        <span class="detail-value">{{ item.dateFin ? item.dateFin|date('d/m/Y') : 'Non spécifié' }}</span>
+    </div>
+
+    <div class="poesie-section-title">{POÉSIE CULINAIRE}</div>
+    <div class="p-4" style="background: white; border-radius: 8px; border: 1px solid #e2e8f0; font-style: italic; color: #475569; line-height: 1.6;">
+        {{ item.description|default('Aucune poésie n\'a encore été rédigée pour ce voyage...')|nl2br }}
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="poesie-footer">
+        <a href="{{ path('app_menu_edit', {id: item.id}) }}" class="btn-poesie btn-edit-p">
+            <i class="fa fa-pencil mr-2"></i> MODIFIER
+        </a>
+        <a href="{{ path('app_menu_index') }}" class="btn-poesie btn-exit-p">
+            <i class="fa fa-arrow-left mr-2"></i> RETOUR
+        </a>
+    </div>
+
+    <div class="text-center mt-5" style="color: #94a3b8; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;">
+        LAMMA EXPLORER • GESTION DES CARTES
+    </div>
+</div>
+{% endblock %}

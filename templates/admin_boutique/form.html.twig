@@ -1,0 +1,110 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{% block title %}{{ title }} — LAMMA{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block breadcrumb %}Édition de l'équipement{% endblock %}
+
+{% block body %}
+    <div class="row justify-content-center">
+        <div class="col-xl-9">
+            <div class="card border-0 shadow-sm p-4" style="background: rgba(255,255,255,0.03) !important;">
+                <div class="mb-4">
+                    <h3 class="text-white" style="font-family:'Anton', sans-serif;">Formulaire d'Équipement</h3>
+                    <p class="text-white-50">Modifiez les paramètres globaux de l'annonce.</p>
+                </div>
+
+                {{ form_start(form, { attr: { novalidate: 'novalidate', 'data-validate': 'true', class: 'text-white' } }) }}
+                    {{ form_errors(form) }}
+                    
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <label class="form-label uppercase small text-white-50">Nom de l'équipement</label>
+                            {{ form_widget(form.nom, { attr: { class: 'form-control bg-dark border-secondary text-white' } }) }}
+                        </div>
+                        
+                        <div class="col-12">
+                            <label class="form-label uppercase small text-white-50">Description détaillée</label>
+                            {{ form_widget(form.description, { attr: { class: 'form-control bg-dark border-secondary text-white', rows: 5 } }) }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label uppercase small text-white-50">Catégorie</label>
+                            {{ form_widget(form.categorie, { attr: { class: 'form-select bg-dark border-secondary text-white' } }) }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label uppercase small text-white-50">Type d'annonce</label>
+                            {{ form_widget(form.type, { attr: { class: 'form-select bg-dark border-secondary text-white' } }) }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label uppercase small text-white-50">Prix (TND)</label>
+                            {{ form_widget(form.prix, { attr: { class: 'form-control bg-dark border-secondary text-white' } }) }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label uppercase small text-white-50">Ville</label>
+                            {{ form_widget(form.ville, { attr: { class: 'form-control bg-dark border-secondary text-white' } }) }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label uppercase small text-white-50">Statut actuel</label>
+                            {{ form_widget(form.statut, { attr: { class: 'form-select bg-dark border-secondary text-white' } }) }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label uppercase small text-white-50">Options de livraison</label>
+                            {{ form_widget(form.livrable, { attr: { class: 'form-select bg-dark border-secondary text-white' } }) }}
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label uppercase small text-white-50">Email de contact / Alerte</label>
+                            {{ form_widget(form.mail, { attr: { class: 'form-control bg-dark border-secondary text-white' } }) }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 mt-5 pt-4 border-top border-secondary">
+                        <button type="submit" class="btn btn-primary px-4 py-2 fw-bold">Enregistrer les modifications</button>
+                        <a href="{{ path('app_admin_boutique_index') }}" class="btn btn-outline-light px-4 py-2">Annuler</a>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form[data-validate]');
+        if (!form) return;
+
+        form.addEventListener('submit', function(e) {
+            const requiredFields = form.querySelectorAll('input[required], select[required], textarea[required]');
+            let isValid = true;
+
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+
+            if (!isValid) {
+                e.preventDefault();
+                alert('Veuillez remplir tous les champs obligatoires.');
+            }
+        });
+
+        form.addEventListener('input', function(e) {
+            if (e.target.classList.contains('is-invalid')) {
+                e.target.classList.remove('is-invalid');
+            }
+        });
+    });
+    </script>
+{% endblock %}

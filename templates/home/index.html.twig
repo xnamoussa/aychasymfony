@@ -1,0 +1,227 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil — LAMMA{% endblock %}
+
+{# Override default hero with a modern, customized homepage hero #}
+{% block hero %}
+<style>
+    /* Dark Theme Core Reset for this specific page */
+    body { background-color: #080808 !important; color: #ffffff !important; }
+    .bg-light { background-color: #080808 !important; } /* Force override of base.html.twig bg-light */
+    .brand_area, .footer, .footer_widget { background-color: #111 !important; }
+
+    /* Modern Dark Hero */
+    .home-hero-section {
+        position: relative;
+        padding: 8rem 0 5rem;
+        background: radial-gradient(circle at center, #1a1a1a 0%, #080808 100%);
+        border-bottom: 1px solid #222;
+        overflow: hidden;
+    }
+    .home-hero-glow {
+        position: absolute;
+        top: 0; left: 50%;
+        transform: translateX(-50%);
+        width: 80%; height: 500px;
+        background: radial-gradient(ellipse at top, rgba(232, 57, 44, 0.15) 0%, transparent 60%);
+        pointer-events: none;
+    }
+    .hero-subtitle-top {
+        color: #ff3344;
+        font-weight: 800;
+        font-size: 0.85rem;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+        display: block;
+        animation: fadeInDown 1s ease;
+    }
+    .hero-title-main {
+        font-family: 'Anton', sans-serif;
+        font-size: 5rem;
+        color: #fff;
+        line-height: 1;
+        letter-spacing: 2px;
+        margin-bottom: 1.5rem;
+        text-transform: uppercase;
+        animation: fadeInUp 1s ease;
+    }
+    .hero-title-main span {
+        background: -webkit-linear-gradient(45deg, #ff3344, #ff8c42);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .hero-desc {
+        color: #888;
+        font-size: 1.25rem;
+        font-weight: 400;
+        max-width: 650px;
+        margin: 0 auto 3rem;
+        animation: fadeInUp 1s ease 0.2s;
+        opacity: 0;
+        animation-fill-mode: forwards;
+    }
+    .btn-hero-primary {
+        background: #ff3344;
+        color: #fff;
+        padding: 15px 40px;
+        border-radius: 50px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        border: navajowhite;
+        transition: all 0.3s;
+        box-shadow: 0 10px 20px rgba(255, 51, 68, 0.3);
+        text-decoration: none;
+        display: inline-block;
+    }
+    .btn-hero-primary:hover {
+        background: #e62030;
+        transform: translateY(-3px);
+        color: #fff;
+        box-shadow: 0 15px 30px rgba(255, 51, 68, 0.4);
+    }
+</style>
+
+<div class="home-hero-section text-center">
+    <div class="home-hero-glow"></div>
+    <div class="container position-relative z-index-2">
+        <span class="hero-subtitle-top">Tableau de bord logistique</span>
+        <h1 class="hero-title-main">BIENVENUE <span>{{ app.user ? app.user.name|split(' ')[0] : 'SUR LAMMA' }}</span></h1>
+        <p class="hero-desc">L'étape finale de vos expériences camping. Unifiez vos achats, vos créneaux diététiques et gérez toutes vos livraisons d'expédition à partir d'un espace centralisé.</p>
+        <a href="{{ path('app_evenement_index') }}" class="btn-hero-primary"><i class="fa fa-compass me-2"></i> Explorer les événements</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block body %}
+<style>
+    .modules-section {
+        padding: 5rem 0;
+        background-color: #080808;
+    }
+    .section-title-dark {
+        color: #fff;
+        font-family: 'Anton', sans-serif;
+        font-size: 2.5rem;
+        letter-spacing: 1px;
+        margin-bottom: 3rem;
+        text-align: left;
+    }
+    .dark-card {
+        background: #141414;
+        border: 1px solid #222;
+        border-radius: 16px;
+        padding: 2.5rem 2rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: block;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+    .dark-card:hover {
+        background: #1a1a1a;
+        transform: translateY(-8px);
+        border-color: #333;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        text-decoration: none;
+    }
+    /* Accents on top of dark cards */
+    .dark-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 3px;
+        background: #333;
+        transition: background 0.3s;
+    }
+    .card-evo:hover::before { background: #FF416C; }
+    .card-btq:hover::before { background: #f59e0b; }
+    .card-rst:hover::before { background: #10b981; }
+    .card-log:hover::before { background: #3b82f6; }
+
+    .dark-card-icon {
+        width: 65px; height: 65px;
+        background: #0f0f0f;
+        border: 1px solid #333;
+        color: #888;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        margin-bottom: 2rem;
+        transition: all 0.3s;
+    }
+    .dark-card:hover .dark-card-icon {
+        color: #fff;
+        border-color: transparent;
+    }
+    .card-evo:hover .dark-card-icon { background: linear-gradient(135deg, #FF416C, #FF4B2B); box-shadow: 0 10px 20px rgba(255, 65, 108, 0.4); }
+    .card-btq:hover .dark-card-icon { background: linear-gradient(135deg, #f59e0b, #ea580c); box-shadow: 0 10px 20px rgba(245, 158, 11, 0.4); }
+    .card-rst:hover .dark-card-icon { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.4); }
+    .card-log:hover .dark-card-icon { background: linear-gradient(135deg, #3b82f6, #2563eb); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4); }
+
+    .dark-card-title {
+        color: #fff;
+        font-family: 'Anton', sans-serif;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        letter-spacing: 1px;
+    }
+    .dark-card-desc {
+        color: #888;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+    
+    @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeInDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+</style>
+
+<div class="modules-section">
+    <div class="container">
+        <h2 class="section-title-dark">ACCÈS RAPIDE</h2>
+        
+        <div class="row g-4 mb-4">
+            <!-- Events -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <a href="{{ path('app_evenement_index') }}" class="dark-card card-evo">
+                    <div class="dark-card-icon"><i class="fa fa-map-marker"></i></div>
+                    <h3 class="dark-card-title">ÉVÉNEMENTS</h3>
+                    <p class="dark-card-desc">Parcourez les expériences outdoor et gérez vos prochaines aventures.</p>
+                </a>
+            </div>
+            
+            <!-- Boutique -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <a href="{{ path('app_boutique') }}" class="dark-card card-btq">
+                    <div class="dark-card-icon"><i class="fa fa-shopping-bag"></i></div>
+                    <h3 class="dark-card-title">BOUTIQUE</h3>
+                    <p class="dark-card-desc">Matériels certifiés ou occasions campeurs. Achetez votre équipement parfait.</p>
+                </a>
+            </div>
+            
+            <!-- Restauration -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <a href="{{ path('app_restaurant_index') }}" class="dark-card card-rst">
+                    <div class="dark-card-icon"><i class="fa fa-fire"></i></div>
+                    <h3 class="dark-card-title">RESTAURATION</h3>
+                    <p class="dark-card-desc">Composez votre plan alimentaire et évaluez vos besoins en calories.</p>
+                </a>
+            </div>
+            
+            <!-- Logistics -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <a href="{{ path('app_my_deliveries') }}" class="dark-card card-log">
+                    <div class="dark-card-icon"><i class="fa fa-truck"></i></div>
+                    <h3 class="dark-card-title">LOGISTIQUE</h3>
+                    <p class="dark-card-desc">Bordereaux de livraison en temps réel, QR et statuts réseau.</p>
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

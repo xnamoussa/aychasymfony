@@ -1,0 +1,59 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Modifier Event Sponsor{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Modifier Event Sponsor</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{{ path('app_event_sponsor_index') }}">Event Sponsors</a></li>
+        <li class="breadcrumb-item active">Modifier</li>
+    </ol>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-edit me-1"></i> Modifier l'association
+        </div>
+        <div class="card-body">
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'row g-3'}}) }}
+
+                <div class="col-md-6">
+                    {{ form_label(form.event, 'Événement', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                    {{ form_widget(form.event, {'attr': {'class': 'form-select'}}) }}
+                    <div class="text-danger small">{{ form_errors(form.event) }}</div>
+                </div>
+
+                <div class="col-md-6">
+                    {{ form_label(form.sponsor, 'Sponsor', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                    {{ form_widget(form.sponsor, {'attr': {'class': 'form-select'}}) }}
+                    <small class="text-muted">Seuls les sponsors actifs sont affichés</small>
+                    <div class="text-danger small">{{ form_errors(form.sponsor) }}</div>
+                </div>
+
+                <div class="col-md-6">
+                    {{ form_label(form.niveau, 'Niveau', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                    {{ form_widget(form.niveau, {'attr': {'class': 'form-select'}}) }}
+                    <div class="text-danger small">{{ form_errors(form.niveau) }}</div>
+                </div>
+
+                <div class="col-md-6">
+                    {{ form_label(form.montant, 'Montant (DT)', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                    {{ form_widget(form.montant, {'attr': {'class': 'form-control'}}) }}
+                    <div class="text-danger small">{{ form_errors(form.montant) }}</div>
+                </div>
+
+                <div class="col-12 mt-4">
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save me-1"></i> Mettre à jour
+                    </button>
+                    <a href="{{ path('app_event_sponsor_index') }}" class="btn btn-secondary ms-2">
+                        <i class="fas fa-times me-1"></i> Annuler
+                    </a>
+                </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

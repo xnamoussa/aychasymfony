@@ -1,0 +1,33 @@
+{% for e in equipements %}
+    <tr>
+        <td class="ps-3">{{ e.id }}</td>
+        <td><a href="{{ path('app_admin_boutique_show', {id: e.id}) }}" class="text-decoration-none fw-bold text-info">{{ e.nom }}</a></td>
+        <td>{{ e.type }}</td>
+        <td>{{ e.categorie ?: '—' }}</td>
+        <td>
+            {% if e.statut == 'disponible' %}
+                <span class="badge bg-success">Disponible</span>
+            {% elseif e.statut == 'VENDU' %}
+                <span class="badge bg-primary"><i class="fa fa-check-circle me-1"></i>Vendu</span>
+            {% else %}
+                <span class="badge bg-secondary">{{ e.statut }}</span>
+            {% endif %}
+        </td>
+        <td>{{ e.livrable ? 'Oui' : 'Non' }}</td>
+        <td>{{ e.owner ? e.owner.name : 'Aucun' }}</td>
+        <td>{{ e.delivery and e.delivery.acheteur ? e.delivery.acheteur.name : '—' }}</td>
+        <td>{{ e.delivery ? e.delivery.statut|replace({'en_attente': 'En attente', 'confirmee': 'Confirmée', 'preparation': 'En préparation', 'expediee': 'Expédiée', 'en_cours': 'En cours', 'livree': 'Livrée', 'annulee': 'Annulée'}) : 'Aucune' }}</td>
+        <td class="text-end pe-3">
+            <a href="{{ path('app_admin_boutique_show', {id: e.id}) }}" class="btn btn-sm btn-outline-info">Voir</a>
+            <a href="{{ path('app_admin_boutique_edit', {id: e.id}) }}" class="btn btn-sm btn-warning text-dark">Modifier</a>
+            <form method="post" action="{{ path('app_admin_boutique_delete', {id: e.id}) }}" style="display:inline;" onsubmit="return confirm('Supprimer cet équipement ?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete_equipement_' ~ e.id) }}">
+                <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+            </form>
+        </td>
+    </tr>
+{% else %}
+    <tr>
+        <td colspan="10" class="text-center text-muted py-4">Aucun équipement trouvé.</td>
+    </tr>
+{% endfor %}

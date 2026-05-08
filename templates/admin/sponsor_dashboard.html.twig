@@ -1,0 +1,332 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Dashboard Sponsors - LAMMA{% endblock %}
+{% block page_title %}Tableau de bord : Sponsors{% endblock %}
+
+{% block body %}
+    {# Stats Cards #}
+    <div class="row mt-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card h-100" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 12px;">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fs-4 fw-bold text-white" style="font-family: 'Anton', sans-serif;">{{ totalSponsors ?? 0 }}</div>
+                        <div class="text-white-50 text-uppercase small fw-bold">Total Sponsors</div>
+                    </div>
+                    <i class="fas fa-handshake fa-2x" style="color: #3b82f6;"></i>
+                </div>
+                <div class="card-footer bg-transparent border-0 pt-0 pb-3 ps-3">
+                    <a class="small text-decoration-none" style="color: rgba(255,255,255,0.5);" href="{{ path('app_sponsor_index') }}">Voir détails →</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card h-100" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px;">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fs-4 fw-bold text-white" style="font-family: 'Anton', sans-serif;">{{ sponsorsActifs ?? 0 }}</div>
+                        <div class="text-white-50 text-uppercase small fw-bold">Sponsors Actifs</div>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x" style="color: #10b981;"></i>
+                </div>
+                <div class="card-footer bg-transparent border-0 pt-0 pb-3 ps-3">
+                    <a class="small text-decoration-none" style="color: rgba(255,255,255,0.5);" href="{{ path('app_sponsor_index') }}">Voir détails →</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card h-100" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 12px;">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fs-4 fw-bold text-white" style="font-family: 'Anton', sans-serif;">{{ totalAssociations ?? 0 }}</div>
+                        <div class="text-white-50 text-uppercase small fw-bold">Participations au Event</div>
+                    </div>
+                    <i class="fas fa-calendar-alt fa-2x" style="color: #f59e0b;"></i>
+                </div>
+                <div class="card-footer bg-transparent border-0 pt-0 pb-3 ps-3">
+                    <a class="small text-decoration-none" style="color: rgba(255,255,255,0.5);" href="{{ path('app_event_sponsor_index') }}">Voir détails →</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card h-100" style="background: rgba(232, 57, 44, 0.1); border: 1px solid rgba(232, 57, 44, 0.2); border-radius: 12px;">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div id="totalAmountValue" class="fs-4 fw-bold text-success" data-base-amount="{{ montantTotal|default(0) }}" style="font-family: 'Anton', sans-serif;">
+                            {{ montantTotal is defined ? montantTotal|number_format(0, '.', ' ') : 0 }} TND
+                        </div>
+                        <div id="totalAmountLabel" class="text-white-50 text-uppercase small fw-bold">Montant Collecté</div>
+                    </div>
+                    <i class="fas fa-coins fa-2x" style="color: #10b981;"></i>
+                </div>
+                <div class="card-footer bg-transparent border-0 pt-0 pb-3 ps-3">
+                    <a class="small text-decoration-none" style="color: rgba(255,255,255,0.5);" href="{{ path('app_event_sponsor_index') }}">Voir détails →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4 mb-4">
+        <div class="col-xl-4 col-md-6">
+            <div class="card" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px;">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-bold" style="color: #fff;">Devise</div>
+                        <div class="small text-white-50">Sélectionnez une devise</div>
+                    </div>
+                    <select id="currencySelector" class="form-select form-select-sm w-auto bg-dark border-secondary text-white">
+                        <option value="TND">TND</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6">
+            <div class="card" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px;">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div id="convertedTotalValue" class="fs-4 fw-bold text-success" style="font-family: 'Anton', sans-serif;">N/A</div>
+                        <div class="small text-white-50">Montant converti</div>
+                    </div>
+                    <i class="fas fa-exchange-alt fa-2x" style="color: #10b981;"></i>
+                </div>
+                <div class="card-footer border-0 bg-transparent pt-0 pb-2 ps-3">
+                    <div id="convertedTotalCurrency" class="small text-white-50 fw-bold">TND</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6">
+            <div class="card" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fs-4 fw-bold text-white" id="exchangeRateValue" style="font-family: 'Anton', sans-serif;">1 TND = 0</div>
+                        <div class="small text-white-50">Taux utilisé</div>
+                    </div>
+                    <i class="fas fa-chart-line fa-2x text-secondary"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Charts Row #}
+    <div class="row">
+        {# Bar Chart - Montant par Événement #}
+        <div class="col-xl-8">
+            <div class="card mb-4" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px;">
+                <div class="card-header bg-transparent border-bottom-0 pb-1 pt-3 text-white fw-bold">
+                    <i class="fas fa-chart-bar me-1" style="color: #3b82f6;"></i>
+                    Montant Collecté par Événement
+                </div>
+                <div class="card-body">
+                    <canvas id="myBarChart" width="100%" height="40"></canvas>
+                </div>
+            </div>
+        </div>
+
+        {# Pie Chart - Montant par Niveau #}
+        <div class="col-xl-4">
+            <div class="card mb-4" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px;">
+                <div class="card-header bg-transparent border-bottom-0 pb-1 pt-3 text-white fw-bold">
+                    <i class="fas fa-chart-pie me-1" style="color: #f59e0b;"></i>
+                    Répartition par Niveau
+                </div>
+                <div class="card-body">
+                    <canvas id="myPieChart" width="100%" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+    {{ parent() }}
+    {% if montantParEvenement is defined %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+    <script>
+        var rates = {{ rates|json_encode|raw }};
+        var baseCurrency = '{{ baseCurrency|default('TND') }}';
+        var montantTotalBase = {{ montantTotal|default(0) }};
+        var barLabels = {{ montantParEvenement|keys|json_encode|raw }};
+        var barDataBase = [{% for val in montantParEvenement %}{{ val }}{% if not loop.last %},{% endif %}{% endfor %}];
+        var barChart = null;
+
+        function formatAmount(value) {
+            return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+        }
+
+        function populateCurrencySelector(ratesObj) {
+            var selector = document.getElementById('currencySelector');
+            if (!selector) {
+                return;
+            }
+            var existingValue = selector.value || baseCurrency;
+            selector.innerHTML = '<option value="TND">TND</option>';
+            Object.keys(ratesObj).sort().forEach(function(code) {
+                if (code === baseCurrency) {
+                    return;
+                }
+                var option = document.createElement('option');
+                option.value = code;
+                option.textContent = code;
+                selector.appendChild(option);
+            });
+            if (ratesObj[existingValue] || existingValue === baseCurrency) {
+                selector.value = existingValue;
+            }
+        }
+
+        function fetchRates() {
+            if (Object.keys(rates).length > 0) {
+                populateCurrencySelector(rates);
+                return Promise.resolve(rates);
+            }
+
+            return fetch('https://open.er-api.com/v6/latest/' + baseCurrency)
+                .then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('Erreur API');
+                    }
+                    return response.json();
+                })
+                .then(function(data) {
+                    rates = data.rates || {};
+                    populateCurrencySelector(rates);
+                    return rates;
+                })
+                .catch(function() {
+                    rates = {};
+                    populateCurrencySelector(rates);
+                    return rates;
+                });
+        }
+
+        function getRate(currency) {
+            if (currency === baseCurrency) {
+                return 1;
+            }
+            return rates[currency] || null;
+        }
+
+        function updateTotals(currency) {
+            var rate = getRate(currency);
+            var totalValue = document.getElementById('totalAmountValue');
+            var convertedTotalValue = document.getElementById('convertedTotalValue');
+            var convertedTotalCurrency = document.getElementById('convertedTotalCurrency');
+            var exchangeRateValue = document.getElementById('exchangeRateValue');
+            var totalLabel = document.getElementById('totalAmountLabel');
+
+            if (!rate) {
+                convertedTotalValue.textContent = 'N/A';
+                exchangeRateValue.textContent = 'Taux indisponible';
+                totalValue.textContent = formatAmount(montantTotalBase) + ' ' + baseCurrency;
+                totalLabel.textContent = 'Montant Collecté';
+                if (barChart) {
+                    barChart.data.datasets[0].data = barDataBase;
+                    barChart.data.datasets[0].label = 'Montant (' + baseCurrency + ')';
+                    barChart.options.scales.yAxes[0].ticks.callback = function(value) { return formatAmount(value) + ' ' + baseCurrency; };
+                    barChart.update();
+                }
+                return;
+            }
+
+            var convertedTotal = montantTotalBase * rate;
+            totalValue.textContent = formatAmount(convertedTotal) + ' ' + currency;
+            totalLabel.textContent = 'Montant Collecté (' + currency + ')';
+            convertedTotalValue.textContent = formatAmount(convertedTotal);
+            convertedTotalCurrency.textContent = currency;
+            exchangeRateValue.textContent = '1 ' + baseCurrency + ' = ' + formatAmount(rate) + ' ' + currency;
+
+            if (barChart) {
+                barChart.data.datasets[0].data = barDataBase.map(function(value) {
+                    return value * rate;
+                });
+                barChart.data.datasets[0].label = 'Montant (' + currency + ')';
+                barChart.options.scales.yAxes[0].ticks.callback = function(value) {
+                    return formatAmount(value) + ' ' + currency;
+                };
+                barChart.update();
+            }
+        }
+
+        function initCurrencySelector() {
+            var selector = document.getElementById('currencySelector');
+            if (!selector) {
+                return;
+            }
+
+            var storedCurrency = localStorage.getItem('dashboardCurrency');
+            var defaultCurrency = storedCurrency || 'USD';
+            if (defaultCurrency !== baseCurrency && !rates[defaultCurrency]) {
+                defaultCurrency = baseCurrency;
+            }
+
+            selector.value = defaultCurrency;
+            updateTotals(defaultCurrency);
+
+            selector.addEventListener('change', function() {
+                var currency = selector.value;
+                localStorage.setItem('dashboardCurrency', currency);
+                updateTotals(currency);
+            });
+        }
+
+        function initBarChart() {
+            var ctxBar = document.getElementById('myBarChart');
+            if (!ctxBar) {
+                return;
+            }
+
+            barChart = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: barLabels,
+                    datasets: [{
+                        label: 'Montant (' + baseCurrency + ')',
+                        backgroundColor: '#3b82f6',
+                        data: barDataBase,
+                    }],
+                },
+                options: {
+                    scales: {
+                        xAxes: [{ gridLines: { display: false, color: 'rgba(255,255,255,0.1)' }, ticks: { maxTicksLimit: 10, fontColor: '#fff' } }],
+                        yAxes: [{ ticks: { maxTicksLimit: 5, fontColor: '#fff', callback: function(value) { return formatAmount(value); } }, gridLines: { color: 'rgba(255,255,255,0.1)' } }],
+                    },
+                    legend: { display: false }
+                }
+            });
+        }
+
+        function initPieChart() {
+            var ctxPie = document.getElementById('myPieChart');
+            if (!ctxPie) {
+                return;
+            }
+
+            var niveauData = [{% for val in montantParNiveau %}{{ val }}{% if not loop.last %},{% endif %}{% endfor %}];
+            new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: ['GOLD', 'SILVER', 'BRONZE', 'PARTENAIRE'],
+                    datasets: [{
+                        data: niveauData,
+                        backgroundColor: ['#f5c842', '#cbd5e1', '#b45309', '#3b82f6'],
+                        borderColor: 'transparent'
+                    }],
+                },
+                options: { legend: { display: true, position: 'bottom', labels: { fontColor: '#fff' } } }
+            });
+        }
+
+        function initDashboard() {
+            initBarChart();
+            initPieChart();
+            fetchRates().then(function() {
+                initCurrencySelector();
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initDashboard);
+        document.addEventListener('turbo:load', initDashboard);
+    </script>
+    {% endif %}
+{% endblock %}

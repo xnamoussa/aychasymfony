@@ -1,0 +1,223 @@
+{% extends is_granted('ROLE_ADMIN') ? 'admin/base_admin.html.twig' : 'base.html.twig' %}
+{% import '_macros.html.twig' as macros %}
+
+{% block title %}Repas et Plats - LAMMA{% endblock %}
+{% block page_title %}Repas & Plats IA{% endblock %}
+{% block admin_title %}Repas & Plats IA{% endblock %}
+
+{% block body %}
+<section class="crud-section">
+    <div class="row align-items-center mb-5">
+        <div class="col-md-6">
+            <h1 style="font-family:'Anton',sans-serif; color:var(--scout-navy); margin: 0; text-transform:uppercase;">
+                <i class="fas fa-utensils mr-2" style="color:#3b82f6;"></i> Gestion des Repas
+            </h1>
+            <div style="font-size: 0.85rem; color: #64748b; font-weight: 700; letter-spacing: 0.5px;">INVENTAIRE UNIFIÉ DES RATIONS ET PLATS IA</div>
+        </div>
+        <div class="col-md-6 text-md-right text-center mt-3 mt-md-0">
+            <a href="{{ path('app_repas_detaille_new') }}" class="btn-scout-confirm" style="padding: 12px 30px; border-radius:30px; font-weight:900;">
+                <i class="fa fa-plus-circle mr-2"></i> AJOUTER UN PLAT IA
+            </a>
+        </div>
+    </div>
+
+    {# Search & Sort Bar #}
+    <div class="scout-card mb-4" style="padding: 15px; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05); border-radius: 15px;">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-0"><i class="fa fa-search text-primary"></i></span>
+                    <input type="text" id="repasSearchInput" class="form-control" placeholder="Rechercher par nom ou type..." style="background: transparent; border: none; border-bottom: 2px solid #e2e8f0; border-radius: 0;" onkeyup="filterRepas()">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select id="repasSortSelect" class="form-control" style="background: transparent; border-radius: 10px;" onchange="filterRepas()">
+                    <option value="">Trier par...</option>
+                    <option value="nom_asc">Nom (A-Z)</option>
+                    <option value="prix_asc">Prix croissant</option>
+                    <option value="prix_desc">Prix décroissant</option>
+                    <option value="cal_desc">Calories max</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    {# Visual Card Grid #}
+    <div class="row" id="repasGrid">
+        {% for item in items %}
+            <div class="col-xl-4 col-lg-6 col-md-6 mb-4 repas-card-wrapper" data-nom="{{ item.nom|lower }}" data-type="{{ item.typeRepas|lower }}" data-prix="{{ item.prix }}" data-calories="{{ item.calories ?? 0 }}">
+                <div class="scout-plat-card">
+                    {# Card Header with Image #}
+                    <div class="plat-card-header" style="background-image: url('{{ item.imageUrl ? (item.imageUrl starts with 'http' ? item.imageUrl : asset('uploads/repas/' ~ item.imageUrl)) : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000&auto=format&fit=crop' }}');">
+                        <div class="plat-price-badge">{{ item.prix }}€</div>
+                        {% if item.vegetarien or item.vegan %}
+                            <div class="plat-type-badge"><i class="fa fa-leaf"></i></div>
+                        {% endif %}
+                    </div>
+
+                    {# Card Body #}
+                    <div class="plat-card-body">
+                        <div class="plat-meta">
+                            <span class="badge badge-soft">ID #{{ item.id }}</span>
+                            <span class="badge badge-soft">{{ item.typeRepas }}</span>
+                        </div>
+                        <h3 class="plat-title">{{ item.nom }}</h3>
+                        <p class="plat-desc">{{ item.description|length > 80 ? item.description|slice(0, 80) ~ '...' : item.description }}</p>
+                        
+                        <div class="plat-stats-footer">
+                            <div class="stat-box">
+                                <span class="stat-label">CALORIES</span>
+                                <span class="stat-val text-blue">{{ item.calories ? item.calories : '--' }} <small>kcal</small></span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-label">PROTÉINES</span>
+                                <span class="stat-val text-green">{{ item.proteines ? item.proteines : '--' }} <small>g</small></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Card Actions #}
+                    <div class="plat-card-actions">
+                        {% if not is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('app_cart_add', {id: item.id}) }}" class="btn-plat-action btn-view" title="Ajouter au Panier" style="color: #10b981;">
+                            <i class="fa fa-cart-plus"></i> PANIER
+                        </a>
+                        {% endif %}
+                        <a href="{{ path('app_repas_detaille_show', {id: item.id}) }}" class="btn-plat-action btn-view" title="Voir détails">
+                            <i class="fa fa-eye"></i> DÉTAILS
+                        </a>
+                        <div class="d-flex" style="gap: 10px;">
+                            <a href="{{ path('app_repas_detaille_edit', {id: item.id}) }}" class="btn-plat-circle btn-edit" title="Modifier">
+                                <i class="fa fa-pencil"></i>
+                            </a>
+                            <form method="post" action="{{ path('app_repas_detaille_delete', {id: item.id}) }}" onsubmit="return confirm('Supprimer définitivement ce plat ?');" style="display:inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ item.id) }}">
+                                <button type="submit" class="btn-plat-circle btn-delete" title="Supprimer">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <div class="scout-empty-state">
+                    <i class="fas fa-drumstick-bite mb-3"></i>
+                    <h3>Aucun plat enregistré</h3>
+                    <p>Commencez par utiliser l'IA Scout pour générer votre premier repas.</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+<script>
+function filterRepas() {
+    const searchInput = document.getElementById('repasSearchInput');
+    const sortSelect = document.getElementById('repasSortSelect');
+    const grid = document.getElementById('repasGrid');
+    if (!grid) return;
+    const cards = Array.from(grid.querySelectorAll('.repas-card-wrapper'));
+    
+    const searchTerm = searchInput.value.toLowerCase();
+    const sortMode = sortSelect.value;
+    
+    // Filter
+    cards.forEach(card => {
+        const nom = card.getAttribute('data-nom') || '';
+        const type = card.getAttribute('data-type') || '';
+        const matches = nom.includes(searchTerm) || type.includes(searchTerm);
+        card.style.display = matches ? '' : 'none';
+    });
+    
+    // Sort
+    if (sortMode) {
+        const visibleCards = cards.filter(c => c.style.display !== 'none');
+        visibleCards.sort((a, b) => {
+            if (sortMode === 'prix_asc') return parseFloat(a.getAttribute('data-prix')) - parseFloat(b.getAttribute('data-prix'));
+            if (sortMode === 'prix_desc') return parseFloat(b.getAttribute('data-prix')) - parseFloat(a.getAttribute('data-prix'));
+            if (sortMode === 'nom_asc') return a.getAttribute('data-nom').localeCompare(b.getAttribute('data-nom'));
+            if (sortMode === 'cal_desc') return parseFloat(b.getAttribute('data-calories')) - parseFloat(a.getAttribute('data-calories'));
+            return 0;
+        });
+        visibleCards.forEach(c => grid.appendChild(c));
+    }
+}
+</script>
+</section>
+
+<style>
+    .scout-plat-card {
+        background: #fff;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        border: 1px solid rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .scout-plat-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); border-color: #3b82f6; }
+
+    .plat-card-header {
+        height: 200px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+    }
+    .plat-price-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(26, 31, 44, 0.85);
+        backdrop-filter: blur(5px);
+        color: #fff;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-weight: 900;
+        font-size: 0.9rem;
+    }
+    .plat-type-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background: rgba(74, 222, 128, 0.9);
+        color: #fff;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    .plat-card-body { padding: 25px; flex-grow: 1; }
+    .plat-meta { display: flex; gap: 8px; margin-bottom: 15px; }
+    .badge-soft { background: #f1f5f9; color: #475569; padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
+    
+    .plat-title { font-family: 'Anton', sans-serif; font-size: 1.4rem; color: #1e293b; margin-bottom: 10px; text-transform: uppercase; line-height: 1.2; }
+    .plat-desc { color: #64748b; font-size: 0.9rem; margin-bottom: 20px; line-height: 1.5; min-height: 45px; }
+
+    .plat-stats-footer { display: flex; border-top: 1px solid #f1f5f9; padding-top: 15px; gap: 20px; }
+    .stat-box { display: flex; flex-direction: column; }
+    .stat-label { font-size: 0.65rem; font-weight: 900; color: #94a3b8; letter-spacing: 0.5px; }
+    .stat-val { font-size: 1.1rem; font-weight: 900; }
+    .text-blue { color: #3b82f6; }
+    .text-green { color: #10b981; }
+
+    .plat-card-actions { padding: 15px 25px; background: #f8fafc; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+    
+    .btn-plat-action { text-decoration: none !important; color: #3b82f6; font-weight: 800; font-size: 0.75rem; letter-spacing: 1px; transition: all 0.2s; }
+    .btn-plat-action:hover { color: #1d4ed8; }
+
+    .btn-plat-circle { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: none; transition: all 0.2s; color:#fff; }
+    .btn-edit { background: #f59e0b; }
+    .btn-edit:hover { background: #d97706; }
+    .btn-delete { background: #ef4444; }
+    .btn-delete:hover { background: #dc2626; }
+
+    .scout-empty-state { padding: 50px; background: #fff; border-radius: 20px; border: 2px dashed #e2e8f0; color: #94a3b8; }
+    .scout-empty-state i { font-size: 4rem; color: #cbd5e1; }
+</style>
+{% endblock %}

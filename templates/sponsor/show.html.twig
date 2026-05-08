@@ -1,0 +1,77 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Détail Sponsor{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Détail Sponsor</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{{ path('app_sponsor_index') }}">Sponsors</a></li>
+        <li class="breadcrumb-item active">Détail</li>
+    </ol>
+
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div><i class="fas fa-handshake me-1"></i> {{ sponsor.nom }}</div>
+            <div>
+                <a href="{{ path('app_sponsor_edit', {'id': sponsor.id}) }}" class="btn btn-warning btn-sm">
+                    <i class="fas fa-edit me-1"></i> Modifier
+                </a>
+                <a href="{{ path('app_sponsor_index') }}" class="btn btn-secondary btn-sm ms-1">
+                    <i class="fas fa-arrow-left me-1"></i> Retour
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Nom</th>
+                            <td>{{ sponsor.nom }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email</th>
+                            <td>{{ sponsor.email }}</td>
+                        </tr>
+                        <tr>
+                            <th>Téléphone</th>
+                            <td>{{ sponsor.telephone }}</td>
+                        </tr>
+                        <tr>
+                            <th>Logo</th>
+                            <td>
+                                {% if sponsor.logo %}
+                                    <img src="/uploads/logos/{{ sponsor.logo }}"
+                                         alt="Logo {{ sponsor.nom }}"
+                                         style="width: 100px; height: 100px; object-fit: contain; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9; padding: 4px;">
+                                {% else %}
+                                    <span class="text-white-50">Aucun logo</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Date Création</th>
+                            <td>{{ sponsor.dateCreation ? sponsor.dateCreation|date('d/m/Y H:i') : '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Statut</th>
+                            <td>
+                                {% if sponsor.statut %}
+                                    <span class="badge bg-success">Actif</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactif</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            {{ include('sponsor/_delete_form.html.twig') }}
+        </div>
+    </div>
+</div>
+{% endblock %}

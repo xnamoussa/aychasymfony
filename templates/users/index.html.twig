@@ -1,0 +1,562 @@
+{# templates/users/index.html.twig #}
+{% extends 'admin/base_admin.html.twig' %}
+{% block title %}User Management{% endblock %}
+{% block page_title %}User Management{% endblock %}
+{% block breadcrumb %}Trail Team · Members currently out in the wild{% endblock %}
+
+{% block extra_styles %}
+<style>
+  /* ══ STATS ══ */
+  .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px;}
+  .stat-card{background:var(--dark-card);border:1px solid var(--line-white);border-radius:12px;padding:22px 24px;display:flex;align-items:center;gap:18px;position:relative;overflow:hidden;transition:border-color .25s,transform .2s;}
+  .stat-card:hover{border-color:rgba(255,255,255,.15);transform:translateY(-2px);}
+  .stat-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 80% at 0% 100%,var(--ac) 0%,transparent 65%);opacity:.15;pointer-events:none;}
+  .stat-card.total{--ac:#2ecfb8;}.stat-card.users{--ac:#f5c842;}.stat-card.admins{--ac:#e8392c;}
+  .stat-icon{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;flex-shrink:0;}
+  .stat-card.total .stat-icon{background:rgba(46,207,184,.12);color:var(--teal);}
+  .stat-card.users .stat-icon{background:rgba(245,200,66,.12);color:var(--yellow);}
+  .stat-card.admins .stat-icon{background:rgba(232,57,44,.12);color:var(--red);}
+  .stat-icon svg{width:22px;height:22px;}
+  .stat-num{font-family:'Bebas Neue',sans-serif;font-size:2.4rem;line-height:1;letter-spacing:.04em;}
+  .stat-label{font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:2px;}
+
+  /* ══ TOOLBAR ══ */
+  .toolbar{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
+  .toolbar-title{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:.06em;flex:1;}
+  .search-wrap{position:relative;}
+  .search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--muted);pointer-events:none;}
+  .search-input{background:var(--dark-surface);border:1px solid var(--line-white);border-radius:8px;padding:9px 14px 9px 36px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--white);outline:none;width:220px;transition:border-color .2s,box-shadow .2s;}
+  .search-input::placeholder{color:rgba(255,255,255,.5);}
+  .search-input:focus{border-color:var(--prm);box-shadow:0 0 0 3px rgba(232,57,44,.15);}
+  .filter-group{display:flex;gap:6px;}
+  .filter-btn{padding:8px 16px;border-radius:8px;font-size:.8rem;font-weight:600;letter-spacing:.04em;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
+  .filter-btn:hover{border-color:rgba(255,255,255,.2);color:var(--soft);}
+  .filter-btn.active{background:var(--red);border-color:var(--red);color:var(--white);}
+  .new-btn{display:flex;align-items:center;gap:7px;padding:9px 18px;border-radius:8px;background:var(--red);border:none;color:var(--white);font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:background .2s,transform .15s,box-shadow .2s;}
+  .new-btn:hover{background:#c93228;transform:translateY(-1px);box-shadow:0 8px 20px rgba(232,57,44,.3);}
+  .new-btn svg{width:15px;height:15px;}
+
+  /* ══ USER GRID ══ */
+  .user-grid{ display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:20px;
+  overflow:visible;}
+
+  .user-card{
+    background:var(--dark-card) !important;
+    border:1px solid var(--line-white) !important;
+    border-radius:14px;
+    padding:18px 18px 16px;
+    cursor:pointer;
+    transition:border-color .25s,transform .2s,box-shadow .2s, z-index 0s;
+    animation:fadeUp .35s ease both;
+    position:relative;
+    overflow:visible;
+    opacity: 1 !important; /* Force full opacity */
+  }
+  .user-card:hover, .user-card.menu-open{
+    border-color:rgba(255,255,255,0.3) !important;
+    transform:translateY(-2px);
+    box-shadow:0 12px 32px rgba(0,0,0,.5) !important;
+    z-index: 1000 !important; /* High z-index when hovered or menu open */
+  }
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .user-card-top{display:flex;align-items:center;gap:12px;margin-bottom:14px;position:relative; z-index: 10;}
+  .user-avatar{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;flex-shrink:0;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--white);}
+  .user-avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover;}
+  .user-card-info{flex:1;min-width:0;}
+  .user-card-name{font-size:.95rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .user-card-role{display:inline-flex;align-items:center;gap:4px;font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:20px;margin-top:3px;}
+  .role-user{background:rgba(245,200,66,.12);color:var(--yellow);}
+  .role-admin{background:rgba(232,57,44,.12);color:var(--red);}
+  .card-menu-btn{width:30px;height:30px;border-radius:8px;background:none;border:1px solid transparent;display:grid;place-items:center;cursor:pointer;color:var(--muted);transition:background .2s,border-color .2s,color .2s;flex-shrink:0;}
+  .card-menu-btn:hover{background:var(--card2);border-color:var(--line);color:var(--white);}
+  .card-menu-btn svg{width:16px;height:16px;}
+  .user-card-email{font-size:.78rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px;}
+  .user-card-email svg{width:13px;height:13px;flex-shrink:0;}
+  .user-card.banned{ filter: grayscale(0.8); }
+  .user-card.banned .user-card-name::after{content:' · BANNED';font-size:.65rem;color:var(--red);font-weight:700;letter-spacing:.08em;}
+
+  .dropdown-menu{
+    position:absolute;
+    top:100%;
+    right:0;
+    background:#1a1a1c !important; /* Solid dark background */
+    border:1px solid rgba(255,255,255,0.15) !important;
+    border-radius:10px;
+    padding:6px;
+    min-width:180px;
+    z-index:10000 !important;
+    box-shadow:0 16px 48px rgba(0,0,0,.8) !important;
+    display:none;
+    margin-top: 5px;
+  }
+  .dropdown-menu.open{display:block;}
+  @keyframes dropIn{from{opacity:0;transform:scale(.92) translateY(-6px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .dropdown-item{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:7px;font-size:.83rem;font-weight:500;color:var(--soft);cursor:pointer;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif;transition:background .15s,color .15s;text-decoration:none;}
+  .dropdown-item:hover{background:rgba(255,255,255,.06);color:var(--white);}
+  .dropdown-item.danger{color:#ff8a80;}
+  .dropdown-item.danger:hover{background:rgba(232,57,44,.1);color:#ff5252;}
+  .dropdown-item.promote{color:var(--teal);}
+  .dropdown-item.promote:hover{background:rgba(46,207,184,.08);}
+  .dropdown-item svg{width:14px;height:14px;flex-shrink:0;}
+  .dropdown-sep{height:1px;background:var(--line);margin:4px 0;}
+
+  .drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);z-index:10000;opacity:0;pointer-events:none;transition:opacity .3s;}
+  .drawer-backdrop.open{opacity:1;pointer-events:all;}
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:400px;background:#0f0f11 !important;border-left:1px solid rgba(255,255,255,0.1);z-index:10001;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:-24px 0 60px rgba(0,0,0,.8);}
+  .drawer.open{transform:translateX(0);}
+  .drawer-header{padding:24px 24px 0;display:flex;justify-content:flex-end;}
+  .drawer-close{width:32px;height:32px;border-radius:8px;background:var(--card2);border:1px solid var(--line);display:grid;place-items:center;cursor:pointer;color:var(--muted);transition:background .2s,color .2s;}
+  .drawer-close:hover{background:rgba(255,255,255,.08);color:var(--white);}
+  .drawer-close svg{width:15px;height:15px;}
+  .drawer-profile{display:flex;flex-direction:column;align-items:center;padding:24px 24px 20px;text-align:center;border-bottom:1px solid var(--line);}
+  .drawer-avatar{width:88px;height:88px;border-radius:50%;display:grid;place-items:center;font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:var(--white);margin-bottom:14px;border:3px solid var(--line);}
+  .drawer-avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover;}
+  .drawer-name{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.05em;margin-bottom:4px;}
+  .drawer-email{font-size:.82rem;color:var(--muted);}
+  .drawer-role-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;margin-top:10px;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;}
+  .drawer-body{flex:1;overflow-y:auto;padding:20px 24px;}
+  .drawer-body::-webkit-scrollbar{width:3px;}
+  .drawer-body::-webkit-scrollbar-thumb{background:var(--line);}
+  .drawer-section{margin-bottom:24px;}
+  .drawer-section-title{font-size:.65rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .drawer-section-title::after{content:'';flex:1;height:1px;background:var(--line);}
+  .drawer-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);}
+  .drawer-row:last-child{border-bottom:none;}
+  .drawer-row-icon{width:32px;height:32px;border-radius:8px;background:var(--surface);display:grid;place-items:center;color:var(--muted);flex-shrink:0;}
+  .drawer-row-icon svg{width:15px;height:15px;}
+  .drawer-row-label{font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+  .drawer-row-value{font-size:.9rem;font-weight:500;color:var(--white);margin-top:1px;}
+
+  .empty-state{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--muted);}
+  .empty-state svg{width:48px;height:48px;margin-bottom:16px;opacity:.3;}
+  .empty-state p{font-size:.9rem;}
+
+  .toast-stack{position:fixed;bottom:24px;right:24px;z-index:9998;display:flex;flex-direction:column;gap:8px;}
+  .toast{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:12px 18px;font-size:.85rem;color:var(--white);font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.4);animation:toastIn .3s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;gap:10px;}
+  @keyframes toastIn{from{opacity:0;transform:translateY(12px) scale(.95)}to{opacity:1;transform:none}}
+  .toast.success{border-color:rgba(46,207,184,.3);}
+  .toast.error{border-color:rgba(232,57,44,.3);}
+  .toast-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .toast.success .toast-dot{background:var(--teal);}
+  .toast.error .toast-dot{background:var(--red);}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(10px);z-index:20000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;}
+  .modal-overlay.open{opacity:1;pointer-events:all;}
+  .modal-box{background:#111113 !important;border:1px solid rgba(255,255,255,0.12) !important;border-radius:18px;width:100%;max-width:540px;max-height:92vh;overflow:hidden;display:flex;flex-direction:column;transform:translateY(28px) scale(.96);transition:transform .32s cubic-bezier(.34,1.56,.64,1);box-shadow:0 40px 100px rgba(0,0,0,0.9);}
+  .modal-overlay.open .modal-box{transform:translateY(0) scale(1);}
+  .modal-head{padding:24px 24px 0;display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0;}
+  .modal-head h2{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:.06em;margin-bottom:3px;}
+  .modal-head p{font-size:.78rem;color:var(--muted);}
+  .modal-x{width:32px;height:32px;border-radius:8px;background:var(--card2);border:1px solid var(--line);display:grid;place-items:center;cursor:pointer;color:var(--muted);flex-shrink:0;margin-left:16px;transition:background .2s,color .2s;}
+  .modal-x:hover{background:rgba(255,255,255,.08);color:var(--white);}
+  .modal-x svg{width:15px;height:15px;}
+  .modal-av-row{display:flex;align-items:center;gap:16px;padding:20px 24px 0;flex-shrink:0;}
+  .modal-av-wrap{position:relative;flex-shrink:0;}
+  .modal-av-img{width:64px;height:64px;border-radius:50%;object-fit:cover;display:block;background:var(--surface);border:2px solid var(--line);transition:border-color .25s;}
+  .modal-av-wrap:hover .modal-av-img{border-color:var(--teal);}
+  .modal-av-edit{position:absolute;bottom:0;right:0;width:22px;height:22px;border-radius:50%;background:var(--red);border:2px solid var(--card);display:grid;place-items:center;cursor:pointer;}
+  .modal-av-edit svg{width:10px;height:10px;}
+  .modal-av-info h4{font-size:.88rem;font-weight:600;margin-bottom:2px;}
+  .modal-av-info p{font-size:.72rem;color:var(--muted);}
+  .modal-av-trigger{font-size:.72rem;font-weight:600;color:var(--teal);background:none;border:none;cursor:pointer;padding:0;margin-top:4px;display:block;}
+  .modal-scroll{flex:1;overflow-y:auto;padding:18px 24px 0;}
+  .modal-scroll::-webkit-scrollbar{width:3px;}
+  .modal-scroll::-webkit-scrollbar-thumb{background:var(--line);}
+  .m-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .m-field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+  .m-field label{font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+  .m-err{font-size:.7rem;color:#ff8a80;margin-top:2px;display:none;}
+  .m-field.has-err .m-err{display:block;}
+  .m-field.has-err .m-inp,.m-field.has-err .m-sel{border-color:#e8392c !important;box-shadow:0 0 0 2px rgba(232,57,44,.15) !important;}
+  .m-wrap{position:relative;}
+  .m-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--muted);display:flex;}
+  .m-ico svg{width:14px;height:14px;}
+  .m-inp,.m-sel{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:11px 12px 11px 36px;font-family:'DM Sans',sans-serif;font-size:.87rem;color:var(--white);outline:none;-webkit-appearance:none;transition:border-color .2s,box-shadow .2s,background .2s;}
+  .m-inp::placeholder{color:rgba(255,255,255,.2);}
+  .m-inp:focus,.m-sel:focus{border-color:var(--teal);background:rgba(46,207,184,.05);box-shadow:0 0 0 3px rgba(46,207,184,.1);}
+  .m-sel option{background:#0f0f11;}
+  .m-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;transition:color .2s;}
+  .m-eye:hover{color:var(--white);}
+  .m-eye svg{width:15px;height:15px;}
+  .m-sep{display:flex;align-items:center;gap:10px;margin:2px 0 14px;}
+  .m-sep span{font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);white-space:nowrap;}
+  .m-sep::before,.m-sep::after{content:'';flex:1;height:1px;background:var(--line);}
+  .m-sbar{height:2px;background:var(--line);border-radius:2px;overflow:hidden;margin-top:6px;}
+  .m-sfill{height:100%;width:0;border-radius:2px;transition:width .4s,background .4s;}
+  .m-slbl{font-size:.65rem;color:var(--muted);margin-top:3px;}
+  .modal-or{display:flex;align-items:center;gap:12px;margin:4px 0 14px;}
+  .modal-or span{font-size:.68rem;color:var(--muted);white-space:nowrap;}
+  .modal-or::before,.modal-or::after{content:'';flex:1;height:1px;background:var(--line);}
+  .btn-google{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:11px;background:var(--surface);border:1px solid var(--line);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;color:var(--soft);cursor:pointer;transition:border-color .2s,background .2s,color .2s;text-decoration:none;margin-bottom:4px;}
+  .btn-google:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:var(--white);}
+  .modal-foot{padding:18px 24px 22px;display:flex;align-items:center;gap:10px;justify-content:flex-end;border-top:1px solid var(--line);flex-shrink:0;}
+  .m-cancel{padding:10px 20px;border-radius:8px;background:transparent;border:1px solid var(--line);color:var(--soft);font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:background .2s,border-color .2s;}
+  .m-cancel:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.2);}
+  .m-submit{padding:10px 24px;border-radius:8px;background:var(--red);border:none;color:var(--white);font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.1em;cursor:pointer;transition:background .2s,transform .15s,box-shadow .2s;display:flex;align-items:center;gap:8px;}
+  .m-submit:hover{background:#c93228;transform:translateY(-1px);box-shadow:0 8px 20px rgba(232,57,44,.3);}
+  .m-submit:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none;}
+  .m-spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none;}
+  .m-submit.loading .m-spinner{display:block;}
+  .m-submit.loading .m-btxt{display:none}
+</style>
+{% endblock %}
+
+{% block body %}
+{% set total_users=users|length %}
+{% set admin_users=users|filter(u=>u.role=='ADMIN')|length %}
+{% set regular_users=total_users-admin_users %}
+
+<div class="stats-row">
+  <div class="stat-card total">
+    <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+    <div><div class="stat-num" id="statTotal">{{ total_users }}</div><div class="stat-label">Total Members</div></div>
+  </div>
+  <div class="stat-card users">
+    <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+    <div><div class="stat-num">{{ regular_users }}</div><div class="stat-label">Regular Users</div></div>
+  </div>
+  <div class="stat-card admins">
+    <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+    <div><div class="stat-num">{{ admin_users }}</div><div class="stat-label">Administrators</div></div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="toolbar-title">Trail Team</div>
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" class="search-input" id="searchInput" placeholder="Search by name or email…"/>
+  </div>
+  <div class="filter-group">
+    <button class="filter-btn active" data-filter="all">All Users</button>
+    <button class="filter-btn" data-filter="az">A–Z</button>
+    <button class="filter-btn" data-filter="user">Users</button>
+    <button class="filter-btn" data-filter="admin">Admins</button>
+  </div>
+  <button type="button" class="new-btn" onclick="openModal()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    New Member
+  </button>
+</div>
+
+<div class="user-grid" id="userGrid">
+  {% for user in users %}
+    {% set colors=['#e8392c','#2ecfb8','#f5c842','#7c6dfa','#fa6d8b','#4db8ff'] %}
+    {% set color=colors[loop.index0%6] %}
+    <div class="user-card {% if user.role=='BANNED' %}banned{% endif %}{% if user.id==current_user_id %} is-me{% endif %}"
+         data-name="{{ user.name|lower }}" data-email="{{ user.email|lower }}" data-role="{{ user.role|lower }}"
+         onclick="openDrawer({{ user.id }},event)">
+      <div class="user-card-top">
+        <div class="user-avatar" style="background:{{ color }};">
+          {% if user.image %}<img src="{{ asset('uploads/images/'~user.image) }}" alt="{{ user.name }}"/>{% else %}{{ user.name|slice(0,1)|upper }}{% endif %}
+        </div>
+        <div class="user-card-info">
+          <div class="user-card-name">{{ user.name }}</div>
+          <span class="user-card-role {{ user.role=='ADMIN'?'role-admin':'role-user' }}">
+            {% if user.role=='ADMIN' %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="10" height="10"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>{% endif %}
+            {{ user.role }}
+          </span>
+        </div>
+        {% if user.id!=current_user_id %}
+          {# Button + menu are siblings inside user-card-top #}
+          <button class="card-menu-btn" onclick="toggleMenu(event,{{ user.id }})" data-menu="{{ user.id }}">
+            <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+          </button>
+          <div class="dropdown-menu" id="menu-{{ user.id }}">
+            {% if user.role!='ADMIN' and user.role!='BANNED' %}
+              <a href="{{ path('app_users_promote',{id:user.id}) }}" class="dropdown-item promote" onclick="return confirmAction(event,'Promote {{ user.name }} to Admin?')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Promote to Admin
+              </a>
+            {% elseif user.role=='ADMIN' %}
+              <a href="{{ path('app_users_demote',{id:user.id}) }}" class="dropdown-item" onclick="return confirmAction(event,'Demote {{ user.name }} to User?')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Demote to User
+              </a>
+            {% endif %}
+            {% set banLabel = user.role == 'BANNED' ? 'Unban' : 'Ban' %}
+            <a href="{{ path('app_users_ban',{id:user.id}) }}" class="dropdown-item" onclick="return confirmAction(event,'{{ banLabel }} {{ user.name }}?')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+              {{ user.role=='BANNED'?'Unban User':'Ban User' }}
+            </a>
+            <div class="dropdown-sep"></div>
+            <form method="POST" action="{{ path('app_users_delete',{id:user.id}) }}" style="margin:0" onsubmit="return confirmAction(event,'Delete {{ user.name }}? This cannot be undone.')">
+              <input type="hidden" name="_token" value="{{ csrf_token('delete'~user.id) }}"/>
+              <button type="submit" class="dropdown-item danger">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>Delete User
+              </button>
+            </form>
+          </div>
+        {% else %}
+          <span style="font-size:.65rem;font-weight:700;letter-spacing:.08em;color:var(--teal);background:rgba(46,207,184,.1);border:1px solid rgba(46,207,184,.25);border-radius:20px;padding:3px 9px;flex-shrink:0;">YOU</span>
+        {% endif %}
+      </div>
+      <div class="user-card-email">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        {{ user.email }}
+      </div>
+      <div style="display:none" class="user-data"
+           data-id="{{ user.id }}" data-name="{{ user.name }}" data-email="{{ user.email }}"
+           data-role="{{ user.role }}" data-phone="{{ user.phone??'—' }}"
+           data-motorized="{{ user.motorized??'—' }}"
+           data-image="{{ user.image?asset('uploads/images/'~user.image):'' }}"
+           data-color="{{ color }}"></div>
+    </div>
+  {% else %}
+    <div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><p>No users found.</p></div>
+  {% endfor %}
+</div>
+
+{# ── DRAWER ── #}
+<div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
+<div class="drawer" id="userDrawer">
+  <div class="drawer-header"><button class="drawer-close" onclick="closeDrawer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="drawer-profile">
+    <div class="drawer-avatar" id="drawerAvatar">?</div>
+    <div class="drawer-name" id="drawerName">—</div>
+    <div class="drawer-email" id="drawerEmail">—</div>
+    <span class="drawer-role-badge" id="drawerRoleBadge">—</span>
+  </div>
+  <div class="drawer-body">
+    <div class="drawer-section">
+      <div class="drawer-section-title">Contact</div>
+      <div class="drawer-row"><div class="drawer-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div><div><div class="drawer-row-label">Email</div><div class="drawer-row-value" id="drawerEmailVal">—</div></div></div>
+      <div class="drawer-row"><div class="drawer-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.8a16 16 0 0 0 6.29 6.29l.96-.96a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div><div><div class="drawer-row-label">Phone</div><div class="drawer-row-value" id="drawerPhone">—</div></div></div>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-section-title">Profile</div>
+      <div class="drawer-row"><div class="drawer-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div><div class="drawer-row-label">Role</div><div class="drawer-row-value" id="drawerRole">—</div></div></div>
+      <div class="drawer-row"><div class="drawer-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div><div><div class="drawer-row-label">Motorized</div><div class="drawer-row-value" id="drawerMotorized">—</div></div></div>
+    </div>
+  </div>
+</div>
+
+{# ── ADD MEMBER MODAL ── #}
+<div class="modal-overlay" id="addModal" onclick="handleModalBg(event)">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div><h2>New Member</h2><p>Add a new user to the LAMMA platform</p></div>
+      <button class="modal-x" onclick="closeModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-av-row">
+      <div class="modal-av-wrap">
+        <img id="mAvPrev" class="modal-av-img"
+          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230f0f11'/%3E%3Ccircle cx='32' cy='25' r='12' fill='%23222'/%3E%3Cellipse cx='32' cy='54' rx='20' ry='14' fill='%23222'/%3E%3C/svg%3E" alt="Preview"/>
+        <label for="mImgInput" class="modal-av-edit"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></label>
+        <input type="file" id="mImgInput" accept="image/*" style="display:none"/>
+      </div>
+      <div class="modal-av-info"><h4>Profile Photo</h4><p>PNG, JPG or WEBP · Max 2 MB</p><button type="button" class="modal-av-trigger" onclick="document.getElementById('mImgInput').click()">Upload photo →</button></div>
+    </div>
+    <div class="modal-scroll">
+      <div class="m-row">
+        <div class="m-field" id="mf-name"><label>Full Name</label><div class="m-wrap"><span class="m-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><input type="text" id="m-name" class="m-inp" placeholder="Jane Doe"/></div><div class="m-err" id="err-name"></div></div>
+        <div class="m-field" id="mf-email"><label>Email Address</label><div class="m-wrap"><span class="m-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span><input type="email" id="m-email" class="m-inp" placeholder="jane@example.com"/></div><div class="m-err" id="err-email"></div></div>
+      </div>
+      <div class="m-row">
+        <div class="m-field" id="mf-phone"><label>Phone <span style="font-size:.6rem;color:var(--muted);font-weight:400;">(optional)</span></label><div class="m-wrap"><span class="m-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.8a16 16 0 0 0 6.29 6.29l.96-.96a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span><input type="tel" id="m-phone" class="m-inp" placeholder="12345678" maxlength="8"/></div><div class="m-err" id="err-phone"></div></div>
+        <div class="m-field"><label>Motorized</label><div class="m-wrap"><span class="m-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span><select id="m-motorized" class="m-sel" style="padding-left:36px;"><option value="">Select…</option><option value="YES">Yes</option><option value="NO">No</option></select></div></div>
+      </div>
+      <div class="m-sep"><span>Security</span></div>
+      <div class="m-row">
+        <div class="m-field" id="mf-password"><label>Password</label><div class="m-wrap"><span class="m-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><input type="password" id="m-password" class="m-inp" placeholder="Min. 6 chars" oninput="mStrength(this.value)" style="padding-right:36px;"/><button type="button" class="m-eye" onclick="mToggle('m-password','m-epwd')"><svg id="m-epwd" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="15" height="15"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div><div class="m-sbar"><div class="m-sfill" id="m-sfill"></div></div><div class="m-slbl" id="m-slbl">Enter a password</div><div class="m-err" id="err-password"></div></div>
+        <div class="m-field" id="mf-confirm"><label>Confirm Password</label><div class="m-wrap"><span class="m-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><input type="password" id="m-confirm" class="m-inp" placeholder="Repeat password" style="padding-right:36px;"/><button type="button" class="m-eye" onclick="mToggle('m-confirm','m-econf')"><svg id="m-econf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="15" height="15"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div><div class="m-err" id="err-confirm"></div></div>
+      </div>
+      <div class="modal-or"><span>or register with</span></div>
+      {# Google button — requires: composer require knpuniversity/oauth2-client-bundle league/oauth2-google #}
+      <a href="/connect/google" class="btn-google">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continue with Google
+      </a>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="m-cancel" onclick="closeModal()">Cancel</button>
+      <button type="button" class="m-submit" id="mSubmitBtn" onclick="submitNewMember()"><div class="m-spinner"></div><span class="m-btxt">CREATE MEMBER</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+{% endblock %}
+
+{% block extra_scripts %}
+{% for type,messages in app.flashes %}{% for msg in messages %}<script>document.addEventListener('DOMContentLoaded',()=>showToast({{ msg|json_encode }},'{{ type }}'));</script>{% endfor %}{% endfor %}
+<script>
+const CREATE_URL = '{{ path("app_users_create") }}';
+
+/* ══ DROPDOWN — fixed positioning so it never goes under cards ══════════════ */
+function toggleMenu(e, id) {
+  e.stopPropagation();
+
+  const menu = document.getElementById('menu-' + id);
+  const card = menu.closest('.user-card');
+
+  document.querySelectorAll('.dropdown-menu').forEach(m => {
+    if (m !== menu) {
+      m.classList.remove('open');
+      m.closest('.user-card')?.classList.remove('menu-open');
+    }
+  });
+
+  menu.classList.toggle('open');
+  card.classList.toggle('menu-open');
+}
+
+document.addEventListener('click', function () {
+  document.querySelectorAll('.dropdown-menu').forEach(m => {
+    m.classList.remove('open');
+    m.closest('.user-card')?.classList.remove('menu-open');
+  });
+});
+
+/* ══ DRAWER ═════════════════════════════════════════════════════════════════ */
+function openDrawer(id, e) {
+  if (e.target.closest('.card-menu-btn') || e.target.closest('.dropdown-menu')) return;
+  const d = document.querySelector(`.user-card [data-id="${id}"]`);
+  if (!d) return;
+  const {name,email,role,phone,motorized,image,color} = d.dataset;
+  const av = document.getElementById('drawerAvatar');
+  if (image) {
+    av.innerHTML = `<img src="${image}" alt="${name}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+    av.style.background = 'transparent'; av.style.border = '3px solid ' + color;
+  } else {
+    av.textContent = (name||'?')[0].toUpperCase();
+    av.style.background = color; av.style.border = '3px solid ' + color + '44';
+  }
+  document.getElementById('drawerName').textContent      = name || '—';
+  document.getElementById('drawerEmail').textContent     = email || '—';
+  document.getElementById('drawerEmailVal').textContent  = email || '—';
+  document.getElementById('drawerPhone').textContent     = phone || '—';
+  document.getElementById('drawerRole').textContent      = role || '—';
+  document.getElementById('drawerMotorized').textContent = motorized || '—';
+  const b = document.getElementById('drawerRoleBadge');
+  b.textContent = role; b.className = 'drawer-role-badge ' + (role === 'ADMIN' ? 'role-admin' : 'role-user');
+  document.getElementById('drawerBackdrop').classList.add('open');
+  document.getElementById('userDrawer').classList.add('open');
+}
+function closeDrawer() {
+  document.getElementById('drawerBackdrop').classList.remove('open');
+  document.getElementById('userDrawer').classList.remove('open');
+}
+
+/* ══ ADD MEMBER MODAL ═══════════════════════════════════════════════════════ */
+function openModal() { resetModal(); document.getElementById('addModal').classList.add('open'); }
+function closeModal() { document.getElementById('addModal').classList.remove('open'); }
+function handleModalBg(e) { if (e.target === document.getElementById('addModal')) closeModal(); }
+
+function resetModal() {
+  ['m-name','m-email','m-phone','m-password','m-confirm'].forEach(id => { const el=document.getElementById(id); if(el)el.value=''; });
+  document.getElementById('m-motorized').value = '';
+  document.getElementById('mImgInput').value = '';
+  document.getElementById('mAvPrev').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230f0f11'/%3E%3Ccircle cx='32' cy='25' r='12' fill='%23222'/%3E%3Cellipse cx='32' cy='54' rx='20' ry='14' fill='%23222'/%3E%3C/svg%3E";
+  ['mf-name','mf-email','mf-phone','mf-password','mf-confirm'].forEach(id => document.getElementById(id)?.classList.remove('has-err'));
+  ['err-name','err-email','err-phone','err-password','err-confirm'].forEach(id => { const el=document.getElementById(id); if(el)el.textContent=''; });
+  document.getElementById('m-sfill').style.width = '0';
+  document.getElementById('m-slbl').textContent = 'Enter a password';
+  const btn = document.getElementById('mSubmitBtn'); btn.classList.remove('loading'); btn.disabled = false;
+}
+
+document.getElementById('mImgInput').addEventListener('change', function() {
+  if (!this.files[0]) return;
+  const r = new FileReader();
+  r.onload = e => document.getElementById('mAvPrev').src = e.target.result;
+  r.readAsDataURL(this.files[0]);
+});
+
+function mToggle(iId, eId) {
+  const i = document.getElementById(iId), e = document.getElementById(eId);
+  i.type = i.type === 'password' ? 'text' : 'password';
+  e.innerHTML = i.type === 'text'
+    ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`
+    : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+}
+
+function mStrength(v) {
+  const f = document.getElementById('m-sfill'), l = document.getElementById('m-slbl');
+  let s=0; if(v.length>=6)s++; if(/[A-Z]/.test(v))s++; if(/[0-9]/.test(v))s++; if(/[\W_]/.test(v))s++;
+  const ls = [{w:'0%',c:'transparent',t:'Enter a password'},{w:'25%',c:'#e8392c',t:'Weak'},{w:'50%',c:'#f5a623',t:'Fair'},{w:'75%',c:'#f5c842',t:'Good'},{w:'100%',c:'#2ecfb8',t:'Strong ✓'}];
+  const lv = ls[v.length===0?0:s];
+  f.style.width=lv.w; f.style.background=lv.c;
+  l.textContent=v.length===0?'Enter a password':lv.t; l.style.color=v.length===0?'var(--muted)':lv.c;
+}
+
+function setErr(fId, errId, msg) {
+  const f=document.getElementById('mf-'+fId), er=document.getElementById('err-'+errId);
+  if(msg){f?.classList.add('has-err');if(er)er.textContent=msg;}
+  else{f?.classList.remove('has-err');if(er)er.textContent='';}
+}
+
+async function submitNewMember() {
+  const btn = document.getElementById('mSubmitBtn');
+  btn.classList.add('loading'); btn.disabled=true;
+  ['name','email','phone','password','confirm'].forEach(f => setErr(f,f,''));
+
+  const fd = new FormData();
+  fd.append('registration_form[name]',      document.getElementById('m-name').value);
+  fd.append('registration_form[email]',     document.getElementById('m-email').value);
+  fd.append('registration_form[phone]',     document.getElementById('m-phone').value);
+  fd.append('registration_form[motorized]', document.getElementById('m-motorized').value);
+  fd.append('registration_form[password]',  document.getElementById('m-password').value);
+  fd.append('confirm_password',             document.getElementById('m-confirm').value);
+  const img = document.getElementById('mImgInput').files[0];
+  if (img) fd.append('registration_form[imageFile]', img);
+
+  try {
+    const res  = await fetch(CREATE_URL, {method:'POST',body:fd,headers:{'X-Requested-With':'XMLHttpRequest'}});
+    const data = await res.json();
+    if (data.success) {
+      closeModal();
+      showToast(data.user.name + ' added successfully!', 'success');
+      addCard(data.user);
+      const t = document.getElementById('statTotal');
+      if (t) t.textContent = parseInt(t.textContent||'0') + 1;
+    } else {
+      const errs = data.errors||{};
+      if(errs.name)     setErr('name','name',errs.name[0]);
+      if(errs.email)    setErr('email','email',errs.email[0]);
+      if(errs.phone)    setErr('phone','phone',errs.phone[0]);
+      if(errs.password) setErr('password','password',errs.password[0]);
+      if(errs._form)    showToast(errs._form[0],'error');
+    }
+  } catch(err) { showToast('Something went wrong. Please try again.','error'); }
+
+  btn.classList.remove('loading'); btn.disabled=false;
+}
+
+function addCard(u) {
+  const cs=['#e8392c','#2ecfb8','#f5c842','#7c6dfa','#fa6d8b','#4db8ff'], c=cs[u.id%6];
+  const av=u.image?`<img src="/uploads/images/${u.image}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;"/>`:(u.name||'?')[0].toUpperCase();
+  const card=document.createElement('div');
+  card.className='user-card'; card.dataset.name=(u.name||'').toLowerCase(); card.dataset.email=(u.email||'').toLowerCase(); card.dataset.role='user';
+  card.setAttribute('onclick',`openDrawer(${u.id},event)`);
+  card.innerHTML=`<div class="user-card-top"><div class="user-avatar" style="background:${c};">${av}</div><div class="user-card-info"><div class="user-card-name">${u.name}</div><span class="user-card-role role-user">USER</span></div></div><div class="user-card-email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="13" height="13"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>${u.email}</div><div style="display:none" class="user-data" data-id="${u.id}" data-name="${u.name}" data-email="${u.email}" data-role="${u.role}" data-phone="${u.phone||'—'}" data-motorized="${u.motorized||'—'}" data-image="" data-color="${c}"></div>`;
+  document.getElementById('userGrid').prepend(card);
+}
+
+/* ══ SEARCH + FILTER ════════════════════════════════════════════════════════ */
+function confirmAction(e,msg){if(!confirm(msg)){e.preventDefault();return false;}return true;}
+let currentFilter='all',searchVal='';
+document.getElementById('searchInput').addEventListener('input',function(){searchVal=this.value.toLowerCase().trim();applyFilters();});
+document.querySelectorAll('.filter-btn').forEach(btn=>btn.addEventListener('click',function(){document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active');currentFilter=this.dataset.filter;applyFilters();}));
+function applyFilters(){
+  const cards=Array.from(document.querySelectorAll('.user-card'));
+  let vis=cards.filter(card=>{
+    const n=card.dataset.name||'',em=card.dataset.email||'',r=card.dataset.role||'';
+    const mS=!searchVal||n.includes(searchVal)||em.includes(searchVal);
+    const mR=currentFilter==='all'?true:currentFilter==='user'?r==='user':currentFilter==='admin'?r==='admin':true;
+    const show=mS&&mR; card.style.display=show?'':'none'; return show;
+  });
+  if(currentFilter==='az'){vis.sort((a,b)=>(a.dataset.name||'').localeCompare(b.dataset.name||''));const g=document.getElementById('userGrid');vis.forEach(c=>g.appendChild(c));}
+  const emp=document.querySelector('.empty-state'); if(emp)emp.style.display=vis.length===0?'block':'none';
+}
+
+/* ══ TOAST ══════════════════════════════════════════════════════════════════ */
+function showToast(msg,type='success'){
+  const s=document.getElementById('toastStack'),t=document.createElement('div');
+  t.className=`toast ${type}`; t.innerHTML=`<div class="toast-dot"></div>${msg}`;
+  s.appendChild(t); setTimeout(()=>t.remove(),4000);
+}
+
+/* ══ ESCAPE KEY ═════════════════════════════════════════════════════════════ */
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeDrawer();}});
+</script>
+{% endblock %}

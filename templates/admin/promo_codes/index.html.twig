@@ -1,0 +1,303 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Gestion des Codes Promo - LAMMA{% endblock %}
+{% block admin_title %}Gestion des Codes Promo{% endblock %}
+
+{% block body %}
+<style>
+    :root {
+        --scout-dark: #0f172a;
+        --scout-card: #1e293b;
+        --scout-orange: #f97316;
+        --scout-orange-hover: #ea580c;
+        --scout-red: #ef4444;
+        --scout-glass: rgba(255, 255, 255, 0.05);
+        --scout-border: rgba(255, 255, 255, 0.1);
+        --scout-text-muted: #94a3b8;
+    }
+
+    .promo-dashboard {
+        background: var(--scout-dark);
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .promo-layout {
+        display: flex;
+        gap: 30px;
+        min-height: 600px;
+    }
+
+    /* List Panel */
+    .promo-list-panel {
+        flex: 2;
+        background: var(--scout-card);
+        border-radius: 12px;
+        border: 1px solid var(--scout-border);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .table-container {
+        overflow-y: auto;
+        flex-grow: 1;
+    }
+
+    .scout-table {
+        width: 100%;
+        color: #fff;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .scout-table th {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 15px 20px;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: var(--scout-text-muted);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        text-align: left;
+    }
+
+    .scout-table td {
+        padding: 18px 20px;
+        border-bottom: 1px solid var(--scout-border);
+        font-size: 0.9rem;
+    }
+
+    .scout-table tr { transition: 0.2s; cursor: pointer; }
+    .scout-table tr:hover { background: rgba(255, 255, 255, 0.03); }
+    .scout-table tr.selected-row { background: rgba(249, 115, 22, 0.1) !important; color: var(--scout-orange); }
+
+    /* Editor Panel */
+    .promo-editor-panel {
+        flex: 1;
+        background: var(--scout-card);
+        border-radius: 12px;
+        padding: 30px;
+        border: 1px solid var(--scout-border);
+        position: sticky;
+        top: 20px;
+        height: fit-content;
+    }
+
+    .editor-title {
+        font-family: 'Anton', sans-serif;
+        font-size: 1.25rem;
+        color: #fff;
+        margin-bottom: 25px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .form-scout label {
+        color: var(--scout-text-muted);
+        font-size: 0.8rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-scout .form-control {
+        background: #0f172a;
+        border: 1px solid var(--scout-border);
+        color: #fff;
+        border-radius: 8px;
+        padding: 12px 15px;
+        margin-bottom: 20px;
+        font-weight: 600;
+    }
+
+    .form-scout .form-control:focus {
+        border-color: var(--scout-orange);
+        box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2);
+    }
+
+    .form-check {
+        background: #0f172a;
+        padding: 12px 15px 12px 40px;
+        border-radius: 8px;
+        border: 1px solid var(--scout-border);
+        margin-bottom: 25px;
+    }
+
+    .btn-scout-orange {
+        background: var(--scout-orange);
+        color: #fff;
+        border: none;
+        padding: 14px;
+        border-radius: 10px;
+        font-weight: 800;
+        width: 100%;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: 0.3s;
+    }
+    .btn-scout-orange:hover { background: var(--scout-orange-hover); transform: translateY(-2px); }
+
+    .btn-scout-new {
+        background: rgba(255, 255, 255, 0.05);
+        color: #fff;
+        border: 1px solid var(--scout-border);
+        padding: 10px;
+        border-radius: 8px;
+        width: 100%;
+        margin-bottom: 25px;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+    }
+    .btn-scout-new:hover { background: rgba(255, 255, 255, 0.1); }
+
+    .btn-scout-delete {
+        background: var(--scout-red);
+        color: #fff;
+        border: none;
+        padding: 14px;
+        border-radius: 10px;
+        font-weight: 800;
+        width: 100%;
+        text-transform: uppercase;
+        margin-top: 15px;
+    }
+
+    /* Progress Bar */
+    .usage-progress {
+        height: 6px;
+        background: #0f172a;
+        border-radius: 3px;
+        margin-top: 8px;
+        overflow: hidden;
+    }
+    .usage-bar {
+        height: 100%;
+        background: var(--scout-orange);
+        transition: 0.5s;
+    }
+
+    .badge-status {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 900;
+        text-transform: uppercase;
+    }
+    .status-true { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+    .status-false { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+</style>
+
+<div class="row mb-4 align-items-center">
+    <div class="col-8">
+        <h2 style="font-family: 'Anton', sans-serif; color: #fff; margin: 0;">Gestion des Codes Promo</h2>
+    </div>
+    <div class="col-4 text-end">
+        <button class="btn btn-sm" style="background: var(--scout-card); color: #fff; border: 1px solid var(--scout-border);" onclick="location.reload()">
+            <i class="fas fa-sync-alt mr-2"></i> Actualiser
+        </button>
+    </div>
+</div>
+
+<div class="promo-dashboard">
+    <div class="promo-layout">
+        <!-- Panel Liste -->
+        <div class="promo-list-panel">
+            <div style="padding: 15px; border-bottom: 1px solid var(--scout-border);">
+                <input type="text" id="promoSearch" placeholder="Filtrer par code..." class="form-control" style="background: rgba(15, 23, 42, 0.4); border: 1px solid var(--scout-border); color: white;" onkeyup="filterPromo()">
+            </div>
+            <div class="table-container">
+                <table class="scout-table" id="promoTable">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Remise (%)</th>
+                            <th>Expiration</th>
+                            <th>Statut</th>
+                            <th>Usage / Limite</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for code in codes %}
+                        <tr onclick="window.location.href='?id={{ code.id }}'" class="{{ currentPromo.id == code.id ? 'selected-row' : '' }} promo-row" data-code="{{ code.code|lower }}">
+                            <td style="font-weight: 800; color: var(--scout-orange);">{{ code.code }}</td>
+                            <td>{{ code.discountPercentage }}%</td>
+                            <td>{{ code.expirationDate ? code.expirationDate|date('Y-m-d') : '∞' }}</td>
+                            <td>
+                                {% if not code.active %}
+                                    <span class="badge-status status-false">Inactif</span>
+                                {% elseif code.isExpired %}
+                                    <span class="badge-status" style="background: rgba(239, 68, 68, 0.2); color: #f87171;">EXPIRÉ</span>
+                                {% elseif code.isLimitReached %}
+                                    <span class="badge-status" style="background: rgba(249, 115, 22, 0.2); color: #fb923c;">ÉPUISÉ</span>
+                                {% else %}
+                                    <span class="badge-status status-true">Actif</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span style="font-size: 0.8rem; font-weight: 700;">{{ code.currentUsage }} / {{ code.usageLimit }}</span>
+                                </div>
+                                <div class="usage-progress">
+                                    {% set pct = (code.usageLimit > 0) ? (code.currentUsage / code.usageLimit * 100)|round : 0 %}
+                                    <div class="usage-bar" style="width: {{ pct > 100 ? 100 : pct }}%"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">Aucun code promo configuré.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Panel Éditeur -->
+        <div class="promo-editor-panel">
+            <div class="editor-title">Édition du Code</div>
+            
+            <a href="{{ path('app_admin_promo_codes_index') }}" class="btn btn-scout-new">
+                <i class="fas fa-plus mr-2"></i> Nouveau
+            </a>
+
+            {{ form_start(form, {'attr': {'class': 'form-scout'}}) }}
+                {{ form_row(form.code) }}
+                {{ form_row(form.discountPercentage) }}
+                {{ form_row(form.expirationDate) }}
+                {{ form_row(form.usageLimit) }}
+                
+                <div class="form-check mb-4">
+                    {{ form_widget(form.active) }}
+                    {{ form_label(form.active) }}
+                </div>
+
+                <button type="submit" class="btn-scout-orange">Enregistrer</button>
+            {{ form_end(form) }}
+
+            {% if currentPromo.id %}
+                <form method="post" action="{{ path('app_admin_promo_codes_delete', {'id': currentPromo.id}) }}" onsubmit="return confirm('Voulez-vous vraiment supprimer ce code ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ currentPromo.id) }}">
+                    <button class="btn-scout-delete">Supprimer</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<script>
+function filterPromo() {
+    const search = document.getElementById('promoSearch').value.toLowerCase();
+    const rows = document.querySelectorAll('.promo-row');
+    rows.forEach(row => {
+        const code = row.getAttribute('data-code') || '';
+        row.style.display = code.includes(search) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

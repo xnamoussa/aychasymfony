@@ -1,0 +1,120 @@
+{% extends is_granted('ROLE_ADMIN') ? 'admin/base_admin.html.twig' : 'base.html.twig' %}
+
+{% block title %}{{ title }} - Plans Abonnement{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block body %}
+<section class="crud-section">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            {# Entête #}
+            <div class="scout-card mb-4" style="padding: 24px 28px;">
+                <div class="d-flex align-items-center gap-3" style="gap:16px;">
+                    <div style="font-size:2rem;">{{ plan ? '✏️' : '✨' }}</div>
+                    <div>
+                        <h3 style="margin:0;font-weight:800;color:#f1f5f9;">{{ title }}</h3>
+                        <div style="color:#64748b;font-size:0.85rem;margin-top:2px;">
+                            Les utilisateurs pourront souscrire à ce plan en un seul clic.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Erreurs globales #}
+            {% if not form.vars.valid and form.vars.submitted %}
+            <div class="alert alert-danger mb-4" style="border-radius:10px;border-left:4px solid #ef4444;">
+                <strong>⚠️ Veuillez corriger les erreurs ci-dessous.</strong>
+                {{ form_errors(form) }}
+            </div>
+            {% endif %}
+
+            {# Formulaire #}
+            <div class="scout-card" style="padding: 32px;">
+                {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'style': 'display:flex;flex-direction:column;gap:20px;'}}) }}
+
+                    {# Nom #}
+                    <div>
+                        {{ form_label(form.nom, null, {'label_attr': {'class': 'scout-input-label'}}) }}
+                        {{ form_widget(form.nom, {'attr': {
+                            'class': 'form-control' ~ (form.nom.vars.errors|length > 0 ? ' is-invalid' : ''),
+                            'placeholder': 'Ex: Pack Mensuel Découverte'
+                        }}) }}
+                        {{ form_errors(form.nom) }}
+                    </div>
+
+                    {# Type + Prix #}
+                    <div class="row" style="margin:0;gap:0;">
+                        <div class="col-md-6 pr-2">
+                            {{ form_label(form.type, null, {'label_attr': {'class': 'scout-input-label'}}) }}
+                            {{ form_widget(form.type, {'attr': {
+                                'class': 'form-control' ~ (form.type.vars.errors|length > 0 ? ' is-invalid' : '')
+                            }}) }}
+                            {{ form_errors(form.type) }}
+                        </div>
+                        <div class="col-md-6 pl-2">
+                            {{ form_label(form.prix, null, {'label_attr': {'class': 'scout-input-label'}}) }}
+                            <div style="position:relative;">
+                                {{ form_widget(form.prix, {'attr': {
+                                    'class': 'form-control' ~ (form.prix.vars.errors|length > 0 ? ' is-invalid' : ''),
+                                    'placeholder': '0.00',
+                                    'style': 'padding-right: 40px;'
+                                }}) }}
+                                <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#64748b;font-weight:700;">€</span>
+                            </div>
+                            {{ form_errors(form.prix) }}
+                        </div>
+                    </div>
+
+                    {# Restriction #}
+                    <div>
+                        {{ form_label(form.restrictionType, null, {'label_attr': {'class': 'scout-input-label'}}) }}
+                        {{ form_widget(form.restrictionType, {'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'Ex: Végétarien, Sans gluten...'
+                        }}) }}
+                        <div style="color:#64748b;font-size:0.78rem;margin-top:4px;">Optionnel — apparaîtra dans les avantages du plan.</div>
+                    </div>
+
+                    {# Auto-renew #}
+                    <div class="scout-card" style="padding:16px 20px;background:rgba(59,130,246,0.06)!important;border:1px solid rgba(59,130,246,0.2)!important;">
+                        <div class="d-flex align-items-center" style="gap:12px;">
+                            {{ form_widget(form.autoRenew) }}
+                            <div>
+                                {{ form_label(form.autoRenew, null, {'label_attr': {'style': 'margin:0;font-weight:700;color:#93c5fd;'}}) }}
+                                <div style="color:#64748b;font-size:0.78rem;">L'abonnement sera reconduit automatiquement à l'expiration.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Aperçu du calcul de durée #}
+                    <div class="scout-card" style="padding:16px 20px;background:rgba(16,185,129,0.06)!important;border:1px solid rgba(16,185,129,0.2)!important;">
+                        <div style="color:#6ee7b7;font-size:0.82rem;font-weight:700;margin-bottom:8px;">ℹ️ Durée calculée automatiquement</div>
+                        <div style="color:#94a3b8;font-size:0.8rem;">
+                            <strong>MENSUEL</strong> → 1 mois &nbsp;|&nbsp;
+                            <strong>ANNUEL / PREMIUM</strong> → 1 an &nbsp;|&nbsp;
+                            <strong>EVENT PASS</strong> → 7 jours
+                        </div>
+                    </div>
+
+                    {# Boutons #}
+                    <div class="d-flex" style="gap:12px;margin-top:8px;">
+                        <button type="submit"
+                                style="flex:1;padding:13px;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;border:none;font-weight:800;font-size:0.95rem;cursor:pointer;box-shadow:0 4px 14px rgba(59,130,246,0.35);transition:opacity 0.2s;"
+                                onmouseover="this.style.opacity='0.9'"
+                                onmouseout="this.style.opacity='1'">
+                            {{ plan ? '💾 Enregistrer les modifications' : '✨ Créer le Plan' }}
+                        </button>
+                        <a href="{{ path('app_abonnement_plans_admin') }}"
+                           style="padding:13px 24px;border-radius:10px;background:rgba(255,255,255,0.06);color:#94a3b8;border:1px solid rgba(255,255,255,0.1);font-weight:700;text-decoration:none;text-align:center;display:inline-flex;align-items:center;gap:6px;">
+                            ← Annuler
+                        </a>
+                    </div>
+
+                {{ form_end(form) }}
+            </div>
+
+        </div>
+    </div>
+</section>
+{% endblock %}

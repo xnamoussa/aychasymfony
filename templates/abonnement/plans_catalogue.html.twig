@@ -1,0 +1,362 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Choisir un Abonnement - LAMMA{% endblock %}
+{% block page_title %}Nos Offres d'Abonnement{% endblock %}
+{% block page_subtitle %}Choisissez le plan qui vous correspond{% endblock %}
+
+{% block stylesheets %}
+<style>
+/* ── CATALOGUE PLANS ─────────────────────────────────────── */
+.plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 28px;
+    padding: 10px 0 40px;
+}
+
+.plan-card {
+    position: relative;
+    border-radius: 20px;
+    padding: 36px 28px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+.plan-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 30px 70px rgba(0,0,0,0.5) !important;
+}
+
+/* Types de plans — gradients */
+.plan-card.MENSUEL    { background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 100%); border: 1px solid rgba(59,130,246,0.4); }
+.plan-card.ANNUEL     { background: linear-gradient(135deg, #2d1b69 0%, #7c3aed 100%); border: 1px solid rgba(139,92,246,0.4); }
+.plan-card.PREMIUM    { background: linear-gradient(135deg, #78350f 0%, #d97706 100%); border: 1px solid rgba(245,158,11,0.5); }
+.plan-card.EVENEMENT_PASS { background: linear-gradient(135deg, #064e3b 0%, #059669 100%); border: 1px solid rgba(16,185,129,0.4); }
+
+/* Badge populaire */
+.plan-badge-popular {
+    position: absolute;
+    top: -1px;
+    right: 24px;
+    background: linear-gradient(90deg, #f59e0b, #ef4444);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 6px 18px;
+    border-radius: 0 0 12px 12px;
+    text-transform: uppercase;
+}
+
+/* Icône de type */
+.plan-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    background: rgba(255,255,255,0.12);
+    margin-bottom: 4px;
+}
+
+/* Nom et type */
+.plan-name {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #fff !important;
+    margin: 0;
+    line-height: 1.2;
+}
+.plan-type-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6) !important;
+    margin-top: 4px;
+}
+
+/* Prix */
+.plan-price-block {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+.plan-price {
+    font-size: 2.8rem;
+    font-weight: 900;
+    color: #fff !important;
+    line-height: 1;
+}
+.plan-price-unit {
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.7) !important;
+    font-weight: 600;
+}
+
+/* Séparateur */
+.plan-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.12);
+    margin: 0;
+}
+
+/* Avantages */
+.plan-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+.plan-features li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.88rem;
+    color: rgba(255,255,255,0.85) !important;
+    font-weight: 500;
+}
+.plan-features li .feat-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+}
+
+/* Bouton souscrire */
+.btn-subscribe {
+    display: block;
+    width: 100%;
+    padding: 14px 0;
+    text-align: center;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-transform: uppercase;
+}
+.btn-subscribe.primary {
+    background: rgba(255,255,255,0.95);
+    color: #1e293b !important;
+}
+.btn-subscribe.primary:hover {
+    background: #fff;
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+.btn-subscribe.subscribed {
+    background: rgba(16,185,129,0.2);
+    border: 2px solid rgba(16,185,129,0.5);
+    color: #6ee7b7 !important;
+    cursor: default;
+}
+
+/* Header section */
+.catalogue-header {
+    text-align: center;
+    margin-bottom: 48px;
+    padding-top: 20px;
+}
+.catalogue-header h1 {
+    font-size: 2.5rem;
+    font-weight: 900;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+}
+.catalogue-header p {
+    color: rgba(255,255,255,0.6) !important;
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* Flash messages */
+.flash-box {
+    padding: 14px 20px;
+    border-radius: 10px;
+    margin-bottom: 24px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+.flash-success { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7 !important; }
+.flash-warning { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: #fcd34d !important; }
+.flash-error   { background: rgba(239,68,68,0.15);  border: 1px solid rgba(239,68,68,0.3);  color: #fca5a5 !important; }
+
+.mes-abonnements-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255,255,255,0.7) !important;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.15);
+    transition: all 0.2s;
+}
+.mes-abonnements-link:hover {
+    background: rgba(255,255,255,0.08);
+    color: #fff !important;
+    text-decoration: none;
+}
+.empty-plans {
+    text-align: center;
+    padding: 80px 20px;
+    color: rgba(255,255,255,0.4) !important;
+}
+.empty-plans .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.4;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div style="padding: 10px 0;">
+
+    {# Flash messages #}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="flash-box flash-{{ label }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    {# Header #}
+    <div class="catalogue-header">
+        <h1>✨ Choisissez votre Plan</h1>
+        <p>Des offres adaptées à chaque profil — souscrivez en un clic, sans formulaire.</p>
+        <div class="mt-4">
+            <a href="{{ path('app_abonnement_index') }}" class="mes-abonnements-link">
+                <i class="fa fa-list"></i> Mes abonnements actifs
+            </a>
+        </div>
+    </div>
+
+    {# Grille des plans #}
+    {% if plans is empty %}
+        <div class="empty-plans">
+            <div class="empty-icon">📭</div>
+            <h4>Aucun plan disponible pour le moment</h4>
+            <p>Les offres seront publiées prochainement par notre équipe.</p>
+        </div>
+    {% else %}
+        <div class="plans-grid">
+            {% for plan in plans %}
+                {% set typeLabel = {
+                    'MENSUEL':       'Pack Mensuel',
+                    'ANNUEL':        'Pack Annuel',
+                    'PREMIUM':       'Pack Premium',
+                    'EVENEMENT_PASS':'Event Pass'
+                } %}
+                {% set typeIcon = {
+                    'MENSUEL':       '📅',
+                    'ANNUEL':        '🗓️',
+                    'PREMIUM':       '👑',
+                    'EVENEMENT_PASS':'🎫'
+                } %}
+                {% set typeDuree = {
+                    'MENSUEL':       '/ mois',
+                    'ANNUEL':        '/ an',
+                    'PREMIUM':       '/ an',
+                    'EVENEMENT_PASS':'/ semaine'
+                } %}
+
+                {% set isSubscribed = userAbonnements[plan.id] is defined %}
+
+                <div class="plan-card {{ plan.type }}">
+                    {# Badge populaire pour PREMIUM #}
+                    {% if plan.type == 'PREMIUM' %}
+                        <div class="plan-badge-popular">⭐ Populaire</div>
+                    {% endif %}
+
+                    {# Icône #}
+                    <div class="plan-icon">
+                        {{ typeIcon[plan.type] ?? '📦' }}
+                    </div>
+
+                    {# Nom et type #}
+                    <div>
+                        <div class="plan-name">{{ plan.nom }}</div>
+                        <div class="plan-type-label">{{ typeLabel[plan.type] ?? plan.type }}</div>
+                    </div>
+
+                    {# Prix #}
+                    <div class="plan-price-block">
+                        <span class="plan-price">{{ plan.prix|number_format(2, ',', ' ') }}€</span>
+                        <span class="plan-price-unit">{{ typeDuree[plan.type] ?? '' }}</span>
+                    </div>
+
+                    <div class="plan-divider"></div>
+
+                    {# Avantages calculés selon le type #}
+                    <ul class="plan-features">
+                        {% if plan.type == 'MENSUEL' %}
+                            <li><span class="feat-icon">✓</span> Accès à tous les événements mensuels</li>
+                            <li><span class="feat-icon">✓</span> 10% de réduction sur les repas</li>
+                            <li><span class="feat-icon">✓</span> Points de fidélité accumulés</li>
+                            {% if plan.restrictionType %}<li><span class="feat-icon">🌿</span> Menu {{ plan.restrictionType }}</li>{% endif %}
+                        {% elseif plan.type == 'ANNUEL' %}
+                            <li><span class="feat-icon">✓</span> Accès illimité toute l'année</li>
+                            <li><span class="feat-icon">✓</span> 15% de réduction sur les repas</li>
+                            <li><span class="feat-icon">✓</span> Points de fidélité doublés</li>
+                            <li><span class="feat-icon">✓</span> Priorité d'inscription</li>
+                            {% if plan.restrictionType %}<li><span class="feat-icon">🌿</span> Menu {{ plan.restrictionType }}</li>{% endif %}
+                        {% elseif plan.type == 'PREMIUM' %}
+                            <li><span class="feat-icon">✓</span> Accès VIP à tous les événements</li>
+                            <li><span class="feat-icon">✓</span> 30% de réduction sur les repas</li>
+                            <li><span class="feat-icon">✓</span> File d'attente prioritaire</li>
+                            <li><span class="feat-icon">✓</span> Événements exclusifs</li>
+                            <li><span class="feat-icon">✓</span> Support dédié 24/7</li>
+                            {% if plan.restrictionType %}<li><span class="feat-icon">🌿</span> Menu {{ plan.restrictionType }}</li>{% endif %}
+                        {% elseif plan.type == 'EVENEMENT_PASS' %}
+                            <li><span class="feat-icon">✓</span> Pass valable 7 jours</li>
+                            <li><span class="feat-icon">✓</span> Accès à l'événement complet</li>
+                            <li><span class="feat-icon">✓</span> Ticket généré automatiquement</li>
+                            {% if plan.restrictionType %}<li><span class="feat-icon">🌿</span> Menu {{ plan.restrictionType }}</li>{% endif %}
+                        {% endif %}
+                        {% if plan.autoRenew %}
+                            <li><span class="feat-icon">🔄</span> Renouvellement automatique</li>
+                        {% endif %}
+                    </ul>
+
+                    {# Bouton souscrire #}
+                    {% if isSubscribed %}
+                        <div class="btn-subscribe subscribed">
+                            ✅ Déjà souscrit
+                        </div>
+                    {% else %}
+                        <form method="post" action="{{ path('app_abonnement_souscrire', {planId: plan.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('souscrire_' ~ plan.id) }}">
+                            <button type="submit" class="btn-subscribe primary" id="btn-subscribe-{{ plan.id }}">
+                                🚀 S'abonner maintenant
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

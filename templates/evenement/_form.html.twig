@@ -1,0 +1,302 @@
+<style>
+    .custom-input {
+        background-color: #1a1a1a !important;
+        border: 1px solid #333 !important;
+        color: #fff !important;
+        border-radius: 0;
+        transition: border-color 0.3s ease;
+    }
+    .custom-input:focus {
+        border-color: #ff3c36 !important;
+        box-shadow: none !important;
+    }
+    .custom-label {
+        font-family: 'Arial', sans-serif;
+        letter-spacing: 1px;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        color: #888;
+    }
+</style>
+
+{{ form_start(form) }}
+    <div class="row g-4 mt-2">
+        <div class="col-md-6 mb-4">
+            <label class="custom-label mb-2">Titre de l'événement <span class="text-danger">*</span></label>
+            {{ form_widget(form.titre, {'attr': {'class': 'form-control form-control-lg custom-input', 'id': 'titre-input'}}) }}
+
+            {{ form_errors(form.titre) }}
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <label class="custom-label mb-2">Type d'événement <span class="text-danger">*</span></label>
+            {{ form_widget(form.type, {'attr': {'class': 'form-control form-control-lg custom-input'}}) }}
+            {{ form_errors(form.type) }}
+        </div>
+
+        <div class="col-12 mb-4">
+            <label class="custom-label mb-2">Description complète <span class="text-danger">*</span></label>
+            {{ form_widget(form.description, {'attr': {'class': 'form-control form-control-lg custom-input', 'rows': 5}}) }}
+            {{ form_errors(form.description) }}
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <label class="custom-label mb-2">Date début <span class="text-danger">*</span></label>
+            {{ form_widget(form.date_debut, {'attr': {'class': 'form-control form-control-lg custom-input'}}) }}
+            {{ form_errors(form.date_debut) }}
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <label class="custom-label mb-2">Date fin <span class="text-danger">*</span></label>
+            {{ form_widget(form.date_fin, {'attr': {'class': 'form-control form-control-lg custom-input'}}) }}
+            {{ form_errors(form.date_fin) }}
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <label class="custom-label mb-2">Lieu <span class="text-danger">*</span></label>
+            {{ form_widget(form.lieu, {'attr': {'class': 'form-control form-control-lg custom-input'}}) }}
+            {{ form_errors(form.lieu) }}
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <label class="custom-label mb-2">Affiche de l'événement (Upload manuel)</label>
+            <div class="mb-3">
+                {{ form_widget(form.imageFile, {'attr': {'class': 'form-control form-control-lg custom-input bg-dark text-white'}}) }}
+                {{ form_errors(form.imageFile) }}
+            </div>
+            
+            <label class="custom-label mb-2">Ou Affiche générée (IA / URL)</label>
+            <div class="input-group mb-2">
+                {{ form_widget(form.image, {'attr': {'class': 'form-control form-control-lg custom-input', 'id': 'image-input', 'placeholder': 'Nom de l\'image ou URL'}}) }}
+                <button type="button" class="btn btn-warning" id="btn-generate-ai" onclick="generateAIPoster_Safe()" title="Générer une affiche par IA">
+                    <i class="fa fa-magic"></i> IA
+                </button>
+            </div>
+            {{ form_errors(form.image) }}
+            <div id="image-preview-container" class="mt-2 text-center {{ (form.vars.value.image is empty) ? 'd-none' : '' }}" style="border: 2px dashed #444; border-radius: 8px; padding: 15px; background: #111;">
+                <p class="text-muted small mb-1">Aperçu de l'affiche</p>
+                <div id="ai-status" class="text-warning small mb-2 d-none"><i class="fa fa-spinner fa-spin"></i> Génération en cours...</div>
+                <img id="image-preview" src="{{ (form.vars.value.image starts with 'http') ? form.vars.value.image : asset('uploads/' ~ form.vars.value.image) }}" alt="Aperçu" style="max-height: 250px; max-width: 100%; border-radius: 4px; box-shadow: 0 4px 20px rgba(0,0,0,0.8);">
+                <div id="ai-url-display" class="mt-2 text-info x-small text-truncate d-none" style="font-size: 10px; opacity: 0.7;"></div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4 mt-4 text-center">
+            <div class="form-check form-switch d-inline-block ps-0">
+                <label class="custom-label mb-2 d-block">Le Coin Make-up</label>
+                {{ form_widget(form.propose_makeup) }}
+                {{ form_errors(form.propose_makeup) }}
+            </div>
+
+        </div>
+
+        <div class="col-12 mb-4">
+            <label class="custom-label mb-2">Équipements recommandés</label>
+            <div class="input-group">
+                {{ form_widget(form.recommended_equipments, {'attr': {'class': 'form-control form-control-lg custom-input', 'id': 'equipments-input'}}) }}
+                <button type="button" class="btn btn-info text-white" id="btn-suggest-eq" onclick="suggestAIEquipments()" title="Suggérer des équipements par IA">
+                    <i class="fa fa-magic"></i> Suggérer (IA)
+                </button>
+            </div>
+            {{ form_errors(form.recommended_equipments) }}
+        </div>
+
+        <div class="col-12 mb-5">
+            <label class="custom-label mb-2">Lien Spotify</label>
+            {{ form_widget(form.spotify_url, {'attr': {'class': 'form-control form-control-lg custom-input'}}) }}
+            {{ form_errors(form.spotify_url) }}
+        </div>
+
+        <div class="col-12 text-center">
+            <button class="btn btn-danger btn-lg px-5" style="background-color: #ff3c36; border: none; font-weight: bold; border-radius: 0; letter-spacing: 1px;">
+                <i class="fa fa-save"></i> {{ button_label|default('ENREGISTRER') }}
+            </button>
+        </div>
+    </div>
+{{ form_end(form) }}
+
+
+<script>
+
+// Logic to handle both local and remote images
+window.updateApercuImg = function(val) {
+    const previewImg = document.getElementById('image-preview');
+    const previewContainer = document.getElementById('image-preview-container');
+    const urlText = document.getElementById('ai-url-display');
+
+    if (!val || val.trim() === '') {
+        if (previewContainer) previewContainer.classList.add('d-none');
+        return;
+    }
+
+    if (previewContainer) previewContainer.classList.remove('d-none');
+    
+    let finalUrl = val;
+    if (!val.startsWith('http') && !val.startsWith('/')) {
+        finalUrl = '/uploads/' + val;
+    }
+    
+    if (previewImg) previewImg.src = finalUrl;
+    if (urlText && val.startsWith('http')) {
+        urlText.innerText = val;
+        urlText.classList.remove('d-none');
+    } else if (urlText) {
+        urlText.classList.add('d-none');
+    }
+}
+
+// Global function for Gemini AI Generation
+window.generateAIPoster_Safe = function() {
+    const btn = document.getElementById('btn-generate-ai');
+    const inputImage = document.getElementById('image-input') || document.querySelector('input[name*="[image]"]');
+    const inputTitre = document.querySelector('input[name*="[titre]"], #evenement_titre');
+    const inputType = document.querySelector('input[name*="[type]"]');
+    const inputDesc = document.querySelector('textarea[name*="[description]"]');
+    const statusDiv = document.getElementById('ai-status');
+
+    if (!inputImage) {
+        alert("Erreur: Champ image non trouvé.");
+        return;
+    }
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gemini...';
+    }
+    if (statusDiv) {
+        statusDiv.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Gemini prépare votre affiche...';
+        statusDiv.classList.remove('d-none');
+    }
+
+    // Appel au backend Symfony pour utiliser Gemini en toute sécurité
+    fetch('{{ path('app_admin_ai_generate_poster') }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            title: inputTitre ? inputTitre.value : 'Événement',
+            type: inputType ? inputType.value : '',
+            description: inputDesc ? inputDesc.value : ''
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.image) {
+            inputImage.value = data.image; // Gemini renvoie du base64
+            window.updateApercuImg(data.image);
+            
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Gemini a terminé !',
+                    text: 'Affiche exclusive générée avec succès.',
+                    timer: 3000
+                });
+            }
+        } else if (data.error) {
+            alert("Erreur Gemini: " + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert("Erreur de connexion au service Gemini.");
+    })
+    .finally(() => {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa fa-magic"></i> IA';
+        }
+        if (statusDiv) statusDiv.classList.add('d-none');
+    });
+};
+
+// Global function for AI Equipment suggestions
+window.suggestAIEquipments = function() {
+    const btn = document.getElementById('btn-suggest-eq');
+    // Sélecteur robuste qui trouve le champ peu importe l'ID généré par Symfony
+    const inputEq = document.getElementById('equipments-input')
+                 || document.querySelector('[name*="recommended_equipments"]')
+                 || document.querySelector('[id*="recommended_equipments"]');
+    const inputTitre = document.querySelector('input[name*="[titre]"], #evenement_titre, [name*="[titre]"]');
+    const inputType  = document.querySelector('input[name*="[type]"], [name*="[type]"]');
+    const inputDesc  = document.querySelector('textarea[name*="[description]"], [name*="[description]"]');
+
+    if (!inputEq) {
+        alert("Erreur technique : champ équipements introuvable.");
+        return;
+    }
+
+    const title = inputTitre ? inputTitre.value.trim() : '';
+    const type  = inputType  ? inputType.value.trim()  : '';
+    const desc  = inputDesc  ? inputDesc.value.trim()  : '';
+
+    if (!title && !type && !desc) {
+        alert("Veuillez d'abord remplir le titre, le type ou la description de l'événement.");
+        return;
+    }
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyse...';
+    }
+
+    fetch('{{ path('app_admin_ai_suggest_equipments') }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, type, description: desc })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.equipments) {
+            inputEq.value = data.equipments;
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Équipements suggérés !',
+                    text: data.equipments,
+                    timer: 4000,
+                    timerProgressBar: true,
+                    background: '#212529',
+                    color: '#fff'
+                });
+            }
+        } else if (data.error) {
+            alert("Erreur Gemini: " + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur suggestion équipements:', error);
+        alert("Erreur de connexion au service de suggestion.");
+    })
+    .finally(() => {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa fa-magic"></i> Suggérer (IA)';
+        }
+    });
+};
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Formulaire pret - IA Initialisée");
+    const inputImage = document.getElementById('image-input') || document.querySelector('input[name*="[image]"]');
+    if (inputImage) {
+        inputImage.addEventListener('input', (e) => window.updateApercuImg(e.target.value));
+        if (inputImage.value) window.updateApercuImg(inputImage.value);
+    }
+
+    // Auto-equipments logic
+    const typeInputSelect = document.querySelector('input[name*="[type]"]');
+    const eqInputSelect = document.querySelector('#equipments-input');
+    if (typeInputSelect && eqInputSelect) {
+        typeInputSelect.addEventListener('input', function(e) {
+            const val = e.target.value.toLowerCase();
+            if (!eqInputSelect.value) {
+                if (val.includes('camping')) eqInputSelect.value = 'tente, sac de couchage';
+                if (val.includes('soire')) eqInputSelect.value = 'tenue de soirée';
+            }
+        });
+    }
+});
+</script>

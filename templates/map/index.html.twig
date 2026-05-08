@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Carte Interactive — LAMMA{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    .lamma-map-container { background: #0f172a; min-height: 100vh; padding: 4rem 0; color: #fff; }
+    #map { height: 600px; width: 100%; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); filter: grayscale(1) invert(1) hue-rotate(180deg) brightness(0.8); }
+    .map-header { margin-bottom: 3rem; }
+    .map-overlay { position: relative; }
+    .map-stats { position: absolute; top: 20px; right: 20px; z-index: 1000; background: rgba(15, 23, 42, 0.9); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(249, 115, 22, 0.3); backdrop-filter: blur(10px); }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="lamma-map-container">
+    <div class="container-fluid px-lg-5">
+        <div class="map-header">
+            <h1 class="h2 text-white mb-2" style="font-family:'Anton', sans-serif;">EXPLORATEUR GÉOGRAPHIQUE</h1>
+            <p class="text-white-50">Localisation des équipements et points de retrait à travers la Tunisie.</p>
+        </div>
+
+        <div class="map-overlay">
+            <div id="map"></div>
+            <div class="map-stats">
+                <div class="small text-prm fw-bold mb-1">HUB LOGISTIQUE</div>
+                <div class="h4 mb-0" style="font-family:'Anton', sans-serif;">TUNIS CENTRE</div>
+                <hr style="border-color:rgba(255,255,255,0.1)">
+                <div class="small text-white-50"><i class="fa fa-circle text-success me-2"></i>Serveur OSRM Actif</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Tunis Center Coordinates
+        const map = L.map('map').setView([36.8065, 10.1815], 11);
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        }).addTo(map);
+
+        const marker = L.marker([36.8065, 10.1815]).addTo(map);
+        marker.bindPopup("<b style='color:#1e293b'>Siège LAMMA Boutique</b><br>Point Central Logistique.").openPopup();
+
+        // Custom orange circle for flare effect
+        L.circle([36.8065, 10.1815], {
+            color: '#F97316',
+            fillColor: '#F97316',
+            fillOpacity: 0.2,
+            radius: 2000
+        }).addTo(map);
+    });
+</script>
+{% endblock %}

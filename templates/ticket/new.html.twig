@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau Ticket - LAMMA{% endblock %}
+{% block page_title %}Générer un Ticket{% endblock %}
+
+{% block body %}
+<section class="crud-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="fiche-card">
+                    <div class="fiche-header text-uppercase">
+                        <i class="fa fa-ticket mr-2"></i> FICHE D'INFORMATION TICKET
+                    </div>
+                    <div class="fiche-body">
+                        {{ form_start(form) }}
+                            <a href="{{ path('app_ticket_index') }}" class="btn btn-secondary" style="border-radius:25px;padding:10px 30px;">Annuler</a>
+                        </div>
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

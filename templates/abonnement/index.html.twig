@@ -1,0 +1,106 @@
+{% extends is_granted('ROLE_ADMIN') ? 'admin/base_admin.html.twig' : 'base.html.twig' %}
+{% import '_macros.html.twig' as macros %}
+
+{% block title %}Abonnements - LAMMA{% endblock %}
+{% block page_title %}
+    {% if is_granted('ROLE_ADMIN') %}Souscriptions des Utilisateurs{% else %}Mes Abonnements{% endif %}
+{% endblock %}
+{% block admin_title %}Abonnements{% endblock %}
+
+{% block body %}
+<section class="crud-section">
+
+    {# ── Header ──────────────────────────────────────────── #}
+    <div class="row align-items-center mb-4">
+        <div class="col-md-6">
+            <h2 style="font-family:'Anton',sans-serif;color:var(--scout-navy); margin: 0;">
+                {% if is_granted('ROLE_ADMIN') %}
+                    📋 Souscriptions Utilisateurs
+                {% else %}
+                    🎫 Mes Abonnements
+                {% endif %}
+            </h2>
+            <div style="font-size: 0.85rem; color: var(--text-dim); font-weight: 600; margin-top:4px;">
+                {% if is_granted('ROLE_ADMIN') %}
+                    Ensemble des abonnements souscrits par les utilisateurs
+                {% else %}
+                    Retrouvez ici vos abonnements actifs et en attente
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-6 d-flex justify-content-end" style="gap:10px;">
+            {% if is_granted('ROLE_ADMIN') %}
+                {# Admin : accès à la gestion des plans #}
+                <a href="{{ path('app_abonnement_plans_admin') }}"
+                   style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:8px;font-size:0.88rem;box-shadow:0 4px 14px rgba(59,130,246,0.3);">
+                    <i class="fa fa-cubes"></i> Gérer les Plans
+                </a>
+            {% else %}
+                {# User : lien vers le catalogue #}
+                <a href="{{ path('app_abonnement_plans') }}"
+                   style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;border:none;border-radius:8px;padding:9px 22px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:8px;font-size:0.88rem;box-shadow:0 4px 14px rgba(59,130,246,0.3);">
+                    ✨ Découvrir les Plans
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ── Flash ───────────────────────────────────────────── #}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label == 'success' ? 'success' : (label == 'error' ? 'danger' : 'warning') }} mb-3"
+                 style="border-radius:10px;font-weight:600;">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    {# ── Tableau ─────────────────────────────────────────── #}
+    <div class="scout-card" style="padding: 0;">
+        {% if items is empty %}
+            <div class="text-center" style="padding: 60px 20px;">
+                <div style="font-size: 3rem; margin-bottom: 16px; opacity:0.3;">📭</div>
+                <h4 style="color:#94a3b8;">
+                    {% if is_granted('ROLE_ADMIN') %}
+                        Aucune souscription enregistrée
+                    {% else %}
+                        Vous n'avez aucun abonnement actif
+                    {% endif %}
+                </h4>
+                {% if not is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_abonnement_plans') }}"
+                       style="display:inline-block;margin-top:16px;background:#3b82f6;color:#fff;padding:10px 28px;border-radius:8px;font-weight:700;text-decoration:none;">
+                        ✨ Voir les plans disponibles
+                    </a>
+                {% endif %}
+            </div>
+        {% else %}
+            {% set columns = {
+                'userName': 'Client',
+                'nom': 'Désignation',
+                'type': 'Type Pack',
+                'dateDebut': 'Activation',
+                'dateFin': 'Expiration',
+                'prix': 'Tarif (€)',
+                'statut': 'Statut'
+            } %}
+            {% if not is_granted('ROLE_ADMIN') %}
+                {% set columns = columns|merge({'userName': null}) %}
+                {# filter out userName if not admin, macro might handle but we can be explicit if needed, 
+                   actually the existing crud_table macro might need specific mapping. 
+                   Let's just use two sets. #}
+                {% set columns = {
+                    'nom': 'Désignation',
+                    'type': 'Type Pack',
+                    'dateDebut': 'Activation',
+                    'dateFin': 'Expiration',
+                    'prix': 'Tarif (€)',
+                    'statut': 'Statut'
+                } %}
+            {% endif %}
+            {{ macros.crud_table(items, columns, 'app_abonnement_show', 'app_abonnement_show', 'abonnement', ['type', 'statut']) }}
+        {% endif %}
+    </div>
+
+</section>
+{% endblock %}

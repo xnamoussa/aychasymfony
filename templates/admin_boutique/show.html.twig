@@ -1,0 +1,157 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Détail équipement — LAMMA{% endblock %}
+{% block page_title %}Détail Équipement{% endblock %}
+{% block breadcrumb %}Fiche technique #{{ equipement.id }}{% endblock %}
+
+{% block body %}
+    <div class="d-flex flex-column flex-md-row align-items-start justify-content-between gap-3 mb-4 mt-2">
+        <div>
+            <h2 class="mb-2 text-white" style="font-family:'Anton', sans-serif;">{{ equipement.nom }}</h2>
+            <p class="text-white-50 mb-0">Gestion administrative et logistique.</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ path('app_admin_boutique_index') }}" class="btn btn-outline-light btn-sm">← Retour</a>
+            <a href="{{ path('app_boutique_show', {id: equipement.id}) }}" class="btn btn-outline-info btn-sm" target="_blank">Fiche publique</a>
+            <a href="{{ path('app_admin_boutique_edit', {id: equipement.id}) }}" class="btn btn-warning btn-sm">Modifier</a>
+            <form method="post" action="{{ path('app_admin_boutique_delete', {id: equipement.id}) }}" style="display:inline;" onsubmit="return confirm('Supprimer cet équipement ?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete_equipement_' ~ equipement.id) }}">
+                <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-xl-8">
+            <div class="card border-0 shadow-sm p-4 h-100" style="background: rgba(255,255,255,0.03) !important;">
+                <h4 class="mb-3 text-white" style="font-family:'Anton', sans-serif; letter-spacing:1px;">Informations principales</h4>
+                <div class="text-white-50 mb-4 p-3 rounded" style="background: rgba(0,0,0,0.2);">
+                    {{ equipement.description ?: 'Aucune description fournie.' }}
+                </div>
+
+                <div class="row gy-4">
+                    <div class="col-md-6">
+                        <div class="text-white-50 small mb-1 uppercase">Prix de vente</div>
+                        <div class="fw-bold fs-4 text-prm">{{ equipement.prix|number_format(2, ',', ' ') }} TND</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-white-50 small mb-1 uppercase">Type d'annonce</div>
+                        <div class="text-white fw-bold">{{ equipement.type }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-white-50 small mb-1 uppercase">Catégorie</div>
+                        <div class="text-white fw-bold">{{ equipement.categorie ?: '—' }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-white-50 small mb-1 uppercase">Localisation</div>
+                        <div class="text-white fw-bold"><i class="fa fa-map-marker-alt text-info me-2"></i>{{ equipement.ville ?: '—' }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-white-50 small mb-1 uppercase">Statut Publication</div>
+                        <div class="text-white fw-bold">
+                             <span class="badge {% if equipement.statut == 'disponible' %}bg-success{% else %}bg-secondary{% endif %}">
+                                {{ equipement.statut }}
+                             </span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-white-50 small mb-1 uppercase">Livrable</div>
+                        <div class="text-white fw-bold">{{ equipement.livrable ? 'OUI ✅' : 'NON ❌' }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-white-50 small mb-1 uppercase">Vendeur (Propriétaire)</div>
+                        <div class="text-info fw-bold">{{ equipement.owner ? equipement.owner.name : 'Système / Aucun' }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-white-50 small mb-1 uppercase">Date de création</div>
+                        <div class="text-white fw-bold">{{ equipement.dateAjout ? equipement.dateAjout|date('d/m/Y H:i') : '—' }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card border-0 shadow-sm p-4 mb-4" style="background: rgba(255,255,255,0.03) !important;">
+                <h5 class="mb-3 text-white" style="font-family:'Anton', sans-serif;">Actions Logistiques</h5>
+                <div class="d-grid gap-2">
+                    {% if equipement.delivery %}
+                        <a href="{{ path('app_boutique_delivery', {id: equipement.id}) }}" class="btn btn-info text-dark fw-bold">Gérer le suivi livraison</a>
+                    {% endif %}
+                    <a href="{{ path('app_admin_boutique_edit', {id: equipement.id}) }}" class="btn btn-outline-warning">Editer les attributs</a>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm border-start border-prm border-4 p-4" style="background: rgba(232, 57, 44, 0.05) !important;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 text-white" style="font-family:'Anton', sans-serif;">Volet Expédition</h5>
+                    {% if equipement.delivery %}
+                        <i class="fa fa-shuttle-van text-prm fs-4"></i>
+                    {% endif %}
+                </div>
+                
+                {% if equipement.delivery %}
+                    <div class="small mb-4">
+                        <div class="mb-2"><strong class="text-white">Statut :</strong> <span class="badge bg-dark border border-secondary">{{ equipement.delivery.statut|replace({'en_attente': 'En attente', 'confirmee': 'Confirmée', 'preparation': 'En préparation', 'expediee': 'Expédiée', 'en_cours': 'En cours', 'livree': 'Livrée', 'annulee': 'Annulée'}) }}</span></div>
+                        <div class="mb-2"><strong class="text-white">Acheteur :</strong> {{ equipement.delivery.acheteur ? equipement.delivery.acheteur.name : '—' }}</div>
+                        <div class="mb-2"><strong class="text-white">Adresse :</strong> {{ equipement.delivery.rue }}, {{ equipement.delivery.ville }}</div>
+                        <div class="mb-2"><strong class="text-white">Date Est. :</strong> {{ equipement.delivery.estimation ? equipement.delivery.estimation|date('d/m/Y') : 'AI Pending...' }} <i class="fa fa-robot text-info" title="Estimation IA"></i></div>
+                    </div>
+
+                    <div class="text-center mt-3 p-3 rounded" style="background: white;">
+                        <span class="d-block text-dark small fw-bold mb-2 uppercase">Bon de Livraison QR</span>
+                        {# Encode all expedition details as text directly in the QR code #}
+                        {% set delivery = equipement.delivery %}
+                        {% set statutLabel = delivery.statut|replace({
+                            'en_attente': 'En attente',
+                            'confirmee': 'Confirmée',
+                            'preparation': 'En préparation',
+                            'expediee': 'Expédiée',
+                            'en_cours': 'En cours',
+                            'livree': 'Livrée',
+                            'annulee': 'Annulée'
+                        }) %}
+                        {% set qrText %}BORDEREAU D'EXPEDITION LAMMA
+================================
+REF: #{{ equipement.id }}
+Date: {{ 'now'|date('d/m/Y H:i') }}
+
+--- MATERIEL ---
+Article : {{ equipement.nom }}
+Categorie: {{ equipement.categorie|default('—') }}
+Prix     : {{ equipement.prix|number_format(2, ',', ' ') }} TND
+Vendeur  : {{ equipement.owner ? equipement.owner.name : '—' }}
+
+--- TRANSACTION ---
+Montant  : {{ transaction is defined and transaction ? transaction.price ~ ' TND' : 'En attente' }}
+Acheteur : {{ delivery.acheteur ? delivery.acheteur.name : '—' }}
+
+--- LIVRAISON ---
+Statut   : {{ statutLabel }}
+Adresse  : {{ delivery.rue }}, {{ delivery.codePostal }} {{ delivery.ville }}
+Pays     : {{ delivery.pays|default('—') }}
+Estimation: {{ delivery.estimation ? delivery.estimation|date('d/m/Y') : 'En attente IA' }}
+
+================================
+LAMMA - Plateforme Collaborative
+d'Equipements de Camping{% endset %}
+                        <img src="{{ qr_code_data_uri(qrText) }}"
+                             alt="QR Bordereau"
+                             class="border border-dark rounded"
+                             style="width: 200px; height: 200px; transition: transform 0.2s, box-shadow 0.2s;"
+                             onmouseover="this.style.transform='scale(1.05)';this.style.boxShadow='0 4px 12px rgba(0,0,0,0.3)';"
+                             onmouseout="this.style.transform='scale(1)';this.style.boxShadow='none';">
+                        <p class="text-dark small mt-2 mb-1">
+                            <i class="fa fa-qrcode me-1"></i>
+                            Scannez → détails s'affichent directement
+                        </p>
+                        <a href="{{ path('app_qrcode_recap', {id: equipement.id}) }}" class="btn btn-sm btn-outline-dark mt-1">
+                            <i class="fa fa-external-link-alt me-1"></i>Voir bordereau en ligne
+                        </a>
+                    </div>
+                {% else %}
+                    <p class="text-white-50 mb-0"><i class="fa fa-info-circle me-1"></i>En attente de commande par un utilisateur.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

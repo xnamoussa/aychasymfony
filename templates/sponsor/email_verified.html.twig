@@ -1,0 +1,12 @@
+{% block body %}
+<div style="text-align:center; padding:100px 20px; color:#fff;">
+    <h1 style="color:#e8c74a; font-size:60px;">✅</h1>
+    <h2>Email vérifié avec succès !</h2>
+    <p>Bonjour {{ sponsor.nom }}, votre compte est maintenant actif.</p>
+    <a href="{{ path('app_evenement_index') }}" 
+       style="background:#e8c74a; color:#000; padding:12px 30px; 
+              border-radius:5px; text-decoration:none; font-weight:bold;">
+        Retour à l'accueil
+    </a>
+</div>
+{% endblock %}
