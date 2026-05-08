@@ -1,0 +1,168 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Dashboard Restauration - LAMMA{% endblock %}
+{% block admin_title %}Restauration{% endblock %}
+
+{% block body %}
+<style>
+    :root {
+        --scout-navy: #1a1f2c;
+        --scout-blue: #2d3648;
+        --scout-orange: #ff7a1a;
+        --scout-orange-hover: #e66a15;
+        --scout-glass: rgba(255, 255, 255, 0.05);
+    }
+
+    .module-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 25px;
+        margin-top: 30px;
+    }
+
+    .module-card {
+        background: var(--scout-blue);
+        border-radius: 15px;
+        padding: 40px 20px;
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid rgba(255,255,255,0.05);
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 250px;
+    }
+
+    .module-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        border-color: var(--scout-orange);
+    }
+
+    .module-icon {
+        font-size: 3rem;
+        color: var(--scout-orange);
+        margin-bottom: 20px;
+    }
+
+    .module-title {
+        font-family: 'Anton', sans-serif;
+        font-size: 1.5rem;
+        color: #fff;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+    }
+
+    .module-desc {
+        font-size: 0.9rem;
+        color: #aab1b7;
+        margin-bottom: 25px;
+        height: 40px;
+    }
+
+    .module-btn {
+        background: var(--scout-orange);
+        color: #fff;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 25px;
+        font-weight: bold;
+        text-decoration: none !important;
+        transition: background 0.3s;
+    }
+
+    .module-btn:hover {
+        background: var(--scout-orange-hover);
+        color: #fff;
+    }
+
+    .dashboard-subtitle {
+        color: #aab1b7;
+        font-size: 1.1rem;
+        text-align: center;
+        margin-top: -10px;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="text-center mb-5">
+        <h1 class="display-4" style="font-family: 'Anton', sans-serif; color: #fff;">RESTAURATION</h1>
+        <p class="dashboard-subtitle">Choisissez un module à gérer</p>
+    </div>
+
+    <div class="module-grid">
+        <div class="module-card" onclick="window.location.href='{{ path('app_repas_detaille_index') }}'">
+            <i class="fas fa-utensils module-icon"></i>
+            <h3 class="module-title">Gestion des Repas</h3>
+            <p class="module-desc">Inventaire unifié des rations et plats avec assistance IA.</p>
+            <a href="{{ path('app_repas_detaille_index') }}" class="module-btn">Ouvrir →</a>
+        </div>
+
+        <!-- Menus -->
+        <div class="module-card" onclick="window.location.href='{{ path('app_menu_index') }}'">
+            <i class="fas fa-scroll module-icon"></i>
+            <h3 class="module-title">Menus</h3>
+            <p class="module-desc">Composer et gérer les catalogues de menus.</p>
+            <a href="{{ path('app_menu_index') }}" class="module-btn">Ouvrir →</a>
+        </div>
+
+        <!-- Planification -->
+        <div class="module-card" onclick="window.location.href='{{ path('app_menu_planner_index') }}'">
+            <i class="fas fa-calendar-check module-icon"></i>
+            <h3 class="module-title">Planification</h3>
+            <p class="module-desc">Planifier les menus de la semaine stratégique.</p>
+            <a href="{{ path('app_menu_planner_index') }}" class="module-btn">Ouvrir →</a>
+        </div>
+
+        <!-- Analytics -->
+        <div class="module-card">
+            <i class="fas fa-chart-line module-icon"></i>
+            <h3 class="module-title">Analytics</h3>
+            <p class="module-desc">Statistiques de consommation et rapports détaillés.</p>
+            <a href="#" class="module-btn">Ouvrir →</a>
+        </div>
+
+        <!-- IA Recommandations -->
+        <div class="module-card">
+            <i class="fas fa-robot module-icon"></i>
+            <h3 class="module-title">IA Recommandations</h3>
+            <p class="module-desc">Recommandations intelligentes basées sur le terrain.</p>
+            <a href="#" class="module-btn">Ouvrir →</a>
+        </div>
+
+        <!-- Codes Promo -->
+        <div class="module-card" onclick="window.location.href='{{ path('app_admin_promo_codes_index') }}'">
+            <i class="fas fa-ticket-alt module-icon"></i>
+            <h3 class="module-title">Codes Promo</h3>
+            <p class="module-desc">Gérer les codes promotionnels et remises.</p>
+            <a href="{{ path('app_admin_promo_codes_index') }}" class="module-btn">Ouvrir →</a>
+        </div>
+
+        <!-- Inventaire -->
+        <div class="module-card" onclick="window.location.href='{{ path('app_ingredient_index') }}'">
+            <i class="fas fa-boxes module-icon"></i>
+            <h3 class="module-title">Inventaire</h3>
+            <p class="module-desc">Gestion des approvisionnements et stocks.</p>
+            <a href="{{ path('app_ingredient_index') }}" class="module-btn">Ouvrir →</a>
+        </div>
+
+        <!-- Restaurants -->
+        <div class="module-card" onclick="window.location.href='{{ path('app_restaurant_index') }}'">
+            <i class="fas fa-store module-icon"></i>
+            <h3 class="module-title">Restaurants</h3>
+            <p class="module-desc">Gérer les points de vente et loges enregistrées.</p>
+            <a href="{{ path('app_restaurant_index') }}" class="module-btn">Ouvrir →</a>
+        </div>
+
+        <!-- Restaurant Map -->
+        <div class="module-card">
+            <i class="fas fa-map-marked-alt module-icon"></i>
+            <h3 class="module-title">Restaurant Map</h3>
+            <p class="module-desc">Carte visuelle des positions de ravitaillement.</p>
+            <a href="#" class="module-btn">Ouvrir →</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

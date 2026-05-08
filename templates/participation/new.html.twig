@@ -1,0 +1,265 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle Participation - LAMMA{% endblock %}
+{% block page_title %}Fiche d'Inscription{% endblock %}
+
+{% block body %}
+<section class="crud-section" style="padding: 60px 0;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-11">
+                <div class="glass-panel" style="padding: 40px; background: #fff; border-radius: 15px;">
+                    <div class="scout-header" style="border-bottom: 3px solid var(--scout-blue);">
+                        <div class="scout-icon-stack" style="background: var(--scout-navy);">🎫</div>
+                        <div class="scout-title-group">
+                            <h2>Inscription Mission • <span style="color: var(--scout-blue);">Participation</span></h2>
+                            <div class="scout-subtitle">LAMMA • Enregistrement d'un nouveau participant</div>
+                        </div>
+                    </div>
+
+                    {% if not form.vars.valid %}
+                    <div class="alert alert-danger mb-4 mt-3" style="border-left: 5px solid var(--scout-orange); background: #fff5f5;">
+                        <h5 style="color: var(--scout-orange); font-weight: 900;"><i class="fa fa-exclamation-triangle"></i> ERREUR DE SAISIE</h5>
+                        {{ form_errors(form) }}
+                    </div>
+                    {% endif %}
+
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'participation-form'}}) }}
+                    <input type="hidden" name="want_abonnement" id="want_abonnement" value="0">
+
+                    <div class="row mt-4">
+                        <!-- LEFT COLUMN: Main form -->
+                        <div class="col-lg-8">
+                            <div class="scout-card mb-4" style="background: #f8fbff; padding: 30px;">
+                                <div class="scout-input-label mb-3" style="color: var(--scout-blue); font-size: 1.1rem; border-bottom: 2px solid var(--scout-blue); padding-bottom: 10px;">📋 Informations de la Participation</div>
+                                
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        {{ form_label(form.evenement) }}
+                                        {{ form_widget(form.evenement) }}
+                                        {{ form_errors(form.evenement) }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        {{ form_label(form.type) }}
+                                        {{ form_widget(form.type, {'attr': {'class': 'form-control'}}) }}
+                                        {{ form_errors(form.type) }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        {{ form_label(form.contexteSocial) }}
+                                        {{ form_widget(form.contexteSocial, {'attr': {'class': 'form-control'}}) }}
+                                    </div>
+                                </div>
+
+                                <div class="scout-input-label mb-3 mt-3" style="color: var(--scout-orange); font-size: 0.95rem;">👥 Nombre de Participants</div>
+                                <div class="row">
+                                    <div class="col-md-3 mb-3">
+                                        {{ form_label(form.nbAdultes) }}
+                                        {{ form_widget(form.nbAdultes) }}
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        {{ form_label(form.nbEnfants) }}
+                                        {{ form_widget(form.nbEnfants) }}
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        {{ form_label(form.nbChiens) }}
+                                        {{ form_widget(form.nbChiens) }}
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        {{ form_label(form.hebergementNuits) }}
+                                        {{ form_widget(form.hebergementNuits) }}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        {{ form_label(form.mealOption) }}
+                                        {{ form_widget(form.mealOption, {'attr': {'class': 'form-control calc-field'}}) }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        {{ form_label(form.generateType) }}
+                                        {{ form_widget(form.generateType) }}
+                                        {{ form_errors(form.generateType) }}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        {{ form_label(form.commentaire) }}
+                                        {{ form_widget(form.commentaire, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        {{ form_label(form.besoinsSpeciaux) }}
+                                        {{ form_widget(form.besoinsSpeciaux, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- RIGHT COLUMN: Price Summary -->
+                        <div class="col-lg-4">
+                            <div class="scout-card mb-4" style="background: var(--scout-navy); padding: 30px; color: #fff; position: sticky; top: 100px;">
+                                <div class="scout-input-label" style="color: #ff005a; font-size: 1rem; text-transform: uppercase;">💰 Estimation Tarifaire</div>
+                                <div style="margin-top: 15px;">
+                                    <div class="d-flex justify-content-between mb-2" style="font-size: 0.85rem;">
+                                        <span>Adultes × <span id="count-adultes">1</span></span>
+                                        <span id="prix-adultes">25.00 €</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2" style="font-size: 0.85rem;">
+                                        <span>Enfants × <span id="count-enfants">0</span></span>
+                                        <span id="prix-enfants">0.00 €</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2" style="font-size: 0.85rem;">
+                                        <span>Hébergement × <span id="count-nuits">0</span> nuits</span>
+                                        <span id="prix-nuits">0.00 €</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2" style="font-size: 0.85rem;">
+                                        <span>Supplément Repas</span>
+                                        <span id="prix-repas">0.00 €</span>
+                                    </div>
+                                    <hr style="border-color: rgba(255,255,255,0.2);">
+                                    <div class="d-flex justify-content-between" style="font-size: 1.3rem; font-weight: 900; color: #ff005a;">
+                                        <span>TOTAL</span>
+                                        <span id="prix-total">25.00 €</span>
+                                    </div>
+                                </div>
+
+                                <div style="margin-top: 25px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;">
+                                    <div style="font-size: 0.75rem; color: #aab1b7;">
+                                        <strong style="color:#fff;">Tarifs appliqués :</strong><br>
+                                        Adulte: 25.00€ • Enfant: 12.50€<br>
+                                        Nuit: 40.00€ • Repas: 15.00€/pers
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-3">
+                                <button type="button" id="btn-submit-participation" class="btn btn-scout-confirm w-100" style="padding: 15px; font-weight: bold; background: var(--scout-navy); color: white; border-radius: 8px; font-size: 1rem; border: none; cursor: pointer;">
+                                    ✅ Confirmer l'Inscription
+                                </button>
+                                <a href="{{ path('app_participation_index') }}" class="btn btn-scout-abort w-100 mt-2" style="padding: 12px; color: #666; text-align: center; display: block; border-radius: 8px;">❌ Annuler</a>
+                            </div>
+                        </div>
+                    </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Abonnement Confirmation Modal -->
+<div id="abonnement-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center;">
+    <div style="background:#fff; border-radius:15px; padding:40px; max-width:500px; width:90%; text-align:center; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+        <div style="font-size:3rem; margin-bottom:15px;">🎯</div>
+        <h3 style="font-family:'Anton',sans-serif; color: var(--scout-navy); margin-bottom:10px;">Voulez-vous un Abonnement ?</h3>
+        <p style="color:#666; font-size:0.9rem; margin-bottom:25px;">
+            Bénéficiez de réductions exclusives et d'un accès prioritaire aux événements LAMMA en souscrivant à un abonnement.
+        </p>
+        <div style="display:flex; gap:15px; justify-content:center;">
+            <button id="btn-with-abonnement" type="button" style="padding:12px 30px; background: var(--scout-navy); color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.95rem;">
+                ✅ Oui, souscrire
+            </button>
+            <button id="btn-without-abonnement" type="button" style="padding:12px 30px; background:#eee; color:#333; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.95rem;">
+                ❌ Non, participer seulement
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const PRIX_ADULTE = 25.00;
+    const PRIX_ENFANT = 12.50;
+    const PRIX_NUIT   = 40.00;
+    const PRIX_REPAS  = 15.00;
+
+    // Get form fields
+    const fields = document.querySelectorAll('.calc-field');
+    const form = document.getElementById('participation-form');
+
+    function getVal(id) {
+        var el = document.getElementById(id);
+        if (!el) {
+            // Try finding by name pattern
+            var els = document.querySelectorAll('[id*="' + id + '"]');
+            if (els.length > 0) el = els[0];
+        }
+        return el ? (parseInt(el.value) || 0) : 0;
+    }
+
+    function getMealOptionValue() {
+        var el = document.querySelector('[id*="mealOption"]');
+        return el ? el.value : '';
+    }
+
+    function recalculate() {
+        var nbAdultes = getVal('nbAdultes');
+        var nbEnfants = getVal('nbEnfants');
+        var nuits = getVal('hebergementNuits');
+        var mealOption = getMealOptionValue();
+
+        var prixAdultes = nbAdultes * PRIX_ADULTE;
+        var prixEnfants = nbEnfants * PRIX_ENFANT;
+        var prixNuits = nuits * PRIX_NUIT;
+        var prixRepas = 0;
+        
+        if (mealOption && mealOption !== 'SANS_REPAS' && mealOption !== '') {
+            prixRepas = (nbAdultes + nbEnfants) * PRIX_REPAS;
+        }
+
+        var total = prixAdultes + prixEnfants + prixNuits + prixRepas;
+
+        document.getElementById('count-adultes').textContent = nbAdultes;
+        document.getElementById('count-enfants').textContent = nbEnfants;
+        document.getElementById('count-nuits').textContent = nuits;
+        document.getElementById('prix-adultes').textContent = prixAdultes.toFixed(2) + ' €';
+        document.getElementById('prix-enfants').textContent = prixEnfants.toFixed(2) + ' €';
+        document.getElementById('prix-nuits').textContent = prixNuits.toFixed(2) + ' €';
+        document.getElementById('prix-repas').textContent = prixRepas.toFixed(2) + ' €';
+        document.getElementById('prix-total').textContent = total.toFixed(2) + ' €';
+    }
+
+    // Attach listeners to ALL inputs
+    document.querySelectorAll('input[type="number"], select').forEach(function(el) {
+        el.addEventListener('change', recalculate);
+        el.addEventListener('input', recalculate);
+    });
+
+    // Initial calculation
+    recalculate();
+
+    // Submit button -> show abonnement modal
+    var btnSubmit = document.getElementById('btn-submit-participation');
+    var modal = document.getElementById('abonnement-modal');
+    var hiddenField = document.getElementById('want_abonnement');
+
+    btnSubmit.addEventListener('click', function(e) {
+        e.preventDefault();
+        modal.style.display = 'flex';
+    });
+
+    // With abonnement
+    document.getElementById('btn-with-abonnement').addEventListener('click', function() {
+        hiddenField.value = '1';
+        modal.style.display = 'none';
+        form.submit();
+    });
+
+    // Without abonnement
+    document.getElementById('btn-without-abonnement').addEventListener('click', function() {
+        hiddenField.value = '0';
+        modal.style.display = 'none';
+        form.submit();
+    });
+
+    // Close modal on outside click
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends is_granted('ROLE_ADMIN') ? 'admin/base_admin.html.twig' : 'base.html.twig' %}
+
+{% block title %}Détails Ingrédient - LAMMA{% endblock %}
+{% block page_title %}{{ item.nom }}{% endblock %}
+{% block page_subtitle %}Consulter les spécifications de l'ingrédient{% endblock %}
+
+{% block body %}
+<section class="crud-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card card-detail">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fa fa-info-circle"></i> Fiche Ingrédient</span>
+                        <span class="badge badge-status badge-{{ item.actif ? 'actif' : 'expire' }}">{{ item.actif ? 'ACTIF' : 'INACTIF' }}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            {% if item.iconUrl %}
+                                <img src="{{ item.iconUrl }}" alt="{{ item.nom }}" style="max-width: 100px; max-height: 100px; border-radius: 10px;">
+                            {% else %}
+                                <div style="width: 100px; height: 100px; background: #eee; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                    <i class="fa fa-shopping-basket fa-3x text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr><th style="width: 30%;">Nom</th><td>{{ item.nom }}</td></tr>
+                                <tr><th>Catégorie</th><td><span class="badge badge-info">{{ item.categorie }}</span></td></tr>
+                                <tr><th>Prix Supplément</th><td>{{ item.prixSupplement ?? '0' }} €</td></tr>
+                                <tr><th>Calories</th><td>{{ item.calories ?? '0' }} kcal</td></tr>
+                                <tr><th>Protéines (g)</th><td>{{ item.proteines ?? '0' }} g</td></tr>
+                                <tr><th>Plat Associé</th><td>
+                                    {% if item.repas %}
+                                        <a href="{{ path('app_repas_detaille_show', {id: item.repas.id}) }}" class="badge badge-info" style="font-size: 0.9rem; padding: 5px 12px;">
+                                            <i class="fa fa-utensils mr-1"></i> {{ item.repas.nom }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">Aucun plat associé</span>
+                                    {% endif %}
+                                </td></tr>
+                                <tr><th>Quantité en Stock</th><td>{{ item.stockQuantite }}</td></tr>
+                                <tr><th>Seuil d'Alerte</th><td>{{ item.stockSeuilAlerte }}</td></tr>
+                            </tbody>
+                        </table>
+                        <div class="mt-4 text-center">
+                            <a href="{{ path('app_ingredient_edit', {id: item.id}) }}" class="btn btn-warning" style="border-radius:25px;padding:10px 30px;">Modifier</a>
+                            <a href="{{ path('app_ingredient_index') }}" class="btn btn-secondary" style="border-radius:25px;padding:10px 30px;">Retour</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

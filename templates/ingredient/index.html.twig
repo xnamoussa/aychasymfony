@@ -1,0 +1,279 @@
+{% extends is_granted('ROLE_ADMIN') ? 'admin/base_admin.html.twig' : 'base.html.twig' %}
+{% import '_macros.html.twig' as macros %}
+
+{% block title %}Ingrédients - LAMMA{% endblock %}
+{% block admin_title %}Gestion des Stocks{% endblock %}
+
+{% block admin_content %}
+    {{ block('main_body') }}
+{% endblock %}
+
+{% block body %}
+    <div style="padding-top: 120px; background: #f8faff; min-height: 100vh;">
+        <div class="container">
+            {{ block('main_body') }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block main_body %}
+<section class="crud-section">
+    <div class="row align-items-center mb-4">
+        <div class="col-md-6">
+            <h2 style="font-family:'Anton',sans-serif;color:var(--scout-navy); margin: 0;">Inventaire des Ingrédients</h2>
+            <div style="font-size: 0.85rem; color: var(--text-dim); font-weight: 700;">Cliquez sur un ingrédient pour l'ajouter à votre composition</div>
+        </div>
+        <div class="col-md-6 text-right">
+            {% if is_granted('ROLE_ADMIN') %}
+                <a href="{{ path('app_ingredient_new') }}" class="btn-scout-confirm" style="padding: 10px 25px;"><i class="fa fa-plus"></i> NOUVEL INGRÉDIENT</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Composition Panel (sticky top) -->
+    <div class="scout-card mb-4" id="composition-panel" style="background: var(--scout-navy); padding: 20px; display: none;">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div style="color: #ff005a; font-weight: 900; text-transform: uppercase; font-size: 0.85rem; margin-bottom: 8px;">🧪 Votre Composition</div>
+                <div id="composition-list" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+            </div>
+            <div class="col-md-4 text-right">
+                <div style="color: #fff;">
+                    <div style="font-size: 0.75rem; color: #aab1b7;">CALORIES TOTALES</div>
+                    <div id="total-calories" style="font-size: 2rem; font-weight: 900; color: #ff005a;">0 kcal</div>
+                    <div style="font-size: 0.75rem; color: #aab1b7; margin-top:5px;">PRIX SUPPLÉMENT</div>
+                    <div id="total-prix" style="font-size: 1.2rem; font-weight: 700; color: #fff;">0.00 €</div>
+                </div>
+                <button id="btn-clear-composition" class="genric-btn danger-border circle small mt-2" style="font-size: 11px; cursor:pointer; background:transparent; border:1px solid #ff005a; color:#ff005a; padding: 5px 15px; border-radius:20px;">Vider</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter & Search Bar -->
+    <div class="scout-card mb-4" style="padding: 15px;">
+        <div class="row align-items-center">
+            <div class="col-md-7 mb-2 mb-md-0">
+                <div class="d-flex flex-wrap gap-2" id="category-filters">
+                    <button class="genric-btn info-border circle small filter-btn active" data-cat="ALL" style="font-size: 11px; cursor:pointer; margin:3px;">TOUS</button>
+                    {% set cats = ['BASE', 'PROTEINE', 'LEGUME', 'SAUCE', 'TOPPING', 'EXTRA'] %}
+                    {% for cat in cats %}
+                        <button class="genric-btn info-border circle small filter-btn" data-cat="{{ cat }}" style="font-size: 11px; cursor:pointer; margin:3px;">{{ cat }}</button>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-md-5 d-flex gap-2">
+                <input type="text" id="ingredient-search" class="form-control" placeholder="Rechercher un ingrédient..." style="background: transparent; border: 1px solid #ff005a; color: white; border-radius: 5px;">
+                <select id="ingredient-sort" class="form-control" style="background: transparent; border: 1px solid #444; color: white; border-radius: 5px; width: 140px;">
+                    <option value="" style="color: black;">Trier par...</option>
+                    <option value="name_asc" style="color: black;">Nom (A-Z)</option>
+                    <option value="name_desc" style="color: black;">Nom (Z-A)</option>
+                    <option value="price_asc" style="color: black;">Prix croissant</option>
+                    <option value="price_desc" style="color: black;">Prix décroissant</option>
+                    <option value="cal_asc" style="color: black;">Calories min</option>
+                    <option value="cal_desc" style="color: black;">Calories max</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ingredient Cards Grid -->
+    <div class="row" id="ingredients-grid">
+        {% for item in items %}
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4 ingredient-card-wrap" data-category="{{ item.categorie }}" data-nom="{{ item.nom }}" data-calories="{{ item.calories ?? 0 }}" data-prix="{{ item.prixSupplement }}">
+            <div class="ingredient-card" style="background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); transition: all 0.3s ease; cursor: pointer; border: 2px solid transparent;" onclick="addToComposition(this)">
+                <div style="height: 140px; background: {% if item.iconUrl %}url('{{ item.iconUrl }}') center/cover{% else %}linear-gradient(135deg, #1a1a2e 0%, #16213e 100%){% endif %}; display: flex; align-items: center; justify-content: center; position: relative;">
+                    {% if not item.iconUrl %}
+                    <span style="font-size: 3rem;">
+                        {% if item.categorie == 'BASE' %}🌾{% elseif item.categorie == 'PROTEINE' %}🥩{% elseif item.categorie == 'LEGUME' %}🥗{% elseif item.categorie == 'SAUCE' %}🫙{% elseif item.categorie == 'TOPPING' %}🧀{% else %}✨{% endif %}
+                    </span>
+                    {% endif %}
+                    <span style="position: absolute; top: 8px; right: 8px; background: {% if item.actif %}#28a745{% else %}#dc3545{% endif %}; color: #fff; font-size: 0.6rem; padding: 3px 8px; border-radius: 20px; font-weight: 700;">
+                        {% if item.actif %}EN STOCK{% else %}RUPTURE{% endif %}
+                    </span>
+                    {% if item.calories %}
+                    <span style="position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.7); color: #ff005a; font-size: 0.7rem; padding: 3px 8px; border-radius: 20px; font-weight: 700;">
+                        {{ item.calories }} kcal
+                    </span>
+                    {% endif %}
+                </div>
+                <div style="padding: 15px;">
+                    <div style="font-weight: 800; font-size: 0.95rem; color: #1a1a2e; margin-bottom: 5px;">{{ item.nom }}</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.75rem; color: #888; text-transform: uppercase; font-weight: 700;">{{ item.categorie }}</span>
+                        <span style="font-weight: 900; color: #ff005a; font-size: 0.9rem;">+{{ item.prixSupplement }} €</span>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 0.7rem; color: #aaa;">
+                        Stock: {{ item.stockQuantite }} | Seuil: {{ item.stockSeuilAlerte }}
+                    </div>
+                </div>
+                <div style="padding: 0 15px 12px; display:flex; gap:5px;">
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('app_ingredient_edit', {id: item.id}) }}" class="genric-btn info-border circle small" style="font-size: 10px; flex:1; text-align:center; padding-left:0; padding-right:0;" onclick="event.stopPropagation();">Edit</a>
+                        <form method="post" action="{{ path('app_ingredient_delete', {'id': item.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet ingrédient ?');" style="flex:1; margin:0; display:flex;" onclick="event.stopPropagation();">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ item.id) }}">
+                            <button class="genric-btn primary-border circle small" style="font-size: 10px; flex:1; text-align:center; padding-left:0; padding-right:0; border-color: #ff005a; color: #ff005a; background: transparent;">Supp</button>
+                        </form>
+                    {% endif %}
+                    <a href="{{ path('app_ingredient_show', {id: item.id}) }}" class="genric-btn info-border circle small" style="font-size: 10px; flex:1; text-align:center; padding-left:0; padding-right:0;" onclick="event.stopPropagation();">Voir</a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center" style="padding: 60px; color: #888;">
+            <div style="font-size: 3rem; margin-bottom: 15px;">🧪</div>
+            <p>Aucun ingrédient trouvé. Commencez par en créer un !</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<style>
+    .ingredient-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+        border-color: #ff005a !important;
+    }
+    .ingredient-card.selected {
+        border-color: #ff005a !important;
+        box-shadow: 0 0 0 3px rgba(255,0,90,0.2) !important;
+    }
+    .filter-btn.active {
+        background: #ff005a !important;
+        color: #fff !important;
+        border-color: #ff005a !important;
+    }
+    .comp-tag {
+        background: rgba(255,0,90,0.15);
+        color: #ff005a;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+    }
+    .comp-tag:hover { background: rgba(255,0,90,0.3); }
+    .comp-tag .remove { font-size: 1rem; }
+</style>
+
+<script>
+var composition = [];
+
+function addToComposition(cardEl) {
+    var wrap = cardEl.closest('.ingredient-card-wrap');
+    var nom = wrap.dataset.nom;
+    var calories = parseInt(wrap.dataset.calories) || 0;
+    var prix = parseFloat(wrap.dataset.prix) || 0;
+
+    composition.push({ nom: nom, calories: calories, prix: prix });
+    cardEl.classList.add('selected');
+    updateCompositionUI();
+}
+
+function removeFromComposition(index) {
+    composition.splice(index, 1);
+    updateCompositionUI();
+}
+
+function updateCompositionUI() {
+    var panel = document.getElementById('composition-panel');
+    var listEl = document.getElementById('composition-list');
+    var totalCalEl = document.getElementById('total-calories');
+    var totalPrixEl = document.getElementById('total-prix');
+
+    if (composition.length === 0) {
+        panel.style.display = 'none';
+        return;
+    }
+
+    panel.style.display = 'block';
+    var totalCal = 0;
+    var totalPrix = 0;
+    var html = '';
+
+    for (var i = 0; i < composition.length; i++) {
+        totalCal += composition[i].calories;
+        totalPrix += composition[i].prix;
+        html += '<span class="comp-tag" onclick="removeFromComposition(' + i + ')">' +
+                composition[i].nom + ' (' + composition[i].calories + ' kcal)' +
+                '<span class="remove">×</span></span>';
+    }
+
+    listEl.innerHTML = html;
+    totalCalEl.textContent = totalCal + ' kcal';
+    totalPrixEl.textContent = totalPrix.toFixed(2) + ' €';
+}
+
+// Clear composition
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('btn-clear-composition').addEventListener('click', function() {
+        composition = [];
+        document.querySelectorAll('.ingredient-card.selected').forEach(function(el) {
+            el.classList.remove('selected');
+        });
+        updateCompositionUI();
+    });
+
+    // Search and Sort Logic
+    const searchInput = document.getElementById('ingredient-search');
+    const sortSelect = document.getElementById('ingredient-sort');
+    const grid = document.getElementById('ingredients-grid');
+
+    function filterAndSortCards() {
+        const activeCat = document.querySelector('.filter-btn.active').dataset.cat;
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const sortMode = sortSelect.value;
+        const cards = Array.from(document.querySelectorAll('.ingredient-card-wrap'));
+
+        // Filter
+        cards.forEach(function(card) {
+            const matchesCat = (activeCat === 'ALL' || card.dataset.category === activeCat);
+            const text = card.innerText.toLowerCase();
+            const dataNom = card.dataset.nom.toLowerCase();
+            const matchesSearch = !searchTerm || text.includes(searchTerm) || dataNom.includes(searchTerm);
+            
+            card.style.display = (matchesCat && matchesSearch) ? '' : 'none';
+        });
+
+        // Sort
+        if (sortMode) {
+            const visibleCards = cards.filter(c => c.style.display !== 'none');
+            visibleCards.sort(function(a, b) {
+                const direction = sortMode.includes('asc') ? 'asc' : 'desc';
+                const cleanNum = (s) => (s || '').toString().replace(/[^0-9.-]/g, '');
+
+                if (sortMode.startsWith('name_')) {
+                    return direction === 'asc' ? a.dataset.nom.localeCompare(b.dataset.nom) : b.dataset.nom.localeCompare(a.dataset.nom);
+                }
+                if (sortMode.startsWith('price_')) {
+                    let numA = parseFloat(cleanNum(a.dataset.prix.replace(',', '.')));
+                    let numB = parseFloat(cleanNum(b.dataset.prix.replace(',', '.')));
+                    return direction === 'asc' ? numA - numB : numB - numA;
+                }
+                if (sortMode.startsWith('cal_')) {
+                    let numA = parseInt(cleanNum(a.dataset.calories));
+                    let numB = parseInt(cleanNum(b.dataset.calories));
+                    return direction === 'asc' ? numA - numB : numB - numA;
+                }
+                return 0;
+            });
+            visibleCards.forEach(c => grid.appendChild(c));
+        }
+    }
+
+    searchInput.addEventListener('input', filterAndSortCards);
+    sortSelect.addEventListener('change', filterAndSortCards);
+
+    // Category filters
+    document.querySelectorAll('.filter-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            filterAndSortCards();
+        });
+    });
+});
+</script>
+{% endblock %}

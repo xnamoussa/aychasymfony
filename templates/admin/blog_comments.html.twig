@@ -1,0 +1,65 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Blog — Gestion des Commentaires{% endblock %}
+{% block page_title %}Gestion des Commentaires{% endblock %}
+{% block breadcrumb %}Blog → Commentaires{% endblock %}
+
+{% block body %}
+
+<div class="card" style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:12px;">
+    <div class="card-header d-flex justify-content-between align-items-center" style="background:transparent; border-bottom:1px solid rgba(255,255,255,0.07); padding:16px 20px;">
+        <span class="fw-bold" style="font-family:'Bebas Neue',sans-serif; letter-spacing:0.5px;">
+            <i class="fas fa-comments me-2" style="color:#10b981;"></i>TOUS LES COMMENTAIRES
+        </span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover mb-0" style="background:transparent;" id="blog-comments-table">
+                <thead style="border-bottom:1px solid rgba(255,255,255,0.07);">
+                    <tr>
+                        <th style="color:#aab1b7; font-size:0.75rem; text-transform:uppercase; padding:14px 16px;">ID</th>
+                        <th style="color:#aab1b7; font-size:0.75rem; text-transform:uppercase; padding:14px 16px;">Contenu</th>
+                        <th style="color:#aab1b7; font-size:0.75rem; text-transform:uppercase; padding:14px 16px;">Auteur</th>
+                        <th style="color:#aab1b7; font-size:0.75rem; text-transform:uppercase; padding:14px 16px;">Post Original</th>
+                        <th style="color:#aab1b7; font-size:0.75rem; text-transform:uppercase; padding:14px 16px;">Date</th>
+                        <th style="color:#aab1b7; font-size:0.75rem; text-transform:uppercase; padding:14px 16px; text-align:right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for comment in comments %}
+                    <tr>
+                        <td style="padding:12px 16px; color:#94a3b8; font-size:0.85rem;">#{{ comment.id }}</td>
+                        <td style="padding:12px 16px; font-weight:500;">
+                            {{ comment.content|slice(0, 100) }}{% if comment.content|length > 100 %}…{% endif %}
+                        </td>
+                        <td style="padding:12px 16px; color:#94a3b8; font-size:0.85rem;">{{ comment.author.name|default('Inconnu') }}</td>
+                        <td style="padding:12px 16px;">
+                            <a href="{{ path('admin_blog_posts') }}" style="color:#3b82f6; text-decoration:none;">
+                                {{ comment.post.title|slice(0, 40) }}…
+                            </a>
+                        </td>
+                        <td style="padding:12px 16px; color:#94a3b8; font-size:0.85rem;">{{ comment.createdAt ? comment.createdAt|date('d/m/Y H:i') : '—' }}</td>
+                        <td style="padding:12px 16px; text-align:right;">
+                            <form method="post" action="{{ path('admin_blog_comment_delete', {'id': comment.id}) }}" onsubmit="return confirm('Supprimer ce commentaire ?')" style="display:inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('admin_delete_comment_' ~ comment.id) }}">
+                                <button type="submit" class="btn btn-sm" style="background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); font-size:0.75rem;">
+                                    <i class="fas fa-trash"></i> Supprimer
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="fas fa-comments fa-2x mb-3 d-block" style="opacity:0.3;"></i>
+                            Aucun commentaire pour le moment.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,151 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Favoris - LAMMA{% endblock %}
+{% block page_title %}Ma Liste de Favoris{% endblock %}
+
+{% block body %}
+<section class="crud-section mt-5 mb-5">
+    <div class="row align-items-center mb-5">
+        <div class="col-md-12 text-center">
+            <h2 style="font-family:'Anton',sans-serif; color:var(--scout-navy); text-transform:uppercase; font-size: 2.5rem;">
+                <i class="fa fa-heart" style="color:#ff005a;"></i> Ma Sélection Personnelle
+            </h2>
+            <p style="color: #64748b; font-size: 1.1rem;">Retrouvez ici tous vos restaurants et plats préférés en un seul coup d'œil.</p>
+        </div>
+    </div>
+
+    {# Unified Search/Filter Bar (Visual only for now) #}
+    <div class="glass-panel mb-5" style="padding: 15px 30px; border-radius: 50px; display: flex; align-items: center; justify-content: space-between; gap: 20px;">
+        <div style="flex-grow: 1; display: flex; align-items: center; gap: 15px;">
+            <i class="fa fa-search" style="color: #94a3b8;"></i>
+            <input type="text" id="favoriSearch" placeholder="Rechercher dans mes favoris..." style="background: transparent; border: none; color: white; width: 100%; outline: none;" onkeyup="filterFavoris()">
+        </div>
+        <div class="d-flex gap-3">
+            <a href="{{ path('app_user_dashboard') }}" class="btn btn-sm" style="background: rgba(255,255,255,0.05); color: #fff; border-radius: 20px; padding: 8px 20px; border: 1px solid rgba(255,255,255,0.1);">
+                <i class="fa fa-arrow-left mr-1"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    {# RESTAURANTS SECTION #}
+    <div class="mb-5">
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <div style="width: 40px; height: 3px; background: #f97316; border-radius: 2px;"></div>
+            <h3 style="font-family: 'Anton', sans-serif; text-transform: uppercase; color: #f97316; margin: 0; letter-spacing: 1px;">
+                Espaces & Restaurants ({{ restaurants|length }})
+            </h3>
+        </div>
+        
+        <div class="row">
+            {% for entity in restaurants %}
+                <div class="col-xl-4 col-lg-6 col-md-6 mb-4 card-favori">
+                    <div class="glass-panel h-100" style="padding: 25px; border-radius: 20px; transition: 0.3s; border: 1px solid rgba(255,255,255,0.05);">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h4 style="font-family: 'Anton', sans-serif; color: #fff; margin:0;">{{ entity.nom }}</h4>
+                            <button class="btn-favorite active" data-type="RESTAURANT" data-id="{{ entity.id }}" 
+                                    style="background: rgba(255,0,90,0.3); border: 1px solid rgba(255,0,90,0.3); color: #ff005a; border-radius: 12px; padding: 10px; width: 45px; cursor: pointer;">
+                                <i class="fa fa-heart"></i>
+                            </button>
+                        </div>
+                        <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 20px;">
+                            <i class="fa fa-map-marker mr-2"></i> {{ entity.adresse|default('Adresse non spécifiée') }}
+                        </p>
+                        <a href="{{ path('app_restaurant_show', {id: entity.id}) }}" class="genric-btn danger-border small radius w-100">Détails</a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-12 text-center py-4 glass-panel" style="border-radius: 20px;">
+                    <p style="color: #64748b; margin: 0;">Aucun restaurant favori pour le moment.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# REPAS SECTION #}
+    <div class="mb-5">
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <div style="width: 40px; height: 3px; background: #10b981; border-radius: 2px;"></div>
+            <h3 style="font-family: 'Anton', sans-serif; text-transform: uppercase; color: #10b981; margin: 0; letter-spacing: 1px;">
+                Délices & Plats ({{ repas|length }})
+            </h3>
+        </div>
+        
+        <div class="row">
+            {% for item in repas %}
+                <div class="col-xl-4 col-lg-6 col-md-6 mb-4 card-favori">
+                    <div class="glass-panel h-100" style="padding: 20px; border-radius: 20px; transition: 0.3s; border: 1px solid rgba(255,255,255,0.05);">
+                        <div class="row no-gutters h-100">
+                            <div class="col-4">
+                                <div style="width: 100%; height: 100%; min-height: 100px; border-radius: 15px; background: url('{{ item.imageUrl ? item.imageUrl : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c' }}') center center / cover;"></div>
+                            </div>
+                            <div class="col-8 pl-3 d-flex flex-column">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 style="font-weight: 800; font-size: 1rem; margin:0; line-height: 1.2;">{{ item.nom }}</h5>
+                                    <button class="btn-favorite active" data-type="PLAT" data-id="{{ item.id }}" 
+                                            style="background: rgba(255,0,90,0.3); border: none; color: #ff005a; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.8rem; padding: 0;">
+                                        <i class="fa fa-heart"></i>
+                                    </button>
+                                </div>
+                                <div style="font-size: 0.8rem; color: #10b981; font-weight: 700; margin-bottom: 5px;">{{ item.prix }} €</div>
+                                <p style="font-size: 0.75rem; color: #94a3b8; margin: 0; flex-grow: 1;">{{ item.description|slice(0, 50) }}...</p>
+                                <a href="{{ path('app_repas_detaille_show', {id: item.id}) }}" style="font-size: 0.75rem; color: #3b82f6; text-decoration: underline;">Voir plus</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-12 text-center py-4 glass-panel" style="border-radius: 20px;">
+                    <p style="color: #64748b; margin: 0;">Aucun plat favori pour le moment.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const favoriteBtns = document.querySelectorAll('.btn-favorite');
+    favoriteBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const type = this.getAttribute('data-type');
+            const id = this.getAttribute('data-id');
+            const icon = this.querySelector('i');
+            const card = this.closest('.card-favori');
+            
+            fetch("{{ path('app_favori_toggle') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: type, id: id })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.active) {
+                    icon.classList.remove('fa-heart-o');
+                    icon.classList.add('fa-heart');
+                    this.style.background = 'rgba(255,0,90,0.3)';
+                } else {
+                    icon.classList.remove('fa-heart');
+                    icon.classList.add('fa-heart-o');
+                    this.style.background = 'rgba(255,0,90,0.1)';
+                    // On this unified page, we might want to fade out the card when unfavorited
+                    card.style.opacity = '0.4';
+                    card.style.pointerEvents = 'none';
+                }
+            });
+        });
+    });
+});
+</script>
+<script>
+function filterFavoris() {
+    const search = document.getElementById('favoriSearch').value.toLowerCase();
+    const cards = document.querySelectorAll('.card-favori');
+    cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        card.style.display = text.includes(search) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

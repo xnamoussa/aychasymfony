@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+{% import '_macros.html.twig' as macros %}
+
+{% block title %}Tickets - LAMMA{% endblock %}
+{% block page_title %}Billetterie & Accès{% endblock %}
+
+{% block body %}
+<section class="crud-section">
+    <div class="row align-items-center mb-4">
+        <div class="col-md-6">
+            <h2 style="font-family:'Anton',sans-serif;color:var(--scout-navy); margin: 0;">Gestion des Titres d'Accès</h2>
+            <div style="font-size: 0.85rem; color: var(--text-dim); font-weight: 700;">Surveillance des badges et codes uniques - Générés automatiquement depuis les participations</div>
+        </div>
+    </div>
+
+    <div class="scout-card" style="padding: 0;">
+        {% set columns = {
+            'codeUnique': 'Code de Mission',
+            'type': 'Type',
+            'lieu': 'Localisation',
+            'statut': 'État',
+            'format': 'Format',
+            'dateExpiration': 'Expiration'
+        } %}
+        {{ macros.crud_table(items, columns, 'app_ticket_edit', 'app_ticket_show', 'ticket') }}
+    </div>
+</section>
+{% endblock %}

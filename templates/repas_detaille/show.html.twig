@@ -1,0 +1,154 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails Repas - LAMMA{% endblock %}
+{% block page_title %}{{ item.nom }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        :root {
+            --scout-navy: #1a1f2c;
+            --scout-blue: #3b82f6;
+            --scout-green: #10b981;
+            --scout-glass: rgba(255, 255, 255, 0.03);
+            --scout-border: rgba(255, 255, 255, 0.1);
+            --scout-text: #f8fafc;
+        }
+
+        body { background: var(--scout-navy); color: var(--scout-text); font-family: 'Inter', sans-serif; }
+        
+        .scout-window {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--scout-border);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            margin-top: 30px;
+        }
+
+        .scout-window-header {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px 30px;
+            border-bottom: 1px solid var(--scout-border);
+            font-family: 'Anton', sans-serif;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            color: #94a3b8;
+        }
+
+        .scout-window-body { padding: 40px; }
+
+        .image-container {
+            width: 100%;
+            height: 400px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 20px;
+            border: 1px solid var(--scout-border);
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .price-overlay {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(37, 99, 235, 0.9);
+            color: #fff;
+            padding: 10px 25px;
+            border-radius: 12px;
+            font-family: 'Anton', sans-serif;
+            font-size: 1.5rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .scout-title { font-family: 'Anton', sans-serif; font-size: 2.5rem; color: #fff; text-transform: uppercase; margin-bottom: 15px; }
+        .scout-desc { color: #94a3b8; font-size: 1.1rem; line-height: 1.6; margin-bottom: 30px; }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--scout-border);
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+        }
+        .stat-card-val { font-family: 'Anton', sans-serif; font-size: 2rem; color: var(--scout-blue); display: block; }
+        .stat-card-label { font-size: 0.7rem; color: #64748b; font-weight: 900; letter-spacing: 1px; }
+
+        .info-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed var(--scout-border); }
+        .info-label { color: #64748b; font-weight: 600; font-size: 0.85rem; }
+        .info-val { color: #fff; font-weight: 700; font-size: 0.9rem; }
+
+        .badge-neon { background: rgba(59, 130, 246, 0.1); color: var(--scout-blue); border: 1px solid var(--scout-blue); border-radius: 6px; padding: 4px 12px; font-size: 0.7rem; font-weight: 800; }
+        .badge-green { background: rgba(16, 185, 129, 0.1); color: var(--scout-green); border: 1px solid var(--scout-green); }
+
+        .btn-action-group { margin-top: 40px; display: flex; gap: 15px; }
+        .btn-scout-edit { background: var(--scout-blue); color: #fff; flex: 1; padding: 15px; border-radius: 12px; text-transform: uppercase; font-family: 'Anton', sans-serif; text-align: center; text-decoration: none !important; }
+        .btn-scout-back { background: transparent; color: #94a3b8; border: 1px solid var(--scout-border); padding: 15px 30px; border-radius: 12px; text-decoration: none !important; }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="scout-window">
+        <div class="scout-window-header">
+            <i class="fa fa-info-circle mr-2"></i> FICHE TECHNIQUE : SCOUT_{{ item.id }}
+        </div>
+
+        <div class="scout-window-body">
+            <div class="row">
+                <!-- Image Section -->
+                <div class="col-lg-12">
+                    <div class="image-container" style="background-image: url('{{ item.imageUrl ? item.imageUrl : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000&auto=format&fit=crop' }}');">
+                        <div class="price-overlay">{{ item.prix }} €</div>
+                    </div>
+                </div>
+
+                <div class="col-lg-7">
+                    <div class="mb-3">
+                        <span class="badge-neon mr-2">TYPE: {{ item.typeRepas }}</span>
+                        {% if item.vegetarien %}<span class="badge-neon badge-green mr-2">VÉGÉTARIEN</span>{% endif %}
+                        {% if item.halal %}<span class="badge-neon badge-green mr-2">HALAL</span>{% endif %}
+                    </div>
+                    <h1 class="scout-title">{{ item.nom }}</h1>
+                    <p class="scout-desc">{{ item.description ? item.description : "Aucune description technique disponible pour ce module de ration." }}</p>
+
+                    <div class="scout-section-title" style="font-family: 'Anton', sans-serif; color: var(--scout-blue); margin-bottom: 15px;">DÉTAILS LOGISTIQUES</div>
+                    <div class="info-row"><span class="info-label">TEMPS DE PRÉPARATION</span><span class="info-val">{{ item.tempsPreparation }} MIN</span></div>
+                    <div class="info-row"><span class="info-label">RESTRICTED DIET</span><span class="info-val">{% if item.vegan %}VEGAN{% elseif item.vegetarien %}VEG{% elseif item.sansGluten %}GLU-FREE{% else %}STANDARD{% endif %}</span></div>
+                    <div class="info-row"><span class="info-label">IDENTIFIANT SYSTÈME</span><span class="info-val">#{{ item.id }}</span></div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="row">
+                        <div class="col-6 mb-4">
+                            <div class="stat-card">
+                                <span class="stat-card-val">{{ item.calories ? item.calories : '---' }}</span>
+                                <span class="stat-card-label">KCAL / FUEL</span>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-4">
+                            <div class="stat-card">
+                                <span class="stat-card-val" style="color: var(--scout-green);">{{ item.proteines ? item.proteines : '---' }}</span>
+                                <span class="stat-card-label">PROTÉINES (G)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card text-left" style="background: rgba(0,0,0,0.2);">
+                        <div class="scout-section-title" style="font-family: 'Anton', sans-serif; color: #64748b; font-size: 0.7rem; margin-bottom: 10px;">NOTES DE TERRAIN</div>
+                        <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.4;">{{ item.notes ? item.notes : "Aucune note interne enregistrée par l'IA Scout." }}</p>
+                    </div>
+
+                    <div class="btn-action-group">
+                        <a href="{{ path('app_repas_detaille_edit', {id: item.id}) }}" class="btn-scout-edit">Modifier</a>
+                        <a href="{{ path('app_repas_detaille_index') }}" class="btn-scout-back">Retour</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

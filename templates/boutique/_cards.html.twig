@@ -1,0 +1,15 @@
+{# Fragment pour la liste de cartes (page initiale + AJAX recherche) #}
+{% for e in equipements %}
+    <div class="card-eq" data-equipement-id="{{ e.id }}" data-detail-url="{{ path('app_boutique_show', {id: e.id}) }}" data-delivery-url="{{ path('app_boutique_delivery', {id: e.id}) }}" role="button" tabindex="0" title="Cliquez pour voir les détails">
+        <h3><span class="equipement-link text-white text-decoration-none">{{ e.nom }}</span></h3>
+        <div class="meta">{{ e.categorie ?? '—' }}</div>
+        <div class="price mt-1">{{ e.prix|number_format(2, ',', ' ') }} TND</div>
+        <div class="meta mt-1">👁 {{ views_count[e.id] ?? 0 }}</div>
+        {% if e.delivery %}
+            <div class="meta mt-1">🚚 {{ e.delivery.statut|replace({'en_attente': 'En attente', 'confirmee': 'Confirmée', 'preparation': 'En préparation', 'expediee': 'Expédiée', 'en_cours': 'En cours', 'livree': 'Livrée', 'annulee': 'Annulée'}) }}</div>
+        {% endif %}
+        <p class="small mt-2 mb-0" style="color:#64748b;">Cliquez pour voir les détails.</p>
+    </div>
+{% else %}
+    <p class="text-muted w-100" id="boutique-empty-msg">{{ empty_message|default('Aucun équipement ne correspond à votre recherche.') }}</p>
+{% endfor %}

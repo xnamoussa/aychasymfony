@@ -1,0 +1,199 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détail événement{% endblock %}
+{% block hero %}{% endblock %}
+
+{% block body %}
+<div style="background-color: #000; min-height: 100vh; padding: 180px 0 60px 0;">
+    <div class="container">
+        <div class="mb-4 d-flex justify-content-between align-items-center">
+            <h2 class="text-white mb-0" style="font-family: impact, sans-serif; letter-spacing: 1px;">DÉTAIL DE L'ÉVÉNEMENT</h2>
+            <div>
+                {% set gcal_start = evenement.date_debut ? evenement.date_debut|date('Ymd\\THis') ~ 'Z' : '' %}
+                {% set gcal_end = evenement.date_fin ? evenement.date_fin|date('Ymd\\THis') ~ 'Z' : '' %}
+                <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text={{ evenement.titre|url_encode }}&dates={{ gcal_start }}/{{ gcal_end }}&details={{ evenement.description|url_encode }}&location={{ evenement.lieu|url_encode }}" 
+                   target="_blank" class="btn btn-info text-white me-2 rounded-0 border-0">
+                   <i class="fa fa-calendar-plus"></i> Google Agenda
+                </a>
+
+                <a href="{{ path('app_participation_new', {'event_id': evenement.id_event}) }}" class="btn btn-primary me-2 rounded-0 border-0 fw-bold">
+                   <i class="fa fa-handshake"></i> S'inscrire
+                </a>
+                <a href="{{ path('app_evenement_index') }}" class="btn btn-outline-light me-2 rounded-0 border-2"><i class="fa fa-arrow-left"></i> Retour</a>
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_evenement_edit', {'id': evenement.id_event}) }}" class="btn text-white rounded-0" style="background-color: #ff3c36; border: none;"><i class="fa fa-pencil"></i> Modifier</a>
+                {% endif %}
+            </div>
+        </div>
+
+    <div class="card bg-dark text-white border-0 shadow-lg">
+        <div class="row g-0">
+            <div class="col-md-5">
+                {% if evenement.image is not empty %}
+                    <img src="{{ (evenement.image starts with 'http') ? evenement.image : asset('uploads/' ~ evenement.image) }}" class="w-100 h-100" alt="{{ evenement.titre }}" style="object-fit: cover; min-height: 400px;" onerror="this.onerror=null; this.src='{{ asset('uploads/logo.png') }}';">
+
+                {% else %}
+                    <div class="d-flex align-items-center justify-content-center h-100 text-secondary" style="min-height: 400px;">
+                        Aucune image
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="col-md-7">
+                <div class="card-body p-4">
+                    <h3 class="card-title mb-3">{{ evenement.titre }}</h3>
+
+                    <p class="mb-3">
+                        <span class="badge bg-danger">{{ evenement.type }}</span>
+                    </p>
+
+                    <p><strong>Description :</strong><br>{{ evenement.description ?: 'Sans description' }}</p>
+                    <p><strong>Date début :</strong> {{ evenement.date_debut ? evenement.date_debut|date('d/m/Y') : '' }}</p>
+                    <p><strong>Date fin :</strong> {{ evenement.date_fin ? evenement.date_fin|date('d/m/Y') : '' }}</p>
+                    <p><strong>Lieu :</strong> {{ evenement.lieu }}</p>
+                    <p><strong>Nombre de vues :</strong> {{ evenement.nb_vues }}</p>
+
+                    <p>
+                        <strong>Spotify :</strong>
+                        {% if evenement.spotify_url %}
+                            <a href="{{ evenement.spotify_url }}" target="_blank" class="btn btn-sm btn-success ms-2">
+                                Ouvrir
+                            </a>
+                        {% else %}
+                            <span class="text-secondary">Aucun lien</span>
+                        {% endif %}
+                    </p>
+
+                    <p class="text-muted small mt-3">
+                        <i class="fa fa-eye"></i> {{ evenement.nb_vues }} personnes ont consulté cet événement
+                    </p>
+
+                    <div class="mt-4 row">
+                        <div class="col-md-4 text-center">
+                            <h6 class="text-white mb-2">Code QR Pass</h6>
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data={{ ('Événement: ' ~ evenement.titre ~ '\nLieu: ' ~ evenement.lieu ~ '\nDates: Du ' ~ (evenement.date_debut ? evenement.date_debut|date('d/m/Y') : '...') ~ ' au ' ~ (evenement.date_fin ? evenement.date_fin|date('d/m/Y') : '...'))|url_encode }}" alt="QR Code" class="img-thumbnail" style="width: 120px; height: 120px; background: white; padding: 5px;">
+                        </div>
+                        <div class="col-md-8">
+                            <h6 class="text-white mb-2">Météo Prévue</h6>
+                            <div class="mt-2 text-warning fw-bold h5">
+                                <i class="fa fa-cloud-sun me-2"></i>
+                                <span id="weather-text">Chargement de la météo...</span>
+                            </div>
+                            
+                            <h6 class="text-white mt-2 mb-2">Emplacement</h6>
+                            <iframe width="100%" height="150" style="border:0" loading="lazy" allowfullscreen src="https://www.google.com/maps?q={{ evenement.lieu }}&output=embed" title="Carte"></iframe>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3 p-3 bg-secondary bg-opacity-25 rounded text-center">
+                        <i class="fa fa-quote-left text-muted me-2"></i>
+                        <span id="zen-quote" class="fst-italic text-light">Chargement de la citation...</span>
+                    </div>
+
+                    {% if evenement.isProposeMakeup() %}
+                        <div class="mt-4 p-4 border border-warning rounded text-white" style="background: rgba(255,193,7,0.1);">
+                            <h5 class="text-warning mb-3"><i class="fa fa-magic me-2"></i> Réserver le Coin Make-up</h5>
+                            <p class="small text-light">Cet événement dispose d'un espace maquillage exclusif. Réservez votre place dès maintenant ! Vous recevrez un email de confirmation.</p>
+                            <form action="{{ path('app_evenement_reserver_makeup', {'id': evenement.id_event}) }}" method="POST" class="d-flex w-100">
+                                <input type="email" name="email" class="form-control rounded-0 me-2" placeholder="Votre adresse e-mail" required>
+                                <button type="submit" class="btn btn-warning rounded-0 fw-bold px-4">Réserver</button>
+                            </form>
+                        </div>
+                    {% endif %}
+
+                    <h5 class="text-white mt-4 border-bottom border-secondary pb-2" style="font-family: impact, sans-serif; letter-spacing: 1px;">PROGRAMME</h5>
+                    {% if evenement.programmes is not empty %}
+                        <ul class="list-group list-group-flush bg-transparent">
+                            {% for prog in evenement.programmes %}
+                                <li class="list-group-item bg-transparent text-light border-secondary border-bottom-0"><i class="fa fa-angle-right text-danger me-2"></i> <strong>{{ prog.titre }}</strong> <span class="text-muted small ms-2">({{ prog.date_debut|date('H:i') }}{{ prog.date_fin ? ' - ' ~ prog.date_fin|date('H:i') : '' }})</span></li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-secondary mb-0">Le programme n'a pas encore été annoncé.</p>
+                    {% endif %}
+
+                    <h5 class="text-white mt-4 border-bottom border-secondary pb-2" style="font-family: impact, sans-serif; letter-spacing: 1px;">ÉQUIPEMENTS </h5>
+                    {% if evenement.equipments is not empty %}
+                        <div class="mt-2 text-light">
+                            {% for eq in evenement.equipments %}
+                                <span class="badge bg-secondary me-1 mb-1">{{ eq.libelle }}</span>
+                            {% endfor %}
+                        </div>
+                        <div class="mt-3">
+                            <a href="{{ path('app_boutique') }}" class="btn btn-warning btn-sm fw-bold rounded-0">
+                                <i class="fa fa-shopping-cart"></i> Allez au store
+                            </a>
+                        </div>
+                    {% else %}
+                        <p class="text-secondary mb-0">Aucun équipement recommandé.</p>
+                    {% endif %}
+
+                    <div class="mt-4">
+                        {% if is_granted('ROLE_ADMIN') %}
+                            {{ include('evenement/_delete_form.html.twig') }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Fetch random quote anonymously
+    fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://zenquotes.io/api/random'))
+      .then(response => response.ok ? response.json() : null)
+      .then(data => {
+        if (data) {
+            let quoteData = JSON.parse(data.contents);
+            if (quoteData && quoteData.length > 0) {
+                document.getElementById('zen-quote').innerText = quoteData[0].q + " - " + quoteData[0].a;
+            }
+        }
+      });
+
+    // --- RELIABLE WEATHER SYSTEM (Open-Meteo) ---
+    const lieu = "{{ evenement.lieu|url_encode }}";
+    const weatherText = document.getElementById('weather-text');
+
+    // 1. Get coordinates
+    fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${lieu}&count=1&language=fr&format=json`)
+      .then(res => res.json())
+      .then(geo => {
+        if (geo.results && geo.results.length > 0) {
+            const { latitude, longitude, name } = geo.results[0];
+            // 2. Get weather
+            return fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+        }
+        throw new Error('Ville non trouvée');
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.current_weather) {
+            const temp = Math.round(data.current_weather.temperature);
+            const code = data.current_weather.weathercode;
+            
+            // Map weather codes to emojis
+            const icons = {
+                0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️',
+                45: '🌫️', 48: '🌫️',
+                51: '🌦️', 53: '🌦️', 55: '🌦️',
+                61: '🌧️', 63: '🌧️', 65: '🌧️',
+                71: '❄️', 73: '❄️', 75: '❄️',
+                80: '🌦️', 81: '🌦️', 82: '🌦️',
+                95: '⛈️'
+            };
+            const icon = icons[code] || '🌡️';
+            weatherText.innerHTML = `${name} : ${icon} ${temp}°C`;
+        }
+      })
+      .catch(() => {
+          weatherText.innerText = "{{ evenement.lieu }}";
+      });
+});
+</script>
+
+{% endblock %}

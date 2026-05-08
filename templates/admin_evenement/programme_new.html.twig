@@ -1,0 +1,44 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Ajouter un Programme{% endblock %}
+
+{% block body %}
+    <h1 class="mt-4">Ajouter un nouveau programme</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ path('app_evenement_index') }}">Événements</a></li>
+        <li class="breadcrumb-item active">Ajout Programme</li>
+    </ol>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4 bg-dark text-white shadow-sm border-0">
+                <div class="card-header border-secondary border-bottom">
+                    <i class="fas fa-plus me-1"></i> Renseigner les étapes du programme
+                </div>
+                <div class="card-body">
+                    {{ form_start(form) }}
+                        <div class="mb-3">
+                            <label class="mb-1 text-muted small">Sélectionnez l'Événement</label>
+                            {{ form_widget(form.event) }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="mb-1 text-muted small">Titre du Programme</label>
+                            {{ form_widget(form.titre) }}
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="mb-1 text-muted small">Heure de Début</label>
+                                {{ form_widget(form.date_debut) }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="mb-1 text-muted small">Heure de Fin</label>
+                                {{ form_widget(form.date_fin) }}
+                            </div>
+                        </div>
+                        <button class="btn btn-danger mt-3 px-4 w-100"><i class="fas fa-save"></i> Enregistrer et Retourner Ã  l'Événement</button>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

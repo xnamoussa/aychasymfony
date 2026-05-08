@@ -1,0 +1,13 @@
+# config/packages/knpu_oauth2_client.yaml
+# This file is created automatically when you run:
+#   composer require knpuniversity/oauth2-client-bundle
+# Then fill in the google client section as shown below.
+
+knpu_oauth2_client:
+    clients:
+        google:
+            type: google
+            client_id: '%env(GOOGLE_CLIENT_ID)%'
+            client_secret: '%env(GOOGLE_CLIENT_SECRET)%'
+            redirect_route: connect_google_check
+            redirect_params: {}

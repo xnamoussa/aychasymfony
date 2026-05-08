@@ -1,0 +1,26 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Ajouter un Programme{% endblock %}
+
+{% block body %}
+    <h1 class="mt-4">Ajouter un Programme</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ path('app_evenement_index') }}">Événements</a></li>
+        <li class="breadcrumb-item active">Ajouter un Programme</li>
+    </ol>
+    
+    <div class="card mb-4 bg-dark text-white border-secondary">
+        <div class="card-header border-secondary border-bottom">
+            <i class="fas fa-plus me-1"></i> Formulaire de création
+        </div>
+        <div class="card-body">
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+                {{ form_widget(form) }}
+                <div class="text-center">
+                    <button type="submit" class="btn btn-danger mt-4 px-5 fw-bold" style="background-color:#ff3c36; border:none; border-radius:0;">ENREGISTRER LE PROGRAMME</button>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

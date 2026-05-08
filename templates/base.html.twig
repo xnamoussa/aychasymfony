@@ -1,0 +1,291 @@
+<!doctype html>
+<html class="no-js" lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>{% block title %}EventCon{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Gestion des événements{% endblock %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('img/favicon.png') }}">
+
+    <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/owl.carousel.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/magnific-popup.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/font-awesome.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/themify-icons.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/gijgo.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/nice-select.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/animate.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/flaticon.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/slicknav.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/lamma_redesign.css') }}">
+
+    {% block stylesheets %}{% endblock %}
+</head>
+
+<body class="bg-light">
+    <header>
+        <div class="header-area">
+            <div id="sticky-header" class="main-header-area">
+                <div class="container-fluid px-lg-5">
+                    <div class="header_bottom_border">
+                        <div class="row align-items-center">
+                            <!-- Logo -->
+                            <div class="col-xl-2 col-lg-2">
+                                <div class="logo">
+                                    <a href="{{ path('app_evenement_index') }}">
+                                        <img src="{{ asset('uploads/logo.png') }}" alt="Logo" style="max-height: 50px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Main Menu -->
+                            <div class="col-xl-7 col-lg-7">
+                                <div class="main-menu d-none d-lg-block">
+                                    <nav>
+                                        <ul id="navigation">
+                                            <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                                            
+                                            <li><a href="#">Expedition <i class="ti-angle-down"></i></a>
+                                                <ul class="submenu shadow-lg border-0 rounded-4">
+                                                    <li><a href="{{ path('app_evenement_index') }}">Événements</a></li>
+                                                    <li><a href="{{ path('app_tiktok_search') }}">📱 TikTok Search</a></li>
+                                                    <li><a href="{{ path('app_abonnement_plans') }}">📦 Nos Abonnements</a></li>
+                                                    <li><a href="{{ path('app_abonnement_index') }}">Mes Abonnements</a></li>
+                                                    <li><a href="{{ path('app_participation_index') }}">Participations</a></li>
+                                                    <li><a href="{{ path('app_ticket_index') }}">Tickets</a></li>
+                                                    <li><a href="{{ path('app_menu_planner_index') }}">📅 Menu Hebdomadaire</a></li>
+                                                </ul>
+                                            </li>
+
+                                            <li><a href="{{ path('app_front_sponsors') }}">Partenaires</a></li>
+                                            <li><a href="{{ path('app_post_index') }}">Blog</a></li>
+
+                                            <li><a href="#">Restauration <i class="ti-angle-down"></i></a>
+                                                <ul class="submenu shadow-lg border-0 rounded-4">
+                                                     <li><a href="{{ path('app_restaurant_index') }}">🍽️ Restaurants</a></li>
+                                                     <li><a href="{{ path('app_menu_index') }}">📋 Menus du Jour</a></li>
+                                                     <li><a href="{{ path('app_repas_composition_list') }}">🛠️ Composition Menu</a></li>
+                                                     <li><a href="{{ path('app_repas_catalogue') }}">🍲 Catalogue Repas</a></li>
+                                                </ul>
+                                            </li>
+
+                                            <li><a href="#">Logistique <i class="ti-angle-down"></i></a>
+                                                <ul class="submenu shadow-lg border-0 rounded-4">
+                                                     <li><a href="{{ path('app_boutique') }}">⛺ Boutique Camping</a></li>
+                                                     {% if app.user %}
+                                                         <li><a href="{{ path('app_my_deliveries') }}">🚚 Mes Livraisons</a></li>
+                                                     {% endif %}
+                                                     <li><a href="{{ path('app_weather') }}">🌤 Météo Camping</a></li>
+                                                     <li><a href="{{ path('app_map') }}">📍 Carte Interactive</a></li>
+                                                </ul>
+                                            </li>
+
+                                            {% if is_granted('ROLE_ADMIN') %}
+                                            <li>
+                                                <a href="{{ path('app_admin_dashboard') }}" class="text-danger fw-bold"><i class="fa fa-shield-alt"></i> Admin</a>
+                                            </li>
+                                            {% endif %}
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+
+                            <!-- User Actions -->
+                            <div class="col-xl-3 col-lg-3 d-none d-lg-block">
+                                <div class="d-flex justify-content-end align-items-center" style="gap: 12px;">
+                                    {% if app.user %}
+                                        <div class="dropdown">
+                                            <a href="#" class="btn btn-outline-dark dropdown-toggle rounded-pill px-4 py-2" id="userDropdown" data-toggle="dropdown">
+                                                <i class="fa fa-user-circle"></i> {{ app.user.name|split(' ')[0] }}
+                                                {% if app.user.persona %}
+                                                    <span class="badge bg-danger rounded-circle p-1 ms-1" style="font-size: 0.5rem;" title="Persona IA: {{ app.user.persona }}">
+                                                        <i class="fas fa-brain"></i>
+                                                    </span>
+                                                {% endif %}
+                                            </a>
+                                            <div class="dropdown-menu dropdown-menu-right shadow-lg border-0 rounded-3 mt-2" aria-labelledby="userDropdown">
+                                                <a class="dropdown-item py-2" href="{{ path('app_profile') }}"><i class="fa fa-id-card-o mr-2"></i> Mon Profil</a>
+                                                <a class="dropdown-item py-2" href="{{ path('app_user_dashboard') }}"><i class="fa fa-dashboard mr-2"></i> Dashboard</a>
+                                                <div class="dropdown-divider"></div>
+                                                <a class="dropdown-item py-2 text-danger" href="{{ path('app_logout') }}"><i class="fa fa-sign-out mr-2"></i> Déconnexion</a>
+                                            </div>
+                                        </div>
+                                        <a href="{{ path('app_cart_index') }}" class="btn btn-dark rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 42px; height: 42px;" title="Mon Panier">
+                                            <i class="fa fa-shopping-basket"></i>
+                                        </a>
+                                    {% else %}
+                                        <a href="{{ path('app_login') }}" class="boxed-btn3 rounded-pill px-4">Connexion</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="mobile_menu d-block d-lg-none"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    {% block hero %}
+        <div class="slider_area">
+            <div class="single_slider d-flex align-items-center slider_bg_1 overlay" style="min-height: 400px;">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-xl-8">
+                            <div class="slider_text text-left">
+                                <span class="wow fadeInLeft" data-wow-duration="1s" data-wow-delay=".3s" style="color: var(--prm); font-weight: 800; text-transform: uppercase; letter-spacing: 2px;">Vivez l'excellence</span>
+                                <h3 class="wow fadeInLeft display-3" data-wow-duration="1s" data-wow-delay=".4s" style="font-family: 'Anton', sans-serif;">{% block hero_title %}Événements Memorable{% endblock %}</h3>
+                                <p class="wow fadeInLeft lead" data-wow-duration="1s" data-wow-delay=".5s">Découvrez une nouvelle dimension de gestion et d'expériences.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endblock %}
+
+
+    {% block body %}
+    {% endblock %}
+
+    {% block extra_sections %}
+        <div class="brand_area black_bg">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="section_title text-center mb-80">
+                            <h4 class="wow fadeInRight" data-wow-duration="1s" data-wow-delay=".3s">Nos partenaires</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="brand_wrap">
+                            <div class="brand_active owl-carousel">
+                                <div class="single_brand text-center">
+                                    <img src="{{ asset('img/brand/1.png') }}" alt="">
+                                </div>
+                                <div class="single_brand text-center">
+                                    <img src="{{ asset('img/brand/2.png') }}" alt="">
+                                </div>
+                                <div class="single_brand text-center">
+                                    <img src="{{ asset('img/brand/3.png') }}" alt="">
+                                </div>
+                                <div class="single_brand text-center">
+                                    <img src="{{ asset('img/brand/4.png') }}" alt="">
+                                </div>
+                                <div class="single_brand text-center">
+                                    <img src="{{ asset('img/brand/5.png') }}" alt="">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endblock %}
+
+    <footer class="footer">
+        <div class="footer_top">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-6 col-md-8">
+                        <div class="footer_widget">
+                            <div class="address_details text-center">
+                                <h4 class="wow fadeInUp" data-wow-duration="1s" data-wow-delay=".3s">Event Management</h4>
+                                
+                                <p class="wow fadeInUp" data-wow-duration="1s" data-wow-delay=".5s">
+                                    Gérer, consulter et organiser les événements facilement.
+                                </p>
+                                <a href="{{ path('app_evenement_index') }}" class="boxed-btn3 wow fadeInUp" data-wow-duration="1s" data-wow-delay=".6s">
+                                    Voir les événements
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="copy-right_text">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xl-12">
+                        <p class="copy_right text-center wow fadeInDown" data-wow-duration="1s" data-wow-delay=".5s">
+                            Copyright &copy;<script>document.write(new Date().getFullYear());</script>
+                            Tous droits réservés
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ asset('js/vendor/modernizr-3.5.0.min.js') }}"></script>
+    <script src="{{ asset('js/vendor/jquery-1.12.4.min.js') }}"></script>
+    <script src="{{ asset('js/popper.min.js') }}"></script>
+    <script src="{{ asset('js/bootstrap.min.js') }}"></script>
+    <script src="{{ asset('js/owl.carousel.min.js') }}"></script>
+    <script src="{{ asset('js/isotope.pkgd.min.js') }}"></script>
+    <script src="{{ asset('js/ajax-form.js') }}"></script>
+    <script src="{{ asset('js/waypoints.min.js') }}"></script>
+    <script src="{{ asset('js/jquery.counterup.min.js') }}"></script>
+    <script src="{{ asset('js/imagesloaded.pkgd.min.js') }}"></script>
+    <script src="{{ asset('js/scrollIt.js') }}"></script>
+    <script src="{{ asset('js/jquery.scrollUp.min.js') }}"></script>
+    <script src="{{ asset('js/wow.min.js') }}"></script>
+    <script src="{{ asset('js/gijgo.min.js') }}"></script>
+    <script src="{{ asset('js/nice-select.min.js') }}"></script>
+    <script src="{{ asset('js/jquery.slicknav.min.js') }}"></script>
+    <script src="{{ asset('js/jquery.magnific-popup.min.js') }}"></script>
+    <script src="{{ asset('js/tilt.jquery.js') }}"></script>
+    <script src="{{ asset('js/plugins.js') }}"></script>
+    <script src="{{ asset('js/contact.js') }}"></script>
+    <script src="{{ asset('js/jquery.ajaxchimp.min.js') }}"></script>
+    <script src="{{ asset('js/jquery.form.js') }}"></script>
+    <script src="{{ asset('js/jquery.validate.min.js') }}"></script>
+    <script src="{{ asset('js/mail-script.js') }}"></script>
+    <script src="{{ asset('js/main.js') }}"></script>
+
+    <!-- AI SCOUT CHATBOT WIDGET -->
+    <div id="chatbot-container" style="position: fixed; bottom: 30px; right: 30px; z-index: 9999; font-family: 'Inter', sans-serif;">
+        <!-- Chat Bubble -->
+        <button id="chatbot-bubble" style="width: 60px; height: 60px; border-radius: 50%; background: #e8392c; border: none; cursor: pointer; color: white; box-shadow: 0 10px 25px rgba(232, 57, 44, 0.4); display: flex; align-items: center; justify-content: center; font-size: 24px;">
+            <i class="fas fa-robot"></i>
+        </button>
+
+        <!-- Chat Window -->
+        <div id="chatbot-window" style="display: none; position: absolute; bottom: 80px; right: 0; width: 350px; height: 500px; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+            <div style="background: rgba(232, 57, 44, 0.9); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: white; font-weight: 800; font-size: 0.9rem; letter-spacing: 1px;">SCOUT ASSISTANT IA</span>
+                <button id="chatbot-close" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;">&times;</button>
+            </div>
+            
+            <div id="chatbot-messages" style="flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;">
+                <div style="background: rgba(232, 57, 44, 0.1); color: #ff9d9d; padding: 10px 15px; border-radius: 12px; font-size: 0.85rem; max-width: 85%;">
+                    Bonjour ! Je suis Scout. Pose-moi n'importe quelle question sur vos ingrédients, revenus ou vos participations.
+                </div>
+            </div>
+
+            <div style="padding: 15px; background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 10px;">
+                <input type="text" id="chatbot-input" placeholder="Posez une question..." style="flex-grow: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 8px 15px; color: white; font-size: 0.85rem; outline: none;">
+                <button id="chatbot-send" style="background: #e8392c; border: none; border-radius: 10px; width: 40px; color: white; cursor: pointer;">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.CHATBOT_API_URL = "{{ path('app_api_chatbot_ask') }}";
+    </script>
+    <script src="{{ asset('js/chatbot.js') }}"></script>
+    {% block javascripts %}{% endblock %}
+</body>
+</html>

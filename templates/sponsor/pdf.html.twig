@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des Sponsors</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; font-size: 12px; color: #333; padding: 30px; }
+        h1 { text-align: center; color: #1a1a2e; font-size: 20px; margin-bottom: 4px; }
+        .subtitle { text-align: center; color: #888; font-size: 10px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        thead { background-color: #1a1a2e; color: #fff; }
+        th { padding: 9px 12px; text-align: left; font-size: 12px; }
+        td { padding: 8px 12px; border-bottom: 1px solid #ddd; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .badge-actif   { background: #28a745; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 10px; }
+        .badge-inactif { background: #dc3545; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 10px; }
+        .footer { margin-top: 24px; text-align: right; font-size: 9px; color: #aaa; }
+        .no-print { text-align: center; margin-bottom: 20px; }
+        .btn-print { background: #1a1a2e; color: #fff; border: none; padding: 10px 24px; font-size: 14px; border-radius: 6px; cursor: pointer; }
+        .btn-back  { background: #6c757d; color: #fff; border: none; padding: 10px 24px; font-size: 14px; border-radius: 6px; cursor: pointer; margin-left: 10px; }
+        @media print {
+            .no-print { display: none; }
+            body { padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <button class="btn-print" onclick="window.print()">🖨️ Imprimer / Enregistrer en PDF</button>
+        <button class="btn-back"  onclick="window.history.back()">← Retour</button>
+    </div>
+
+    <h1>Liste des Sponsors</h1>
+    <div class="subtitle">Généré le {{ "now"|date("d/m/Y à H:i") }} — Total : {{ sponsors|length }} sponsor(s)</div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Téléphone</th>
+                <th>Date Création</th>
+                <th>Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for sponsor in sponsors %}
+            <tr>
+                <td>{{ sponsor.id }}</td>
+                <td>{{ sponsor.nom }}</td>
+                <td>{{ sponsor.email }}</td>
+                <td>{{ sponsor.telephone }}</td>
+                <td>{{ sponsor.dateCreation ? sponsor.dateCreation|date('d/m/Y') : '-' }}</td>
+                <td>
+                    {% if sponsor.statut %}
+                        <span class="badge-actif">Actif</span>
+                    {% else %}
+                        <span class="badge-inactif">Inactif</span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">LAMMA Admin — Liste des Sponsors</div>
+
+    <script>
+        window.onload = function() { window.print(); };
+    </script>
+</body>
+</html>
