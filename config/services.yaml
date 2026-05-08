@@ -1,0 +1,24 @@
+# config/services.yaml
+
+parameters:
+    # Where uploaded profile pictures are saved
+    # Accessible in controllers as: $this->getParameter('images_directory')
+    images_directory: '%kernel.project_dir%/public/uploads/images'
+    logos_directory: '%kernel.project_dir%/public/uploads/logos'
+    google_recaptcha_site_key: '%env(GOOGLE_RECAPTCHA_SITE_KEY)%'
+
+services:
+    _defaults:
+        autowire:      true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    App\Service\GeminiService:
+        arguments:
+            $apiKey: '%env(GEMINI_API_KEY)%'

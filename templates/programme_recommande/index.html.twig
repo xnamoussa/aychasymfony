@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+{% import '_macros.html.twig' as macros %}
+
+{% block title %}Programmes - LAMMA{% endblock %}
+{% block page_title %}Programmes Recommandés{% endblock %}
+
+{% block body %}
+<section class="crud-section">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 style="font-family:'Anton',sans-serif;">Liste des Activités</h2>
+            <a href="{{ path('app_programme_recommande_new') }}" class="btn btn-add"><i class="fa fa-star"></i> Nouvelle Activité</a>
+        </div>
+        <div class="card card-detail">
+            <div class="card-body p-0">
+                {% set columns = [
+                    {label: 'ID', field: 'id'},
+                    {label: 'Activité', field: 'activite'},
+                    {label: 'Début', field: 'heureDebut', time: true},
+                    {label: 'Fin', field: 'heureFin', time: true},
+                    {label: 'Ambiance', field: 'ambiance', badge: true},
+                    {label: 'Recommandé', field: 'recommande', bool: true}
+                ] %}
+                {{ macros.crud_table(items, columns, 'ProgrammeRecommande', 'app_programme_recommande') }}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

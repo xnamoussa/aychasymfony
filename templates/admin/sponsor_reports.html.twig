@@ -1,0 +1,89 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Sponsor Reports & Feedbacks{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">📋 Sponsor Reports & Feedbacks</h1>
+    </div>
+
+    {# REPORTS SECTION #}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex align-items-center" style="background:#c0392b;">
+            <h6 class="m-0 font-weight-bold text-white">🚨 Reports ({{ reports|length }})</h6>
+        </div>
+        <div class="card-body">
+            {% if reports|length == 0 %}
+                <p class="text-muted text-center py-3">Aucun report pour le moment.</p>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Sponsor</th>
+                                <th>Nom</th>
+                                <th>Email</th>
+                                <th>Contenu</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in reports %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td><strong>{{ report.sponsor.nom }}</strong></td>
+                                <td>{{ report.nom }}</td>
+                                <td>{{ report.email }}</td>
+                                <td>{{ report.contenu }}</td>
+                                <td>{{ report.createdAt|date('d/m/Y H:i') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# FEEDBACKS SECTION #}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex align-items-center" style="background:#27ae60;">
+            <h6 class="m-0 font-weight-bold text-white">💬 Feedbacks ({{ feedbacks|length }})</h6>
+        </div>
+        <div class="card-body">
+            {% if feedbacks|length == 0 %}
+                <p class="text-muted text-center py-3">Aucun feedback pour le moment.</p>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Sponsor</th>
+                                <th>Nom</th>
+                                <th>Email</th>
+                                <th>Feedback</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for fb in feedbacks %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td><strong>{{ fb.sponsor.nom }}</strong></td>
+                                <td>{{ fb.nom }}</td>
+                                <td>{{ fb.email }}</td>
+                                <td>{{ fb.contenu }}</td>
+                                <td>{{ fb.createdAt|date('d/m/Y H:i') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

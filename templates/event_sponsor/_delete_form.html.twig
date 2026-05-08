@@ -1,0 +1,7 @@
+<form method="post" action="{{ path('app_event_sponsor_delete', {'id': event_sponsor.id}) }}"
+      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette association ?');" style="display:inline">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ event_sponsor.id) }}">
+    <button class="btn btn-danger btn-sm">
+        <i class="fas fa-trash"></i>
+    </button>
+</form>

@@ -1,0 +1,374 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Sponsor Feedbacks & Reports{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-white">
+            <i class="fas fa-comments"></i> Sponsor Feedbacks & Reports
+        </h1>
+        <span class="badge badge-secondary" style="font-size:14px;">
+            Total: <strong id="total-count">{{ entries|length }}</strong>
+        </span>
+    </div>
+
+    <!-- Flash Messages -->
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>{{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>{{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    <!-- Batch Analysis Button -->
+    <div class="d-flex justify-content-end mb-3">
+        <form method="POST" action="{{ path('admin_analyze_batch_feedback') }}" style="display: inline;">
+            <input type="hidden" name="_token" value="{{ csrf_token('analyze_batch') }}">
+            <button type="submit" class="btn btn-primary" onclick="return confirm('Analyser tous les feedbacks non analysés ? Cette opération peut prendre quelques minutes.');">
+                <i class="fas fa-brain"></i> Analyser tous les feedbacks
+            </button>
+        </form>
+    </div>
+
+    <!-- Search + Filter Bar -->
+    <div class="card shadow mb-4">
+        <div class="card-body py-3">
+            <div class="row align-items-center">
+                <div class="col-md-4 mb-2 mb-md-0">
+                    <input type="text" id="search-input"
+                           placeholder="🔍 Rechercher par nom, email, sponsor..."
+                           class="form-control"
+                           style="border-radius:20px; padding-left:15px;">
+                </div>
+                <div class="col-md-3 mb-2 mb-md-0">
+                    <select id="type-filter" class="form-control" style="border-radius:20px;">
+                        <option value="">Tous les types</option>
+                        <option value="feedback">💬 Feedback</option>
+                        <option value="report">🚨 Report</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-2 mb-md-0">
+                    <select id="sponsor-filter" class="form-control" style="border-radius:20px;">
+                        <option value="">Tous les sponsors</option>
+                        {% set seen = [] %}
+                        {% for entry in entries %}
+                            {% if entry.sponsor.nom not in seen %}
+                                <option value="{{ entry.sponsor.nom }}">{{ entry.sponsor.nom }}</option>
+                                {% set seen = seen|merge([entry.sponsor.nom]) %}
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button onclick="resetFilters()"
+                            class="btn btn-outline-secondary btn-block"
+                            style="border-radius:20px;">
+                        Réinitialiser
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="feedback-table">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th class="sortable" data-col="0" style="cursor:pointer; user-select:none;">
+                                # <span class="sort-icon">↕</span>
+                            </th>
+                            <th class="sortable" data-col="1" style="cursor:pointer; user-select:none;">
+                                Type <span class="sort-icon">↕</span>
+                            </th>
+                            <th class="sortable" data-col="2" style="cursor:pointer; user-select:none;">
+                                Sponsor <span class="sort-icon">↕</span>
+                            </th>
+                            <th class="sortable" data-col="3" style="cursor:pointer; user-select:none;">
+                                Nom <span class="sort-icon">↕</span>
+                            </th>
+                            <th class="sortable" data-col="4" style="cursor:pointer; user-select:none;">
+                                Email <span class="sort-icon">↕</span>
+                            </th>
+                            <th>Contenu</th>
+                            <th class="sortable" data-col="6" style="cursor:pointer; user-select:none;">
+                                Date <span class="sort-icon">↕</span>
+                            </th>
+                            <th style="width: 80px; text-align: center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        {% if entries|length == 0 %}
+                            <td colspan="8" class="text-center text-white-50 py-4">
+                                Aucun feedback ou report pour le moment.
+                            </td>
+                        {% else %}
+                            {% for entry in entries %}
+                            <tr class="data-row"
+                                data-type="{{ entry.type }}"
+                                data-sponsor="{{ entry.sponsor.nom|lower }}"
+                                data-nom="{{ entry.nom|lower }}"
+                                data-email="{{ entry.email|lower }}"
+                                data-contenu="{{ entry.contenu|lower }}">
+                                <td>{{ loop.index }}</td>
+                                <td>
+                                    {% if entry.type == 'feedback' %}
+                                        <span class="badge badge-success" style="font-size:13px; padding:6px 12px;">
+                                            💬 Feedback
+                                        </span>
+                                    {% else %}
+                                        <span class="badge badge-danger" style="font-size:13px; padding:6px 12px;">
+                                            🚨 Report
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td><strong>{{ entry.sponsor.nom }}</strong></td>
+                                <td>{{ entry.nom }}</td>
+                                <td>{{ entry.email }}</td>
+                                <td>
+                                    <span title="{{ entry.contenu }}">
+                                        {{ entry.contenu|length > 80 ? entry.contenu|slice(0, 80) ~ '...' : entry.contenu }}
+                                    </span>
+                                    {% if entry.sentimentScore is not null %}
+                                        <br>
+                                        <span class="badge badge-{{ sentiment_service.getSentimentColor(entry.sentimentScore) }} mt-1" style="font-size:11px;">
+                                            {{ sentiment_service.getSentimentEmoji(entry.sentimentScore) }}
+                                            {{ entry.sentimentLabel|capitalize }}
+                                            (Satisfaction sponsor : {{ sentiment_service.getSatisfactionPercentage(entry.sentimentScore) }}%)
+                                        </span>
+                                            <small class="text-white-50 d-block">
+                                                Confiance : {{ (entry.sentimentConfidence * 100)|round }}%
+                                            </small>
+                                    {% else %}
+                                        <br>
+                                        <form method="POST" action="{{ path('admin_analyze_feedback', {'id': entry.id}) }}" style="display: inline;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('analyze' ~ entry.id) }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-info mt-1" title="Analyser le sentiment">
+                                                <i class="fas fa-brain"></i> Analyser
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                                <td>{{ entry.createdAt|date('d/m/Y H:i') }}</td>
+                                <td style="text-align: center;">
+                                    <form method="POST" action="{{ path('admin_delete_feedback', {'id': entry.id}) }}" 
+                                          style="display: inline;" 
+                                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce feedback/report ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ entry.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+
+                <div id="no-results" style="display:none;" class="text-center text-white-50 py-4">
+                    <i class="fas fa-search" style="font-size:30px; margin-bottom:10px;"></i>
+                    <p>Aucun résultat trouvé pour votre recherche.</p>
+                </div>
+            </div>
+
+            <div class="mt-2">
+                <small class="text-white-50">
+                    Affichage de <strong id="visible-count" class="text-white">{{ entries|length }}</strong>
+                    sur <strong class="text-white">{{ entries|length }}</strong> entrées
+                </small>
+            </div>
+
+            {% if analyzed_count > 0 %}
+            <div class="mt-4 p-4 border border-white border-opacity-10 rounded" style="background: rgba(255,255,255,0.02);">
+                <h5 class="mb-3 text-white">
+                    <i class="fas fa-chart-pie"></i> Score de Satisfaction Global
+                </h5>
+                
+                <div class="row">
+                    <div class="col-md-8">
+                        <!-- Barre de progression -->
+                        <div class="progress" style="height: 30px; border-radius: 15px; background-color: #e9ecef;">
+                            <div class="progress-bar" 
+                                 role="progressbar" 
+                                 style="width: {{ global_satisfaction }}%; background: linear-gradient(to right, 
+                                 {% if global_satisfaction <= 33 %}#dc3545{% elseif global_satisfaction <= 66 %}#ffc107{% else %}#28a745{% endif %});" 
+                                 aria-valuenow="{{ global_satisfaction }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                <strong style="color: white; position: absolute; left: 50%; transform: translateX(-50%); top: 50%; transform: translate(-50%, -50%);">
+                                    {{ global_satisfaction }}%
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 text-right">
+                        <div class="mb-2">
+                            <span class="badge badge-{{ global_satisfaction <= 33 ? 'danger' : (global_satisfaction <= 66 ? 'warning' : 'success') }}" 
+                                  style="font-size: 16px; padding: 10px 15px;">
+                                {{ sentiment_service.getSentimentEmoji(global_score) }}
+                                {{ global_score >= 0.6 ? 'Satisfait' : (global_score <= 0.4 ? 'Insatisfait' : 'Neutre') }}
+                            </span>
+                        </div>
+                        <small class="text-white-50 d-block">
+                            Basé sur <strong>{{ analyzed_count }}</strong> 
+                            feedback{{ analyzed_count > 1 ? 's' : '' }} analysé{{ analyzed_count > 1 ? 's' : '' }}
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Détails supplémentaires -->
+                <div class="mt-3 pt-3 border-top">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-white-50">
+                                <strong>Total des feedbacks & reports :</strong> {{ entries|length }}<br>
+                                <strong>Analysés :</strong> {{ analyzed_count }}<br>
+                                <strong>En attente :</strong> {{ entries|length - analyzed_count }}
+                            </small>
+                        </div>
+                        <div class="col-md-6 text-right">
+                            <small class="text-white-50">
+                                <strong>Score moyen :</strong> {{ (global_score * 100)|round }}/100<br>
+                                <strong>Taux d'analyse :</strong> {{ ((analyzed_count / entries|length) * 100)|round }}%
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    var searchInput   = document.getElementById('search-input');
+    var typeFilter    = document.getElementById('type-filter');
+    var sponsorFilter = document.getElementById('sponsor-filter');
+    var visibleCount  = document.getElementById('visible-count');
+    var totalCount    = document.getElementById('total-count');
+    var noResults     = document.getElementById('no-results');
+    var sortState     = { col: -1, dir: 'asc' };
+
+    function filterTable() {
+        var search  = searchInput.value.toLowerCase().trim();
+        var type    = typeFilter.value.toLowerCase();
+        var sponsor = sponsorFilter.value.toLowerCase();
+        var rows    = document.querySelectorAll('tr.data-row');
+        var visible = 0;
+
+        rows.forEach(function (row) {
+            var matchSearch = !search ||
+                row.dataset.sponsor.includes(search) ||
+                row.dataset.nom.includes(search) ||
+                row.dataset.email.includes(search) ||
+                row.dataset.contenu.includes(search);
+
+            var matchType    = !type    || row.dataset.type === type;
+            var matchSponsor = !sponsor || row.dataset.sponsor === sponsor;
+
+            if (matchSearch && matchType && matchSponsor) {
+                row.style.display = '';
+                visible++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        visibleCount.textContent = visible;
+        noResults.style.display  = visible === 0 ? 'block' : 'none';
+
+        var idx = 1;
+        rows.forEach(function (row) {
+            if (row.style.display !== 'none') {
+                row.cells[0].textContent = idx++;
+            }
+        });
+    }
+
+    searchInput.addEventListener('keyup', filterTable);
+    typeFilter.addEventListener('change', filterTable);
+    sponsorFilter.addEventListener('change', filterTable);
+
+    document.querySelectorAll('.sortable').forEach(function (th) {
+        th.addEventListener('click', function () {
+            var col = parseInt(this.dataset.col);
+            var dir = (sortState.col === col && sortState.dir === 'asc') ? 'desc' : 'asc';
+            sortState = { col: col, dir: dir };
+
+            document.querySelectorAll('.sortable').forEach(function (h) {
+                h.classList.remove('asc', 'desc');
+                h.querySelector('.sort-icon').textContent = '↕';
+            });
+            this.classList.add(dir);
+
+            var tbody = document.getElementById('table-body');
+            var rows  = Array.from(tbody.querySelectorAll('tr.data-row'));
+
+            rows.sort(function (a, b) {
+                var aVal = a.cells[col] ? a.cells[col].textContent.trim().toLowerCase() : '';
+                var bVal = b.cells[col] ? b.cells[col].textContent.trim().toLowerCase() : '';
+
+                if (col === 6) {
+                    var parseDate = function(s) {
+                        var p = s.split(' ');
+                        var d = p[0].split('/');
+                        return new Date(d[2], d[1]-1, d[0],
+                            p[1] ? p[1].split(':')[0] : 0,
+                            p[1] ? p[1].split(':')[1] : 0);
+                    };
+                    aVal = parseDate(aVal);
+                    bVal = parseDate(bVal);
+                    return dir === 'asc' ? aVal - bVal : bVal - aVal;
+                }
+
+                if (aVal < bVal) return dir === 'asc' ? -1 : 1;
+                if (aVal > bVal) return dir === 'asc' ?  1 : -1;
+                return 0;
+            });
+
+            rows.forEach(function (row) { tbody.appendChild(row); });
+            filterTable();
+        });
+    });
+
+    totalCount.textContent   = document.querySelectorAll('tr.data-row').length;
+    visibleCount.textContent = document.querySelectorAll('tr.data-row').length;
+});
+
+function resetFilters() {
+    document.getElementById('search-input').value   = '';
+    document.getElementById('type-filter').value    = '';
+    document.getElementById('sponsor-filter').value = '';
+    document.querySelectorAll('tr.data-row').forEach(function (r) {
+        r.style.display = '';
+    });
+    document.getElementById('no-results').style.display = 'none';
+    var idx = 1;
+    document.querySelectorAll('tr.data-row').forEach(function (r) {
+        r.cells[0].textContent = idx++;
+    });
+    var total = document.querySelectorAll('tr.data-row').length;
+    document.getElementById('visible-count').textContent = total;
+    document.getElementById('total-count').textContent   = total;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,289 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Custom Mission - {{ repas.nom }}{% endblock %}
+
+{% block stylesheets %}
+<style>
+    body {
+        background-color: #0b0f19 !important;
+        color: #f8fafc !important;
+        overflow: hidden; /* Hide body scroll while modal is open */
+    }
+    .rations-sidebar {
+        width: 280px;
+        background: rgba(15, 23, 42, 0.5);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+        height: calc(100vh - 80px);
+        padding: 30px;
+        position: sticky;
+        top: 80px;
+    }
+    .sidebar-title { font-family: 'Anton', sans-serif; font-size: 1.5rem; margin-bottom: 5px; text-transform: uppercase; }
+    .sidebar-subtitle { color: #94a3b8; font-size: 0.8rem; font-weight: 700; letter-spacing: 1px; margin-bottom: 40px; display: block; }
+    
+    .main-ration-content { flex-grow: 1; padding: 40px; opacity: 0.3; /* Dim the background */ pointer-events: none; }
+    .ration-card { background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 20px; margin-bottom: 20px; display: flex; gap: 20px; }
+    .ration-img { width: 100px; height: 100px; border-radius: 12px; object-fit: cover; }
+    
+    /* MODAL OVERLAY */
+    .custom-mission-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        backdrop-filter: blur(5px);
+        padding: 20px;
+    }
+
+    .custom-mission-panel {
+        width: 100%;
+        max-width: 650px;
+        height: 90vh;
+        background: rgba(15, 23, 42, 0.98);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .close-mission {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        color: #64748b;
+        cursor: pointer;
+        z-index: 10;
+        font-size: 1.2rem;
+    }
+
+    .panel-header {
+        padding: 30px;
+        display: flex;
+        gap: 25px;
+        background: linear-gradient(180deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0) 100%);
+    }
+
+    .repas-img-sm {
+        width: 120px;
+        height: 120px;
+        border-radius: 12px;
+        object-fit: cover;
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+    }
+
+    .mission-header-info { flex-grow: 1; }
+    .mission-label { color: #10b981; font-size: 0.65rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; display: block; }
+    .mission-title { font-family: 'Anton', sans-serif; font-size: 1.8rem; margin-bottom: 5px; }
+    .mission-price { color: #94a3b8; font-size: 0.9rem; }
+
+    .stats-grid {
+        display: flex;
+        gap: 15px;
+        margin-top: 20px;
+    }
+    .stat-item {
+        flex: 1;
+        background: rgba(30, 41, 59, 0.5);
+        border-radius: 10px;
+        padding: 10px;
+        text-align: center;
+    }
+    .stat-lbl { font-size: 0.55rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+    .stat-val { font-size: 1rem; font-weight: 700; }
+
+    .ingredients-scroll {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 0 30px 40px 30px;
+    }
+
+    .cat-title { font-size: 0.75rem; color: #64748b; font-weight: 800; text-transform: uppercase; margin: 30px 0 15px 0; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
+    
+    .ing-row {
+        display: flex;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    .ing-icon { width: 42px; height: 42px; background: #1e293b; border-radius: 8px; margin-right: 15px; overflow: hidden; }
+    .ing-icon img { width: 100%; height: 100%; object-fit: cover; }
+    .ing-name-box { flex-grow: 1; }
+    .ing-name { font-size: 0.9rem; font-weight: 600; }
+    .ing-price { font-size: 0.75rem; color: #10b981; }
+    
+    .qty-box { display: flex; align-items: center; gap: 12px; }
+    .q-btn { width: 28px; height: 28px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .q-minus { background: #334155; color: #94a3b8; }
+    .q-plus { background: #10b981; color: white; }
+    .q-val { font-size: 0.9rem; font-weight: 700; min-width: 15px; text-align: center; }
+
+    .mission-footer-sticky {
+        padding: 25px 30px;
+        background: #0f172a;
+        display: flex;
+        gap: 20px;
+        border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .total-pill {
+        flex-grow: 1;
+        background: rgba(30, 41, 59, 0.5);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        border-radius: 30px;
+        display: flex;
+        align-items: center;
+        padding: 0 25px;
+        font-family: 'Anton', sans-serif;
+        font-size: 1.5rem;
+    }
+    .commit-btn {
+        background: #f97316;
+        color: white;
+        border: none;
+        padding: 0 40px;
+        border-radius: 30px;
+        font-weight: 800;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: 0.3s;
+        height: 60px;
+    }
+    .commit-btn:hover { background: #ea580c; transform: translateY(-2px); }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="d-flex" style="position: relative;">
+    <!-- Background Sidebar -->
+    <div class="rations-sidebar">
+        <div class="sidebar-title">Trail Rations 2026</div>
+        <span class="sidebar-subtitle"><i class="fa fa-folder-open"></i> LAMMA EXPEDITION</span>
+        <div class="nav flex-column nav-pills nav-pills-custom">
+            <a class="nav-link active" href="#"><i class="fa fa-circle"></i> ALL GEAR</a>
+            <a class="nav-link" href="#"><i class="fa fa-heart"></i> MY SAVED</a>
+            <a class="nav-link" href="#"><i class="fa fa-mountain"></i> HIGH-ALT</a>
+        </div>
+    </div>
+
+    <!-- Background Content -->
+    <div class="main-ration-content">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <h2 style="font-family:'Anton', sans-serif; text-transform:uppercase;">Explore Our Bowls</h2>
+            <div class="search-bar-rations" style="width:300px; text-align:right;"><i class="fa fa-search"></i> Scout for rations...</div>
+        </div>
+        {% for item in allItems %}
+            <div class="ration-card">
+                <img src="{{ item.imageUrl|default('https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000&auto=format&fit=crop') }}" class="ration-img">
+                <div class="ration-info">
+                    <h3>{{ item.nom }}</h3>
+                    <div style="font-size: 0.6rem; color: #10b981; font-weight: 800; margin-bottom: 5px;">LIGHT PACK <i class="fa fa-leaf"></i> FORAGER</div>
+                    <p class="ration-desc">{{ item.description|slice(0, 100) }}...</p>
+                    <div class="ration-price">{{ item.prix }} €</div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- MODAL PANEL -->
+    <div class="custom-mission-overlay">
+        <form action="{{ path('app_cart_add_custom', {id: repas.id}) }}" method="POST" class="custom-mission-panel">
+            <a href="{{ path('app_repas_composition_list') }}" class="close-mission"><i class="fa fa-times"></i></a>
+            
+            <div class="panel-header">
+                <img src="{{ repas.imageUrl|default('https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000&auto=format&fit=crop') }}" class="repas-img-sm">
+                <div class="mission-header-info">
+                    <span class="mission-label">Custom Mission</span>
+                    <h1 class="mission-title">{{ repas.nom }}</h1>
+                    <p class="mission-price">À partir de {{ repas.prix|number_format(2, ',', ' ') }} €</p>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-lbl">Energy</div>
+                            <div class="stat-val" style="color:#f87171;" id="cal-display">{{ repas.calories|default(0) }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-lbl">Prep</div>
+                            <div class="stat-val" style="color:#94a3b8;">25 Mins</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-lbl">Protein</div>
+                            <div class="stat-val" style="color:#10b981;">{{ repas.proteines|default(0) }}g</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ingredients-scroll">
+                {% for category, ingredients in groupedIngredients %}
+                    <h2 class="cat-title">{{ category }}</h2>
+                    {% for ing in ingredients %}
+                        <div class="ing-row" data-id="{{ ing.id }}" data-price="{{ ing.prixSupplement }}" data-calories="{{ ing.calories|default(0) }}">
+                            <div class="ing-icon">
+                                <img src="{{ ing.iconUrl|default('https://img.icons8.com/color/48/ingredients.png') }}">
+                            </div>
+                            <div class="ing-name-box">
+                                <div class="ing-name">{{ ing.nom }}</div>
+                                <div class="ing-price">
+                                    {% if ing.prixSupplement > 0 %}
+                                        +{{ ing.prixSupplement|number_format(2, ',', ' ') }} €
+                                    {% else %}
+                                        Inclus
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="qty-box">
+                                <button type="button" class="q-btn q-minus" onclick="qUpd({{ ing.id }}, -1)">-</button>
+                                <span class="q-val" id="q-{{ ing.id }}">0</span>
+                                <button type="button" class="q-btn q-plus" onclick="qUpd({{ ing.id }}, 1)">+</button>
+                                <input type="hidden" name="supplements[{{ ing.id }}]" id="i-{{ ing.id }}" value="0">
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+
+            <div class="mission-footer-sticky">
+                <div class="total-pill" id="total-display">{{ repas.prix|number_format(2, ',', ' ') }} €</div>
+                {% if not is_granted('ROLE_ADMIN') %}
+                <button type="submit" class="commit-btn"><i class="fa fa-shopping-cart mr-2"></i> Commit to Kit</button>
+                {% else %}
+                <button type="button" class="commit-btn" style="background:#475569; cursor:not-allowed;" disabled>Mode Admin : Aperçu</button>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const baseP = {{ repas.prix }};
+    const baseC = {{ repas.calories|default(0) }};
+
+    function qUpd(id, d) {
+        const dsp = document.getElementById('q-' + id);
+        const inp = document.getElementById('i-' + id);
+        let q = parseInt(dsp.innerText) + d;
+        if (q < 0) q = 0;
+        dsp.innerText = q;
+        inp.value = q;
+        recalc();
+    }
+
+    function recalc() {
+        let eP = 0; let eC = 0;
+        document.querySelectorAll('.ing-row').forEach(r => {
+            const q = parseInt(document.getElementById('i-' + r.dataset.id).value);
+            eP += parseFloat(r.dataset.price) * q;
+            eC += parseInt(r.dataset.calories) * q;
+        });
+        document.getElementById('total-display').innerText = (baseP + eP).toLocaleString('fr-FR', { minimumFractionDigits: 2 }) + ' €';
+        document.getElementById('cal-display').innerText = Math.round(baseC + eC);
+    }
+</script>
+{% endblock %}

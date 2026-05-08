@@ -1,0 +1,264 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier Repas - LAMMA{% endblock %}
+{% block page_title %}Édition de Plat Scout v2.0{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --scout-navy: #1a1f2c;
+            --scout-blue: #3b82f6;
+            --scout-green: #10b981;
+            --scout-glass: rgba(255, 255, 255, 0.03);
+            --scout-border: rgba(255, 255, 255, 0.1);
+            --scout-text: #f8fafc;
+        }
+
+        body { background: var(--scout-navy); color: var(--scout-text); font-family: 'Inter', sans-serif; }
+        
+        .scout-window {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--scout-border);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            margin-top: 30px;
+        }
+
+        .scout-window-header {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px 30px;
+            border-bottom: 1px solid var(--scout-border);
+            font-family: 'Anton', sans-serif;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            color: #94a3b8;
+        }
+
+        .scout-window-body { padding: 40px; }
+
+        .form-control-scout {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--scout-border);
+            border-radius: 12px;
+            color: #fff;
+            padding: 12px 20px;
+            transition: all 0.3s;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .form-control-scout:focus {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--scout-blue);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+        }
+
+        .scout-section-title {
+            font-family: 'Anton', sans-serif;
+            font-size: 0.8rem;
+            color: var(--scout-blue);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .scout-section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, var(--scout-border), transparent); }
+
+        .btn-update {
+            background: var(--scout-blue);
+            color: #fff;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-family: 'Anton', sans-serif;
+            font-size: 1.1rem;
+            width: 100%;
+            transition: all 0.3s;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .btn-update:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3); }
+
+        .btn-cancel {
+            background: transparent;
+            color: #94a3b8;
+            border: 1px solid var(--scout-border);
+            padding: 12px 30px;
+            border-radius: 12px;
+            text-decoration: none !important;
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        .btn-cancel:hover { background: rgba(255,255,255,0.05); color: #fff; }
+
+        .fuel-display {
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid var(--scout-border);
+            height: 100%;
+        }
+
+        .fuel-val { font-family: 'Anton', sans-serif; font-size: 3.5rem; color: var(--scout-blue); line-height: 1; }
+        .fuel-label { font-size: 0.7rem; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+
+        .hidden-symfony-field { display: none; }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="scout-window">
+        <div class="scout-window-header">
+            <i class="fa fa-pencil mr-2"></i> Modification du Plat : {{ item.nom }}
+        </div>
+
+        {# Flash Messages Display #}
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'danger' ? 'danger' : 'success' }} alert-dismissible fade show m-3" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        {{ form_start(form, {'attr': {'id': 'ration_form'}}) }}
+        <div class="scout-window-body">
+            <div class="row">
+                <!-- Left Panel: Form -->
+                <div class="col-lg-8 pr-lg-5">
+                    <div class="scout-section-title">Common Logistics</div>
+                    {{ form_widget(form.nom, {'attr': {'class': 'form-control-scout', 'placeholder': 'Nom du Plat'}}) }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form_widget(form.prix, {'attr': {'class': 'form-control-scout', 'placeholder': 'Prix (€)'}}) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_widget(form.typeRepas, {'attr': {'class': 'form-control-scout'}}) }}
+                        </div>
+                    </div>
+
+                    <div class="scout-section-title">Detailed Specs</div>
+                    {{ form_widget(form.description, {'attr': {'class': 'form-control-scout', 'rows': '4', 'placeholder': 'Description marketing...'}}) }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <select class="form-control-scout" id="restaurant-select" name="repas_detaille[restaurantId]">
+                                <option value="">Choisir Restaurant</option>
+                                {% for res in restaurants %}
+                                    <option value="{{ res.id }}" {{ item.restaurantId == res.id ? 'selected' : '' }}>{{ res.nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <select class="form-control-scout" id="menu-select" name="repas_detaille[menuId]">
+                                <option value="">Choisir Menu</option>
+                                {% for m in menus %}
+                                    <option value="{{ m.id }}" {{ item.menuId == m.id ? 'selected' : '' }}>{{ m.nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <select class="form-control-scout" id="serving-type-select">
+                                <option value="">Régime Alimentaire</option>
+                                <option value="standard" {{ not (item.vegetarien or item.vegan or item.sansGluten or item.halal) ? 'selected' : '' }}>Standard</option>
+                                <option value="vegetarien" {{ item.vegetarien ? 'selected' : '' }}>Végétarien</option>
+                                <option value="vegan" {{ item.vegan ? 'selected' : '' }}>Vegan</option>
+                                <option value="sansGluten" {{ item.sansGluten ? 'selected' : '' }}>Sans Gluten</option>
+                                <option value="halal" {{ item.halal ? 'selected' : '' }}>Halal</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <input type="number" name="repas_detaille[tempsPreparation]" class="form-control-scout" placeholder="Temps de Préparation (min)" value="{{ item.tempsPreparation }}">
+                        </div>
+                    </div>
+
+                    <div class="scout-section-title" style="color: #fb923c; margin-top: 30px;">
+                        <i class="fa fa-camera"></i> VISUAL FEED
+                    </div>
+                    <div style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--scout-border); border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 15px;">
+                        {{ form_widget(form.imageUrl, {'attr': {'class': 'form-control-scout', 'style': 'display:none;'}}) }}
+                        <input type="text" id="visual_filename_preview" class="form-control-scout" style="margin-bottom:0;" placeholder="{{ item.imageUrl ? item.imageUrl : 'Aucun nouveau fichier' }}" readonly>
+                        
+                        <button type="button" class="btn-update" style="width: auto; padding: 10px 20px; font-size: 0.8rem;" onclick="document.getElementById('{{ form.imageUrl.vars.id }}').click()">
+                            <i class="fa fa-folder"></i> FILES
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Display Stats -->
+                <div class="col-lg-4 mt-4 mt-lg-0">
+                    <div class="fuel-display">
+                        <div class="scout-section-title">Current Fuel Profile</div>
+                        <div class="mb-4">
+                            <div class="fuel-label">Kcal / Calories</div>
+                            <div class="fuel-val"><span id="display-kcal">{{ item.calories ? item.calories : '---' }}</span></div>
+                        </div>
+                        <div class="mb-4">
+                            <div class="fuel-label">Proteins (Estimated)</div>
+                            <div class="fuel-val"><span id="display-proteins" style="color: var(--scout-green);">{{ item.proteines ? item.proteines : '---' }}</span> <span style="font-size:0.8rem; font-weight:normal;">g</span></div>
+                        </div>
+                        
+                        <div style="margin-top: 50px;">
+                            <button type="submit" class="btn-update">Sauvegarder les modifications</button>
+                            <a href="{{ path('app_repas_detaille_index') }}" class="btn-cancel">Annuler les changements</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hidden-symfony-field">
+            {{ form_widget(form.vegetarien) }}{{ form_widget(form.vegan) }}
+            {{ form_widget(form.sansGluten) }}{{ form_widget(form.halal) }}
+            {{ form_widget(form.actif) }}{{ form_widget(form.notes) }}
+            {{ form_widget(form.calories) }}
+            <input type="hidden" name="repas_detaille[proteines]" id="hidden_proteines_field" value="{{ item.proteines }}">
+        </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+
+<script>
+    // JS for form field sync
+    const servingSelect = document.getElementById('serving-type-select');
+    servingSelect.addEventListener('change', (e) => {
+        const val = e.target.value;
+        document.getElementById('{{ form.vegetarien.vars.id }}').checked = (val === 'vegetarien');
+        document.getElementById('{{ form.vegan.vars.id }}').checked = (val === 'vegan');
+        document.getElementById('{{ form.sansGluten.vars.id }}').checked = (val === 'sansGluten');
+        document.getElementById('{{ form.halal.vars.id }}').checked = (val === 'halal');
+    });
+
+    // Filename preview
+    const fileInput = document.getElementById('{{ form.imageUrl.vars.id }}');
+    const filenamePreview = document.getElementById('visual_filename_preview');
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            if (this.files.length) {
+                filenamePreview.value = this.files[0].name;
+            }
+        });
+    }
+</script>
+{% endblock %}

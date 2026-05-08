@@ -1,0 +1,105 @@
+{% extends is_granted('ROLE_ADMIN') ? 'admin/base_admin.html.twig' : 'base.html.twig' %}
+
+{% block title %}Modifier Ingrédient - LAMMA{% endblock %}
+{% block page_title %}Modifier {{ item.nom }}{% endblock %}
+{% block page_subtitle %}Modifier les paramètres de l'ingrédient{% endblock %}
+
+{% block body %}
+<section class="crud-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card card-detail">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div><i class="fa fa-edit"></i> Modification d'Ingrédient</div>
+                    </div>
+                    <div class="card-body form-section">
+                        {{ form_start(form, {'attr': {'id': 'ingredient_form'}}) }}
+                        
+                        <div class="form-group mb-4">
+                            {{ form_label(form.nom) }}
+                            <div class="input-group">
+                                {{ form_widget(form.nom) }}
+                                <div class="input-group-append">
+                                    <button type="button" id="btn_predict_nutrition" class="btn btn-outline-info" style="border-radius: 0 25px 25px 0; font-weight: bold;">
+                                        <i class="fa fa-magic mr-1"></i> DEVINER (IA)
+                                    </button>
+                                </div>
+                            </div>
+                            {{ form_errors(form.nom) }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">{{ form_row(form.categorie) }}</div>
+                            <div class="col-md-6">{{ form_row(form.prixSupplement) }}</div>
+                            <div class="col-md-6">{{ form_row(form.calories) }}</div>
+                            <div class="col-md-6">{{ form_row(form.proteines) }}</div>
+                            <div class="col-md-12">{{ form_row(form.repas) }}</div>
+                            <div class="col-md-6">{{ form_row(form.stockQuantite) }}</div>
+                            <div class="col-md-6">{{ form_row(form.stockSeuilAlerte) }}</div>
+                            <div class="col-md-6">{{ form_row(form.iconUrl) }}</div>
+                            <div class="col-md-6" style="padding-top: 30px;">{{ form_row(form.actif) }}</div>
+                        </div>
+                        <div class="mt-4 text-center">
+                            <button class="btn btn-add">Mettre à jour</button>
+                            <a href="{{ path('app_ingredient_index') }}" class="btn btn-secondary" style="border-radius:25px;padding:10px 30px;">Annuler</a>
+                        </div>
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnPredict = document.getElementById('btn_predict_nutrition');
+    const inputNom = document.querySelector('[id$="_nom"]');
+    const inputCalories = document.querySelector('[id$="_calories"]');
+    const inputProteines = document.querySelector('[id$="_proteines"]');
+
+    btnPredict.addEventListener('click', function() {
+        const nom = inputNom.value.trim();
+        if (!nom) {
+            alert("Veuillez d'abord saisir le nom de l'ingrédient.");
+            return;
+        }
+
+        btnPredict.disabled = true;
+        btnPredict.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> ANALYSE...';
+
+        fetch("{{ path('app_ingredient_predict_data') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nom: nom })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert("Erreur IA : " + data.error);
+            } else {
+                if (inputCalories) inputCalories.value = data.calories;
+                if (inputProteines) inputProteines.value = data.proteines;
+                
+                btnPredict.className = 'btn btn-success';
+                btnPredict.innerHTML = '<i class="fa fa-check mr-1"></i> DEVINÉ !';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Erreur lors de la prédiction.");
+        })
+        .finally(() => {
+            setTimeout(() => {
+                btnPredict.disabled = false;
+                btnPredict.className = 'btn btn-outline-info';
+                btnPredict.innerHTML = '<i class="fa fa-magic mr-1"></i> DEVINER (IA)';
+            }, 2000);
+        });
+    });
+});
+</script>
+{% endblock %}

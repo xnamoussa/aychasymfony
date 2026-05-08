@@ -1,0 +1,13 @@
+twig:
+    default_path: '%kernel.project_dir%/templates'
+    globals:
+        osrm_apiUrl: 'https://router.project-osrm.org/route/v1'
+        osrm_apiKey: ''
+        nominatim_apiUrl: 'https://nominatim.openstreetmap.org/reverse'
+        qr_server_apiUrl: 'https://api.qrserver.com/v1/create-qr-code/'
+        open_meteo_apiUrl: 'https://api.open-meteo.com/v1/forecast'
+        stripe_public_key: '%env(STRIPE_PUBLIC_KEY)%'
+
+when@test:
+    twig:
+        strict_variables: true

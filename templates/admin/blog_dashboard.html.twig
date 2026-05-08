@@ -1,0 +1,262 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Blog — Tableau de bord{% endblock %}
+{% block page_title %}Blog Dashboard{% endblock %}
+{% block breadcrumb %}Gestion du Blog{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .chart-container { position:relative; height:280px; width:100%; }
+    .blog-stat-card { transition:transform 0.2s; cursor:default; }
+    .blog-stat-card:hover { transform:translateY(-4px); }
+</style>
+{% endblock %}
+
+{% block body %}
+
+{# ── Stats Cards ── #}
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="card blog-stat-card" style="background:linear-gradient(135deg,#3b82f6,#06b6d4); color:white; border:none; border-radius:12px; box-shadow:0 4px 15px rgba(59,130,246,0.3);">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="small text-white-50 text-uppercase fw-bold mb-1">Total Posts</div>
+                    <div class="fs-2 fw-bold" style="font-family:'Bebas Neue',sans-serif; letter-spacing:1px;">{{ total_posts }}</div>
+                </div>
+                <i class="fas fa-file-alt fa-2x" style="opacity:0.5;"></i>
+            </div>
+            <div class="card-footer d-flex justify-content-between align-items-center" style="background:rgba(0,0,0,0.1); border:none;">
+                <a class="small text-white text-decoration-none" href="{{ path('admin_blog_posts') }}">Gérer les posts →</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card blog-stat-card" style="background:linear-gradient(135deg,#10b981,#059669); color:white; border:none; border-radius:12px; box-shadow:0 4px 15px rgba(16,185,129,0.3);">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="small text-white-50 text-uppercase fw-bold mb-1">Total Commentaires</div>
+                    <div class="fs-2 fw-bold" style="font-family:'Bebas Neue',sans-serif; letter-spacing:1px;">{{ total_comments }}</div>
+                </div>
+                <i class="fas fa-comments fa-2x" style="opacity:0.5;"></i>
+            </div>
+            <div class="card-footer d-flex justify-content-between align-items-center" style="background:rgba(0,0,0,0.1); border:none;">
+                <a class="small text-white text-decoration-none" href="{{ path('admin_blog_comments') }}">Gérer les commentaires →</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card blog-stat-card" style="background:linear-gradient(135deg,#f59e0b,#d97706); color:white; border:none; border-radius:12px; box-shadow:0 4px 15px rgba(245,158,11,0.3);">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="small text-white-50 text-uppercase fw-bold mb-1">Plus commenté</div>
+                    <div class="fs-2 fw-bold" style="font-family:'Bebas Neue',sans-serif; letter-spacing:1px;">{{ top_posts|first.comment_count|default(0) }}</div>
+                </div>
+                <i class="fas fa-trophy fa-2x" style="opacity:0.5;"></i>
+            </div>
+            <div class="card-footer d-flex justify-content-between align-items-center" style="background:rgba(0,0,0,0.1); border:none;">
+                <a class="small text-white text-decoration-none" href="{{ path('admin_blog_stats') }}">Statistiques →</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card blog-stat-card" style="background:linear-gradient(135deg,#8b5cf6,#ec4899); color:white; border:none; border-radius:12px; box-shadow:0 4px 15px rgba(139,92,246,0.3);">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="small text-white-50 text-uppercase fw-bold mb-1">Posts récents</div>
+                    <div class="fs-2 fw-bold" style="font-family:'Bebas Neue',sans-serif; letter-spacing:1px;">{{ latest_posts|length }}</div>
+                </div>
+                <i class="fas fa-clock fa-2x" style="opacity:0.5;"></i>
+            </div>
+            <div class="card-footer d-flex justify-content-between align-items-center" style="background:rgba(0,0,0,0.1); border:none;">
+                <a class="small text-white text-decoration-none" href="{{ path('admin_blog_posts') }}">Voir les posts →</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── Charts ── #}
+<div class="row mb-4">
+    <div class="col-xl-6">
+        <div class="card" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:12px;">
+            <div class="card-header" style="background:transparent; border-bottom:1px solid rgba(255,255,255,0.07); padding:16px 20px;">
+                <i class="fas fa-chart-bar me-2" style="color:#f09000;"></i>
+                <span class="fw-bold" style="font-family:'Bebas Neue',sans-serif; letter-spacing:0.5px;">POSTS PAR MOIS (6 DERNIERS MOIS)</span>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="postsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:12px;">
+            <div class="card-header" style="background:transparent; border-bottom:1px solid rgba(255,255,255,0.07); padding:16px 20px;">
+                <i class="fas fa-chart-pie me-2" style="color:#10b981;"></i>
+                <span class="fw-bold" style="font-family:'Bebas Neue',sans-serif; letter-spacing:0.5px;">VUE D'ENSEMBLE DU CONTENU</span>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── Recent Posts Table ── #}
+<div class="row mb-4">
+    <div class="col-xl-6">
+        <div class="card" style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:12px;">
+            <div class="card-header d-flex justify-content-between align-items-center" style="background:transparent; border-bottom:1px solid rgba(255,255,255,0.07); padding:16px 20px;">
+                <span class="fw-bold" style="font-family:'Bebas Neue',sans-serif; letter-spacing:0.5px;"><i class="fas fa-list me-2" style="color:#3b82f6;"></i>POSTS RÉCENTS</span>
+                <a href="{{ path('admin_blog_posts') }}" class="btn btn-sm" style="background:rgba(59,130,246,0.15); color:#3b82f6; border:1px solid rgba(59,130,246,0.3); font-size:0.78rem;">Tous les posts</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0" style="background:transparent;">
+                        <thead style="border-bottom:1px solid rgba(255,255,255,0.07);">
+                            <tr>
+                                <th style="color:#aab1b7; font-size:0.75rem; text-transform:uppercase; padding:12px 16px;">Titre</th>
+                                <th style="color:#aab1b7; font-size:0.75rem; text-transform:uppercase; padding:12px 16px;">Date</th>
+                                <th style="color:#aab1b7; font-size:0.75rem; text-transform:uppercase; padding:12px 16px;">Comm.</th>
+                                <th style="padding:12px 16px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for post in latest_posts %}
+                            <tr>
+                                <td style="padding:10px 16px; font-weight:500;">{{ post.title|slice(0, 35) }}{% if post.title|length > 35 %}…{% endif %}</td>
+                                <td style="padding:10px 16px; color:#94a3b8; font-size:0.85rem;">{{ post.createdAt ? post.createdAt|date('d/m/Y') : '—' }}</td>
+                                <td style="padding:10px 16px;">{{ post.comments|length }}</td>
+                                <td style="padding:10px 16px;">
+                                    <a href="{{ path('app_post_edit', {'id': post.id}) }}" class="btn btn-sm" style="background:rgba(255,255,255,0.08); color:#fff; font-size:0.75rem;">Éditer</a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="4" class="text-center text-muted py-4">Aucun post</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card" style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:12px;">
+            <div class="card-header d-flex justify-content-between align-items-center" style="background:transparent; border-bottom:1px solid rgba(255,255,255,0.07); padding:16px 20px;">
+                <span class="fw-bold" style="font-family:'Bebas Neue',sans-serif; letter-spacing:0.5px;"><i class="fas fa-fire me-2" style="color:#f59e0b;"></i>TOP POSTS (COMMENTAIRES)</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0" style="background:transparent;">
+                        <thead style="border-bottom:1px solid rgba(255,255,255,0.07);">
+                            <tr>
+                                <th style="color:#aab1b7; font-size:0.75rem; text-transform:uppercase; padding:12px 16px;">Titre</th>
+                                <th style="color:#aab1b7; font-size:0.75rem; text-transform:uppercase; padding:12px 16px;">Commentaires</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in top_posts %}
+                            <tr>
+                                <td style="padding:10px 16px; font-weight:500;">{{ item.post.title|slice(0, 45) }}{% if item.post.title|length > 45 %}…{% endif %}</td>
+                                <td style="padding:10px 16px;"><span class="badge" style="background:#f09000;">{{ item.comment_count }}</span></td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="2" class="text-center text-muted py-4">Aucun post</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── Latest Comments ── #}
+<div class="card" style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:12px;">
+    <div class="card-header d-flex justify-content-between align-items-center" style="background:transparent; border-bottom:1px solid rgba(255,255,255,0.07); padding:16px 20px;">
+        <span class="fw-bold" style="font-family:'Bebas Neue',sans-serif; letter-spacing:0.5px;"><i class="fas fa-comments me-2" style="color:#10b981;"></i>COMMENTAIRES RÉCENTS</span>
+        <a href="{{ path('admin_blog_comments') }}" class="btn btn-sm" style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); font-size:0.78rem;">Tous les commentaires</a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover mb-0" style="background:transparent;">
+                <thead style="border-bottom:1px solid rgba(255,255,255,0.07);">
+                    <tr>
+                        <th style="color:#aab1b7; font-size:0.75rem; text-transform:uppercase; padding:12px 16px;">Commentaire</th>
+                        <th style="color:#aab1b7; font-size:0.75rem; text-transform:uppercase; padding:12px 16px;">Post</th>
+                        <th style="color:#aab1b7; font-size:0.75rem; text-transform:uppercase; padding:12px 16px;">Date</th>
+                        <th style="padding:12px 16px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for comment in latest_comments %}
+                    <tr>
+                        <td style="padding:10px 16px;">{{ comment.content|slice(0, 70) }}{% if comment.content|length > 70 %}…{% endif %}</td>
+                        <td style="padding:10px 16px; color:#3b82f6; font-size:0.85rem;">{{ comment.post.title|slice(0, 35) }}…</td>
+                        <td style="padding:10px 16px; color:#94a3b8; font-size:0.85rem;">{{ comment.createdAt ? comment.createdAt|date('d/m/Y H:i') : '—' }}</td>
+                        <td style="padding:10px 16px; text-align:right;">
+                            <form method="post" action="{{ path('admin_blog_comment_delete', {'id': comment.id}) }}" onsubmit="return confirm('Supprimer ce commentaire ?')" style="display:inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('admin_delete_comment_' ~ comment.id) }}">
+                                <button type="submit" class="btn btn-sm btn-danger" style="font-size:0.75rem;">Supprimer</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" class="text-center text-muted py-4">Aucun commentaire</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const months   = {{ chart_months|raw }};
+    const postsData = {{ chart_data|raw }};
+
+    // Bar chart — Posts per month
+    new Chart(document.getElementById('postsChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: months,
+            datasets: [{
+                label: 'Posts créés',
+                data: postsData,
+                backgroundColor: '#f09000',
+                borderColor: '#f09000',
+                borderWidth: 1,
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1, color: '#aab1b7' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                x: { ticks: { color: '#aab1b7' }, grid: { display: false } }
+            }
+        }
+    });
+
+    // Pie chart — content overview
+    new Chart(document.getElementById('pieChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Posts', 'Commentaires'],
+            datasets: [{ data: [{{ total_posts }}, {{ total_comments }}], backgroundColor: ['#f09000', '#3b82f6'], borderWidth: 0 }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { color: '#aab1b7', padding: 15 } } }
+        }
+    });
+});
+</script>
+{% endblock %}

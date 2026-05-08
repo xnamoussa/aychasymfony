@@ -1,0 +1,310 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Blog — Posts{% endblock %}
+
+{% block hero %}
+<div class="bradcam_area">
+    <div class="single_bradcam d-flex align-items-center bradcam_bg_1 overlay">
+        <div class="container">
+            <div class="row align-items-center justify-content-center">
+                <div class="col-xl-12">
+                    <div class="bradcam_text text-center">
+                        <h3>Blog</h3>
+                        <p>Partagez vos idées, découvrez celles des autres</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .reaction-btn { background:#f0f2f5; border:none; border-radius:20px; padding:5px 12px; margin:0 3px; cursor:pointer; transition:all 0.2s; font-size:14px; }
+    .reaction-btn:hover { background:#e0e0e0; transform:scale(1.08); }
+    .translate-btn, .image-btn { background:#f09000; color:white; border:none; padding:6px 16px; border-radius:4px; margin:5px 5px 5px 0; cursor:pointer; transition:all 0.2s; font-size:13px; }
+    .translate-btn:hover, .image-btn:hover { background:#d07a00; }
+    .post-image-container { margin-bottom:15px; border-radius:8px; overflow:hidden; }
+    .post-image-container img { width:100%; height:220px; object-fit:cover; }
+    .loading { text-align:center; padding:20px; color:#999; font-style:italic; }
+    .flash-messages { position:fixed; top:20px; right:20px; z-index:9999; min-width:280px; }
+    .flash-success { background:#10b981; color:white; padding:12px 20px; border-radius:8px; margin-bottom:10px; animation:slideIn 0.3s ease; box-shadow:0 4px 12px rgba(0,0,0,0.15); }
+    .flash-error   { background:#ef4444; color:white; padding:12px 20px; border-radius:8px; margin-bottom:10px; animation:slideIn 0.3s ease; box-shadow:0 4px 12px rgba(0,0,0,0.15); }
+    @keyframes slideIn { from { transform:translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+    .ai-badge { background:linear-gradient(135deg,#667eea,#764ba2); color:white; padding:3px 12px; border-radius:20px; font-size:12px; display:inline-flex; align-items:center; gap:5px; }
+    .comment-box { background:#f9f9f9; padding:12px; margin-bottom:10px; border-left:3px solid #f09000; border-radius:4px; }
+</style>
+{% endblock %}
+
+{% block body %}
+{# Flash messages #}
+<div class="flash-messages">
+    {% for message in app.flashes('success') %}
+        <div class="flash-success">✓ {{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="flash-error">✗ {{ message }}</div>
+    {% endfor %}
+</div>
+
+<section class="blog_area section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+
+                {# ── Top bar: new post + search ── #}
+                <div class="d-flex justify-content-between align-items-center mb-4" style="flex-wrap:wrap; gap:12px;">
+                    <h4 style="margin:0; color:#1a2f45; font-weight:700;">
+                        <i class="fa fa-newspaper-o" style="color:#f09000;"></i>
+                        Blog communautaire
+                    </h4>
+                    {% if is_granted('ROLE_USER') %}
+                        <a href="{{ path('app_post_new') }}" class="btn btn-primary" style="padding:8px 20px; font-size:14px; border-radius: 8px;">
+                            <i class="fa fa-plus"></i> Nouveau Post
+                        </a>
+                    {% endif %}
+                </div>
+
+                {# ── Search & Sort ── #}
+                <div style="background:#f8f9fa; padding:20px; border-radius:8px; margin-bottom:30px; border:1px solid #e9ecef;">
+                    <form method="get" action="{{ path('app_post_index') }}" style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+                        <div style="flex:2; min-width:200px;">
+                            <label for="search" style="display:block; margin-bottom:5px; font-weight:600; color:#1a2f45; font-size:13px;">Rechercher par titre :</label>
+                            <input type="text" id="search" name="search" value="{{ current_search }}"
+                                   placeholder="Entrer le titre d'un post..."
+                                   style="width:100%; padding:9px 12px; border:1px solid #ddd; border-radius:4px; font-size:13px;">
+                        </div>
+                        <div style="flex:1; min-width:150px;">
+                            <label for="sort" style="display:block; margin-bottom:5px; font-weight:600; color:#1a2f45; font-size:13px;">Trier par :</label>
+                            <select id="sort" name="sort" style="width:100%; padding:9px 12px; border:1px solid #ddd; border-radius:4px; font-size:13px;">
+                                <option value="latest"        {% if current_sort == 'latest'        %}selected{% endif %}>Plus récents</option>
+                                <option value="oldest"        {% if current_sort == 'oldest'        %}selected{% endif %}>Plus anciens</option>
+                                <option value="most_commented"{% if current_sort == 'most_commented'%}selected{% endif %}>Plus commentés</option>
+                            </select>
+                        </div>
+                        <div style="display:flex; gap:8px; align-items:flex-end;">
+                            <button type="submit" class="boxed-btn3" style="padding:9px 20px; font-size:13px;">Filtrer</button>
+                            <a href="{{ path('app_post_index') }}" style="background:#6c757d; color:white; text-decoration:none; padding:9px 16px; border-radius:4px; font-size:13px;">Réinitialiser</a>
+                        </div>
+                    </form>
+                </div>
+
+                {% if current_search %}
+                <div style="margin-bottom:20px; padding:10px 16px; background:#e9ecef; border-radius:4px; font-size:13px;">
+                    <strong>Résultats pour : "{{ current_search }}"</strong> — {{ posts|length }} post(s) trouvé(s)
+                </div>
+                {% endif %}
+
+                {# ── Post list ── #}
+                {% for post in posts %}
+                <article class="blog_item" data-post-id="{{ post.id }}">
+                    <div class="blog_item_img">
+                        <div class="post-image-container">
+                            <div class="loading">Chargement de l'image...</div>
+                        </div>
+                        <a href="#" class="blog_item_date">
+                            <h3>{{ post.createdAt ? post.createdAt|date('d') : '' }}</h3>
+                            <p>{{ post.createdAt ? post.createdAt|date('M') : '' }}</p>
+                        </a>
+                    </div>
+
+                    <div class="blog_details">
+                        <div class="original-content">
+                            <h2 class="blog-title">{{ post.title }}</h2>
+                            <p>{{ post.content }}</p>
+                        </div>
+                        <div class="translated-content" style="display:none;"></div>
+
+                        {# AI badge + action buttons #}
+                        <div style="margin:12px 0; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                            <span class="ai-badge"><i class="fa fa-magic"></i> AI Active</span>
+                            <button class="translate-btn" data-post-id="{{ post.id }}">🌐 Traduire en anglais</button>
+                            <button class="image-btn"     data-post-id="{{ post.id }}">🖼️ Actualiser image</button>
+                        </div>
+
+                        {# Reactions #}
+                        <div class="reactions" style="margin:12px 0; display:flex; gap:5px; flex-wrap:wrap;">
+                            {% for emoji, count in post.reactions %}
+                                <button class="reaction-btn" data-emoji="{{ emoji }}" data-post-id="{{ post.id }}">
+                                    {{ emoji }} {% if count > 0 %}{{ count }}{% endif %}
+                                </button>
+                            {% endfor %}
+                        </div>
+
+                        <ul class="blog-info-link">
+                            <li><a href="#"><i class="fa fa-user"></i> {{ post.author.name|default('Inconnu') }}</a></li>
+                            <li><a href="#"><i class="fa fa-comments"></i> {{ post.comments|length }} Commentaires</a></li>
+                            {% if (app.user and post.author and post.author.id == app.user.id) or is_granted('ROLE_ADMIN') %}
+                            <li><a href="{{ path('app_post_edit', {'id': post.id}) }}"><i class="fa fa-edit"></i> Modifier</a></li>
+                            <li>
+                                <form method="post" action="{{ path('app_post_delete', {'id': post.id}) }}" style="display:inline;" onsubmit="return confirm('Supprimer ce post ?')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ post.id) }}">
+                                    <button type="submit" style="background:none; border:none; color:#f09000; cursor:pointer; font-size:14px;">
+                                        <i class="fa fa-trash"></i> Supprimer
+                                    </button>
+                                </form>
+                            </li>
+                            {% endif %}
+                        </ul>
+
+                        {# Comments #}
+                        <div class="comments-area mt-4">
+                            <h4 style="color:#1a2f45; font-size:16px; margin-bottom:12px; font-weight:600;">
+                                <i class="fa fa-comments" style="color:#f09000;"></i> Commentaires
+                            </h4>
+
+                            {% for comment in post.comments %}
+                            <div class="comment-box">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                                    <span style="font-weight:600; font-size:13px; color:#1a2f45;">{{ comment.author.name|default('Inconnu') }}</span>
+                                    <small style="color:#999;">{{ comment.createdAt ? comment.createdAt|date('Y-m-d H:i') : '' }}</small>
+                                </div>
+
+                                {% if comment.author == app.user or is_granted('ROLE_ADMIN') %}
+                                <form id="edit-form-{{ comment.id }}" method="post" action="{{ path('app_comment_edit', {'id': comment.id}) }}" style="display:none;">
+                                    <input type="text" name="content" value="{{ comment.content }}" style="width:70%; padding:6px; border:1px solid #ddd; border-radius:4px; font-size:13px;">
+                                    <button type="submit" style="background:#f09000; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; margin-left:5px;">Sauvegarder</button>
+                                    <button type="button" onclick="document.getElementById('edit-form-{{ comment.id }}').style.display='none'; document.getElementById('comment-text-{{ comment.id }}').style.display='flex';" style="background:#ccc; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; margin-left:3px;">Annuler</button>
+                                </form>
+                                {% endif %}
+
+                                <div id="comment-text-{{ comment.id }}" style="display:flex; justify-content:space-between; align-items:center;">
+                                    <p style="margin:0; color:#444; font-size:14px;">{{ comment.content }}</p>
+                                    <div style="display:flex; gap:5px;">
+                                        {% if (app.user and comment.author and comment.author.id == app.user.id) or is_granted('ROLE_ADMIN') %}
+                                        <button onclick="document.getElementById('edit-form-{{ comment.id }}').style.display='block'; document.getElementById('comment-text-{{ comment.id }}').style.display='none';" style="background:none; border:none; color:#f09000; cursor:pointer;"><i class="fa fa-edit"></i></button>
+                                        <form method="post" action="{{ path('app_comment_delete', {'id': comment.id}) }}" style="display:inline;" onsubmit="return confirm('Supprimer ce commentaire ?')">
+                                            <button type="submit" style="background:none; border:none; color:#e74c3c; cursor:pointer;"><i class="fa fa-trash"></i></button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <p style="color:#999; font-size:14px; font-style:italic;">Aucun commentaire. Soyez le premier !</p>
+                            {% endfor %}
+
+                            {# Add comment form - Allowed for ROLE_USER #}
+                            {% if is_granted('ROLE_USER') %}
+                            <form method="post" action="{{ path('app_comment_add', {'id': post.id}) }}" style="display:flex; gap:10px; align-items:flex-start; margin-top:12px;">
+                                <textarea name="content" required placeholder="Écrire un commentaire..." style="flex:1; padding:8px 12px; border:1px solid #ddd; border-radius:4px; font-size:13px; resize:vertical;" rows="2"></textarea>
+                                <button type="submit" class="boxed-btn3" style="padding:8px 18px; font-size:13px; white-space:nowrap;">Commenter</button>
+                            </form>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </article>
+                {% else %}
+                <div style="text-align:center; padding:60px; background:#f9f9f9; border-radius:8px;">
+                    <i class="fa fa-pencil-square-o fa-3x" style="color:#ddd; margin-bottom:15px;"></i>
+                    <p style="color:#666; font-size:18px; margin-bottom:15px;">Aucun post trouvé.</p>
+                    <a href="{{ path('app_post_new') }}" class="boxed-btn3">Créer le premier post</a>
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascripts %}
+{# Word predictor #}
+{% include 'partials/word_predictor.html.twig' %}
+<script>
+// Auto-hide flash messages
+setTimeout(function() {
+    document.querySelectorAll('.flash-success, .flash-error').forEach(function(el) {
+        el.style.opacity = '0';
+        el.style.transition = 'opacity 0.3s';
+        setTimeout(function() { if (el && el.remove) el.remove(); }, 300);
+    });
+}, 4000);
+
+// ── Reaction buttons ──
+document.querySelectorAll('.reaction-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var postId = this.getAttribute('data-post-id');
+        var emoji  = this.getAttribute('data-emoji');
+        var self   = this;
+        fetch('/post/' + postId + '/reaction/' + emoji, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            var count = data.reactions[emoji];
+            self.textContent = emoji + (count > 0 ? ' ' + count : '');
+        });
+    });
+});
+
+// ── Translate buttons ──
+document.querySelectorAll('.translate-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var postId       = this.getAttribute('data-post-id');
+        var article      = this.closest('.blog_item');
+        var originalDiv  = article.querySelector('.original-content');
+        var translatedDiv = article.querySelector('.translated-content');
+        var self         = this;
+
+        if (translatedDiv.style.display === 'none' || translatedDiv.style.display === '') {
+            self.textContent = '⏳ Traduction...';
+            self.disabled = true;
+            fetch('/post/' + postId + '/translate')
+                .then(r => r.json())
+                .then(data => {
+                    translatedDiv.innerHTML = '<h2 class="blog-title">' + data.title + '</h2><p>' + data.content + '</p>';
+                    originalDiv.style.display  = 'none';
+                    translatedDiv.style.display = 'block';
+                    self.textContent = '🔄 Voir l\'original';
+                    self.disabled = false;
+                })
+                .catch(() => { self.textContent = '🌐 Traduire en anglais'; self.disabled = false; });
+        } else {
+            originalDiv.style.display  = 'block';
+            translatedDiv.style.display = 'none';
+            self.textContent = '🌐 Traduire en anglais';
+        }
+    });
+});
+
+// ── Auto-load images ──
+document.querySelectorAll('.blog_item').forEach(function(article) {
+    var postId       = article.getAttribute('data-post-id');
+    var imgContainer = article.querySelector('.post-image-container');
+    if (!imgContainer) return;
+    fetch('/post/' + postId + '/image')
+        .then(r => r.json())
+        .then(data => {
+            if (data.image_url) {
+                imgContainer.innerHTML = '<img src="' + data.image_url + '" alt="Post image">';
+            } else {
+                imgContainer.innerHTML = '<div style="background:#e9ecef;height:200px;display:flex;align-items:center;justify-content:center;color:#999;border-radius:8px;"><i class=\"fa fa-image fa-2x\"></i></div>';
+            }
+        })
+        .catch(() => {
+            imgContainer.innerHTML = '<div style="background:#e9ecef;height:200px;display:flex;align-items:center;justify-content:center;color:#999;border-radius:8px;">Image non disponible</div>';
+        });
+});
+
+// ── Refresh image buttons ──
+document.querySelectorAll('.image-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var postId       = this.getAttribute('data-post-id');
+        var article      = this.closest('.blog_item');
+        var imgContainer = article.querySelector('.post-image-container');
+        imgContainer.innerHTML = '<div class="loading">Chargement...</div>';
+        fetch('/post/' + postId + '/image')
+            .then(r => r.json())
+            .then(data => {
+                imgContainer.innerHTML = data.image_url
+                    ? '<img src="' + data.image_url + '" alt="Post image">'
+                    : '<div style="background:#e9ecef;height:200px;display:flex;align-items:center;justify-content:center;color:#999;border-radius:8px;">Image non disponible</div>';
+            });
+    });
+});
+</script>
+{% endblock %}

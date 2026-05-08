@@ -1,0 +1,87 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Nouveau Sponsor{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Nouveau Sponsor</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{{ path('app_sponsor_index') }}">Sponsors</a></li>
+        <li class="breadcrumb-item active">Nouveau</li>
+    </ol>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-plus me-1"></i> Ajouter un Sponsor
+        </div>
+        <div class="card-body">
+            {{ form_start(form, {'attr': {'class': 'row g-3', 'enctype': 'multipart/form-data', 'novalidate': 'novalidate'}}) }}
+
+                <div class="col-md-6">
+                    {{ form_label(form.nom, 'Nom', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                    {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
+                    <div class="text-danger small">{{ form_errors(form.nom) }}</div>
+                </div>
+
+                <div class="col-md-6">
+                    {{ form_label(form.email, 'Email', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                    {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
+                    <div class="text-danger small">{{ form_errors(form.email) }}</div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Téléphone</label>
+                    <div class="input-group">
+                        <span class="input-group-text">🇹🇳 +216</span>
+                        {{ form_widget(form.numLocal, {'attr': {'class': 'form-control', 'maxlength': '8'}}) }}
+                    </div>
+                    <div class="text-danger small">{{ form_errors(form.numLocal) }}</div>
+                    <small class="text-muted">Exactement 8 chiffres. Ex: 12345678</small>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Logo</label>
+                    <div class="d-flex align-items-center gap-3">
+                        <img id="logoPreview" src="/uploads/logos/placeholder.png"
+                             onerror="this.src='https://via.placeholder.com/80x80?text=Logo'"
+                             style="width:80px; height:80px; object-fit:contain; border:1px solid #ddd; border-radius:8px; background:#f9f9f9;">
+                        {{ form_widget(form.logoFile, {'attr': {'class': 'form-control', 'accept': 'image/*', 'id': 'logoFile'}}) }}
+                    </div>
+                    <div class="text-danger small">{{ form_errors(form.logoFile) }}</div>
+                    <small class="text-muted">JPG, PNG, GIF, WEBP — max 2Mo</small>
+                </div>
+
+                <div class="col-md-6">
+                    {{ form_label(form.statut, 'Statut', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                    {{ form_widget(form.statut, {'attr': {'class': 'form-select'}}) }}
+                    <div class="text-danger small">{{ form_errors(form.statut) }}</div>
+                </div>
+
+                <div class="col-12 mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Enregistrer
+                    </button>
+                    <a href="{{ path('app_sponsor_index') }}" class="btn btn-secondary ms-2">
+                        <i class="fas fa-times me-1"></i> Annuler
+                    </a>
+                </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('logoFile').addEventListener('change', function () {
+    const file = this.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            document.getElementById('logoPreview').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,298 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Panier - LAMMA{% endblock %}
+{% block page_title %}Panier d'Expédition{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .cart-container {
+        max-width: 500px;
+        margin: 0 auto;
+        background-color: #0f172a; /* Deep dark blue */
+        border-radius: 20px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        color: white;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .cart-icon-banner {
+        background-color: #1e293b;
+        margin: 20px 20px 0 20px;
+        padding: 15px;
+        border-radius: 12px;
+        text-align: center;
+    }
+    
+    .cart-icon-banner i {
+        font-size: 32px;
+        color: white;
+    }
+
+    .secure-text {
+        text-align: center;
+        color: #10b981; /* Green */
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        margin-top: 15px;
+        font-weight: 600;
+    }
+
+    .cart-total-large {
+        text-align: center;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 10px 0 25px 0;
+    }
+
+    .cart-items-section {
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 20px;
+        background: rgba(255,255,255,0.02);
+    }
+
+    .cart-items-header {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        color: #94a3b8;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    .cart-item-row {
+        display: flex;
+        align-items: center;
+        background: #1e293b;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        position: relative;
+    }
+
+    .cart-item-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.1);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-right: 15px;
+    }
+
+    .cart-item-details {
+        flex-grow: 1;
+    }
+
+    .cart-item-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-bottom: 3px;
+    }
+
+    .cart-item-qty {
+        font-size: 0.75rem;
+        color: #94a3b8;
+    }
+
+    .cart-item-price {
+        color: #10b981;
+        font-weight: 700;
+        margin-right: 15px;
+    }
+
+    .cart-item-remove {
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .cart-item-remove:hover {
+        background: #ef4444;
+        color: white;
+    }
+
+    .promo-section {
+        display: flex;
+        margin-top: 20px;
+        gap: 10px;
+    }
+
+    .promo-input {
+        flex-grow: 1;
+        background: #1e293b;
+        border: 1px solid rgba(255,255,255,0.1);
+        padding: 10px 15px;
+        border-radius: 8px;
+        color: white;
+        font-size: 0.9rem;
+    }
+    
+    .promo-input::placeholder {
+        color: #475569;
+    }
+
+    .promo-btn {
+        background: #334155;
+        border: none;
+        color: white;
+        padding: 0 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
+    .encryption-section {
+        background: #064e3b;
+        margin: 20px;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        color: #34d399; /* Light green */
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .checkout-btn {
+        display: block;
+        width: 100%;
+        background: #f97316; /* Orange */
+        color: white;
+        text-align: center;
+        padding: 20px;
+        font-weight: 800;
+        font-size: 1rem;
+        letter-spacing: 1px;
+        border: none;
+        text-decoration: none;
+        transition: background 0.3s;
+    }
+
+    .checkout-btn:hover {
+        background: #ea580c;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<!-- Flash Messages -->
+{% for label, messages in app.flashes %}
+    {% for message in messages %}
+        <div class="alert alert-{{ label == 'error' ? 'danger' : label }} text-center mb-4 mx-auto" style="max-width: 500px;">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endfor %}
+
+<div class="cart-container mt-4 mb-5">
+    
+    <!-- Top Icon Banner -->
+    <div class="cart-icon-banner">
+        <i class="fa fa-briefcase"></i> <i class="fa fa-mobile-phone ml-2"></i>
+    </div>
+
+    <!-- Title & Total -->
+    <div class="secure-text">SECURE TRAIL PAY</div>
+    <div class="cart-total-large">
+        {% if discount > 0 %}
+            <div style="font-size: 0.8rem; color: #94a3b8; text-decoration: line-through; margin-bottom: -10px;">{{ total|number_format(2, ',', ' ') }} €</div>
+            <div style="color: #10b981;">{{ discountedTotal|number_format(2, ',', ' ') }} €</div>
+        {% else %}
+            {{ total|number_format(2, ',', ' ') }} €
+        {% endif %}
+    </div>
+
+    <!-- Items Section -->
+    <div class="cart-items-section">
+        <div class="cart-items-header">
+            <span><i class="fa fa-shopping-cart"></i> YOUR SELECTION</span>
+            <span>{% set count = 0 %}{% for item in items %}{% set count = count + item.quantity %}{% endfor %}{{ count }} items</span>
+        </div>
+
+        {% if items is empty %}
+            <div class="text-center text-muted py-4">
+                Votre sac d'expédition est vide.<br>
+                <a href="{{ path('app_repas_detaille_index') }}" class="btn btn-outline-light mt-3 py-1">Explorer les repas</a>
+            </div>
+        {% else %}
+            {% for item in items %}
+            <div class="cart-item-row">
+                <div class="cart-item-icon">
+                    <i class="fa fa-cutlery"></i>
+                </div>
+                <div class="cart-item-details">
+                    <div class="cart-item-title">{{ item.repas.nom }}</div>
+                    {% if item.supplements is not empty %}
+                        <div style="font-size: 0.7rem; color: #10b981; margin-bottom: 3px;">
+                            {% for supp in item.supplements %}
+                                + {{ supp.qty }}x {{ supp.ingredient.nom }}{{ not loop.last ? ',' : '' }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="cart-item-qty">Quantity: {{ item.quantity }}</div>
+                </div>
+                <div class="cart-item-price">
+                    {{ (item.prixUnitaireTotal * item.quantity)|number_format(2, ',', ' ') }} €
+                </div>
+                <a href="{{ path('app_cart_remove', {'hash': item.hash}) }}" class="cart-item-remove" title="Retirer">
+                    <i class="fa fa-times"></i>
+                </a>
+            </div>
+            {% endfor %}
+
+            <!-- Promo -->
+            {% if appliedPromo %}
+                <div class="cart-item-row mt-3" style="background: rgba(16, 185, 129, 0.1); border: 1px dashed #10b981;">
+                    <div class="cart-item-icon" style="background: #10b981;">
+                        <i class="fa fa-tag" style="color: white;"></i>
+                    </div>
+                    <div class="cart-item-details">
+                        <div class="cart-item-title" style="color: #10b981;">CODE APPLIQUÉ : {{ appliedPromo.code }}</div>
+                        <div style="font-size: 0.75rem; color: #94a3b8;">Remise de {{ appliedPromo.discountPercentage }}% appliquée sur le total</div>
+                    </div>
+                    <div class="cart-item-price" style="color: #10b981;">
+                        - {{ discount|number_format(2, ',', ' ') }} €
+                    </div>
+                    <a href="{{ path('app_cart_remove_promo') }}" class="cart-item-remove" title="Retirer le code" style="background: rgba(239, 68, 68, 0.1);">
+                        <i class="fa fa-trash"></i>
+                    </a>
+                </div>
+            {% else %}
+                <form action="{{ path('app_cart_apply_promo') }}" method="POST" class="promo-section">
+                    <input type="text" name="code" class="promo-input" placeholder="Promo Code (ex: WELLCOME20)" required>
+                    <button type="submit" class="promo-btn">APPLY</button>
+                </form>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <!-- Encryption Disclaimer -->
+    <div class="encryption-section">
+        <i class="fa fa-lock mr-2"></i> EXPEDITION FUNDS ENCRYPTED
+    </div>
+
+    <!-- Action Button -->
+    {% if items is not empty %}
+        <form action="{{ path('app_cart_checkout') }}" method="POST">
+            <button type="submit" class="checkout-btn w-100">PAYER & VALIDER LA MISSION</button>
+        </form>
+    {% else %}
+        <div class="checkout-btn w-100" style="background:#475569;cursor:not-allowed;">PANIER VIDE</div>
+    {% endif %}
+
+</div>
+{% endblock %}

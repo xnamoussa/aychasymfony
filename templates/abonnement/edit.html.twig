@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier Abonnement - LAMMA{% endblock %}
+{% block page_title %}Modification d'Abonnement{% endblock %}
+
+{% block body %}
+<section class="crud-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card card-detail">
+                    <div class="card-header"><i class="fa fa-edit"></i> Formulaire de modification</div>
+                    <div class="card-body form-section">
+                        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                        <div class="row">
+                            <div class="col-12">
+                                {{ form_widget(form) }}
+                            </div>
+                        </div>
+                        <div class="mt-4 text-center">
+                            <button class="btn btn-add">Mettre à jour l'Abonnement</button>
+                            <a href="{{ path('app_abonnement_index') }}" class="btn btn-secondary" style="border-radius:25px;padding:10px 30px;">Annuler</a>
+                        </div>
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

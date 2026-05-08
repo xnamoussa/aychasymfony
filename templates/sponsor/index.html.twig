@@ -1,0 +1,169 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Liste des Sponsors{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Sponsors</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Dashboard</a></li>
+        <li class="breadcrumb-item active">Sponsors</li>
+    </ol>
+
+    <div class="card mb-3">
+        <div class="card-header"><i class="fas fa-filter me-1"></i> Filtres & Recherche</div>
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start gap-3">
+
+                <form method="get" action="{{ path('app_sponsor_index') }}" class="row g-2 align-items-end flex-grow-1">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Statut</label>
+                        <select name="statut" class="form-select">
+                            <option value="">Tous</option>
+                            <option value="1" {{ filters.statut == '1' ? 'selected' : '' }}>Actif</option>
+                            <option value="0" {{ filters.statut == '0' ? 'selected' : '' }}>Inactif</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Date début</label>
+                        <input type="date" name="dateDebut" class="form-control" value="{{ filters.dateDebut }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Date fin</label>
+                        <input type="date" name="dateFin" class="form-control" value="{{ filters.dateFin }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Trier par</label>
+                        <select name="sort" class="form-select">
+                            <option value="id"           {{ filters.sort == 'id'           ? 'selected' : '' }}>#</option>
+                            <option value="nom"          {{ filters.sort == 'nom'          ? 'selected' : '' }}>Nom</option>
+                            <option value="email"        {{ filters.sort == 'email'        ? 'selected' : '' }}>Email</option>
+                            <option value="dateCreation" {{ filters.sort == 'dateCreation' ? 'selected' : '' }}>Date</option>
+                            <option value="statut"       {{ filters.sort == 'statut'       ? 'selected' : '' }}>Statut</option>
+                        </select>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label fw-bold">Ordre</label>
+                        <select name="dir" class="form-select">
+                            <option value="asc"  {{ filters.dir == 'asc'  ? 'selected' : '' }}>↑ ASC</option>
+                            <option value="desc" {{ filters.dir == 'desc' ? 'selected' : '' }}>↓ DESC</option>
+                        </select>
+                    </div>
+                    <div class="col-12 d-flex gap-2 mt-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter me-1"></i> Filtrer
+                        </button>
+                        <a href="{{ path('app_sponsor_index') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i> Réinitialiser
+                        </a>
+                    </div>
+                </form>
+
+                <div style="min-width: 260px;">
+                    <label class="form-label fw-bold">Recherche</label>
+                    <input type="text" id="liveSearch" class="form-control"
+                           placeholder="Nom, email, téléphone...">
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div><i class="fas fa-handshake me-1"></i> Liste des Sponsors (<span id="countResult">{{ sponsors|length }}</span>)</div>
+            <div class="d-flex gap-2">
+                <a href="{{ path('app_sponsor_pdf') }}" class="btn btn-danger btn-sm" target="_blank">
+                    <i class="fas fa-file-pdf me-1"></i> Exporter PDF
+                </a>
+                <a href="{{ path('app_sponsor_new') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus me-1"></i> Nouveau Sponsor
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger">{{ message }}</div>
+            {% endfor %}
+
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Logo</th>
+                        <th>Nom</th>
+                        <th>Email</th>
+                        <th>Téléphone</th>
+                        <th>Date Création</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="sponsorTableBody">
+                {% for sponsor in sponsors %}
+                    <tr class="sponsor-row">
+                        <td>
+                            {% if sponsor.logo %}
+                                <img src="/uploads/logos/{{ sponsor.logo }}"
+                                     alt="{{ sponsor.nom }}"
+                                     style="width:55px; height:55px; object-fit:contain; border-radius:6px; background:#f9f9f9; border:1px solid #ddd;">
+                            {% else %}
+                                <div style="width:55px; height:55px; background:#f0f0f0; border-radius:6px; display:flex; align-items:center; justify-content:center; border:1px solid #ddd;">
+                                    <i class="fas fa-image text-white-50"></i>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>{{ sponsor.nom }}</td>
+                        <td>{{ sponsor.email }}</td>
+                        <td>{{ sponsor.telephone }}</td>
+                        <td>{{ sponsor.dateCreation ? sponsor.dateCreation|date('d/m/Y') : '-' }}</td>
+                        <td>
+                            {% if sponsor.statut %}
+                                <span class="badge bg-success">Actif</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactif</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ path('app_sponsor_show', {'id': sponsor.id}) }}" class="btn btn-info btn-sm">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ path('app_sponsor_edit', {'id': sponsor.id}) }}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            {{ include('sponsor/_delete_form.html.twig') }}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                    <tr>
+                        <td colspan="7" class="text-center text-white-50">Aucun sponsor trouvé.</td>
+                    </tr>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <div id="noResultMsg" class="text-center text-white-50 mt-2" style="display:none;">
+                Aucun résultat pour cette recherche.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('liveSearch').addEventListener('input', function () {
+    const term = this.value.toLowerCase().trim();
+    const rows = document.querySelectorAll('#sponsorTableBody .sponsor-row');
+    let visible = 0;
+    rows.forEach(function (row) {
+        const match = row.innerText.toLowerCase().includes(term);
+        row.style.display = match ? '' : 'none';
+        if (match) visible++;
+    });
+    document.getElementById('countResult').textContent = visible;
+    document.getElementById('noResultMsg').style.display = (visible === 0) ? 'block' : 'none';
+});
+</script>
+{% endblock %}

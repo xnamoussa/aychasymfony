@@ -1,0 +1,478 @@
+{# templates/security/login.html.twig #}
+{% extends 'base_auth.html.twig' %}
+
+{% block title %}Sign In{% endblock %}
+
+{% block hero_eyebrow %}Welcome Back, Explorer{% endblock %}
+
+{% block hero_title %}
+  BACK<br/>
+  TO<br/>
+  <span class="outline">CAMP</span>
+{% endblock %}
+
+{% block hero_desc %}
+  Your next trail is waiting. Sign in and pick up where your adventure left off.
+{% endblock %}
+
+{% block extra_styles %}
+  .form-panel { align-items: center; }
+  .label-row { display:flex; justify-content:space-between; align-items:center; }
+  .forgot-link { font-size:.75rem; font-weight:500; color:var(--teal); text-decoration:none; letter-spacing:.02em; transition:opacity .2s; }
+  .forgot-link:hover { opacity:.7; }
+  .remember-row { display:flex; align-items:center; gap:10px; }
+  .checkbox-wrap { position:relative; width:18px; height:18px; flex-shrink:0; }
+  .checkbox-wrap input[type="checkbox"] { position:absolute; opacity:0; width:100%; height:100%; cursor:pointer; margin:0; z-index:2; }
+  .checkbox-box { position:absolute; inset:0; border:1.5px solid var(--line); border-radius:4px; background:var(--surface); transition:border-color .2s,background .2s; display:grid; place-items:center; }
+  .checkbox-wrap input:checked ~ .checkbox-box { border-color:var(--teal); background:rgba(46,207,184,.15); }
+  .checkbox-box svg { width:10px; height:10px; stroke:var(--teal); opacity:0; transition:opacity .2s; }
+  .checkbox-wrap input:checked ~ .checkbox-box svg { opacity:1; }
+  .remember-label { font-size:.82rem; color:var(--soft); cursor:pointer; }
+  .face-id-rings { position:relative; width:20px; height:20px; flex-shrink:0; }
+  .face-id-rings svg { width:20px; height:20px; }
+  .btn-social.face-active .face-id-rings::before { content:''; position:absolute; inset:-4px; border:1.5px solid var(--teal); border-radius:50%; animation:ripple .6s ease-out; }
+  @keyframes ripple { 0%{opacity:1;transform:scale(.8)} 100%{opacity:0;transform:scale(1.6)} }
+  .scan-line { position:absolute; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgba(46,207,184,0.7),transparent); top:0; display:none; animation:scan 1.2s ease-in-out forwards; }
+  .btn-social.scanning .scan-line { display:block; }
+  @keyframes scan { 0%{top:0;opacity:1} 100%{top:100%;opacity:0} }
+  .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.72); backdrop-filter:blur(8px); z-index:100; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .3s; }
+  .modal-backdrop.open { opacity:1; pointer-events:all; }
+  .modal { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:40px; width:100%; max-width:420px; position:relative; transform:translateY(20px) scale(.97); transition:transform .35s cubic-bezier(.34,1.56,.64,1); box-shadow:0 32px 80px rgba(0,0,0,0.6),0 0 0 1px rgba(46,207,184,0.08); }
+  .modal-backdrop.open .modal { transform:translateY(0) scale(1); }
+  .modal-close { position:absolute; top:16px; right:16px; width:30px; height:30px; border-radius:50%; background:rgba(255,255,255,.06); border:1px solid var(--line); display:grid; place-items:center; cursor:pointer; color:var(--muted); transition:background .2s,color .2s; }
+  .modal-close:hover { background:rgba(255,255,255,.1); color:var(--white); }
+  .modal-icon { width:54px; height:54px; border-radius:14px; background:rgba(232,57,44,.12); border:1px solid rgba(232,57,44,.25); display:grid; place-items:center; margin-bottom:20px; }
+  .modal-icon svg { width:24px; height:24px; stroke:var(--red); }
+  .modal h2 { font-family:'Bebas Neue',sans-serif; font-size:2rem; letter-spacing:.08em; margin-bottom:8px; }
+  .modal-view > p { font-size:.85rem; color:var(--muted); line-height:1.65; margin-bottom:28px; }
+  .modal .field { display:flex; flex-direction:column; gap:7px; }
+  .modal .field label { font-size:.7rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+  .modal-steps { display:flex; flex-direction:column; gap:18px; }
+  .step-indicator { display:flex; align-items:center; gap:0; margin-bottom:28px; }
+  .step-dot { width:28px; height:28px; border-radius:50%; background:var(--surface); border:1.5px solid var(--line); display:grid; place-items:center; font-family:'Bebas Neue',sans-serif; font-size:.85rem; color:var(--muted); transition:all .3s; flex-shrink:0; }
+  .step-dot.active { border-color:var(--red); color:var(--white); background:var(--red); }
+  .step-dot.done { border-color:var(--teal); background:var(--teal); color:var(--dark); }
+  .step-line { flex:1; height:1px; background:var(--line); transition:background .3s; }
+  .step-line.done { background:var(--teal); }
+  .modal-view { display:none; }
+  .modal-view.active { display:block; }
+  .btn-modal { width:100%; margin-top:20px; padding:14px; background:var(--red); border:none; border-radius:8px; font-family:'Bebas Neue',sans-serif; font-size:1.05rem; letter-spacing:.14em; color:var(--white); cursor:pointer; transition:background .2s,transform .15s,box-shadow .2s; }
+  .btn-modal:hover { background:#c93228; transform:translateY(-1px); box-shadow:0 8px 24px rgba(232,57,44,.3); }
+  .btn-modal.secondary { background:transparent; border:1px solid var(--line); color:var(--soft); margin-top:10px; box-shadow:none; }
+  .btn-modal.secondary:hover { background:rgba(255,255,255,.05); border-color:rgba(255,255,255,.2); transform:none; box-shadow:none; }
+  .success-icon { width:64px; height:64px; border-radius:50%; background:rgba(46,207,184,.12); border:1.5px solid rgba(46,207,184,.3); display:grid; place-items:center; margin:0 auto 20px; animation:popIn .5s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes popIn { 0%{transform:scale(0);opacity:0} 100%{transform:scale(1);opacity:1} }
+  .success-icon svg { width:28px; height:28px; stroke:var(--teal); }
+  .success-text { text-align:center; }
+  .success-text h2 { font-family:'Bebas Neue',sans-serif; font-size:2rem; letter-spacing:.08em; margin-bottom:8px; }
+  .success-text p { font-size:.85rem; color:var(--muted); line-height:1.65; }
+  .code-row { display:flex; gap:10px; justify-content:center; margin:8px 0; }
+  .code-row input { width:46px; height:54px; text-align:center; font-family:'Bebas Neue',sans-serif; font-size:1.5rem; border-radius:8px; padding:0; letter-spacing:0; }
+
+  /* Face ID Modal specific styles */
+  .face-video-container { position:relative; width:100%; border-radius:12px; overflow:hidden; background:#000; display:flex; justify-content:center; align-items:center; aspect-ratio:4/3; margin-bottom:16px; border:1px solid var(--line); }
+  #face-video { width:100%; height:100%; object-fit:cover; transform:scaleX(-1); }
+  #face-loading { position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:var(--white); font-weight:600; text-align:center; text-shadow:0 1px 3px rgba(0,0,0,0.8); z-index:10; }
+  .face-actions { display:none; gap:12px; margin-top:16px; }
+  .face-enroll-container { display:none; margin-top:16px; text-align:left; }
+{% endblock %}
+
+{% block form_content %}
+
+  <div class="form-header" style="margin-bottom:36px;">
+    <h1>Sign In</h1>
+    <p>Good to see you again. Enter your credentials to access your account.</p>
+  </div>
+
+  <form action="{{ path('app_login') }}" method="POST" novalidate>
+
+    {# CSRF token — required by Symfony security.yaml enable_csrf: true #}
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}"/>
+
+    <div class="fields">
+
+      {# Email — name must be "_username" as declared in security.yaml #}
+      <div class="field">
+        <label for="inputEmail">Email Address</label>
+        <div class="input-wrap">
+          <span class="input-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </span>
+          <input type="email"
+                 id="inputEmail"
+                 name="_username"
+                 value="{{ last_username }}"
+                 placeholder="jane@example.com"
+                 required
+                 autocomplete="email"
+                 {% if error %}style="border-color:var(--red);"{% endif %}/>
+        </div>
+        {# Show authentication error (e.g. wrong password, user not found) #}
+        {% if error %}
+          <div id="login-error-msg" style="font-size:.72rem;color:#ff8a80;margin-top:4px;" data-cooldown="{{ app.session.get('cooldown_until_timestamp')|default('') }}">
+            {{ error.messageKey|trans(error.messageData, 'security') }}
+          </div>
+        {% endif %}
+      </div>
+
+      {# Password — name must be "_password" as declared in security.yaml #}
+      <div class="field">
+        <div class="label-row">
+          <label for="inputPassword">Password</label>
+          <a href="#" class="forgot-link" onclick="openReset(event)">Forgot password?</a>
+        </div>
+        <div class="input-wrap">
+          <span class="input-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </span>
+          <input type="password"
+                 id="inputPassword"
+                 name="_password"
+                 placeholder="Your password"
+                 required
+                 autocomplete="current-password"/>
+          <button type="button" class="eye" onclick="togglePwd('inputPassword', this)" aria-label="Toggle">
+            <svg id="eye-inputPassword" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {# Remember me — name must be "_remember_me" as declared in security.yaml #}
+      <div class="remember-row">
+        <label class="checkbox-wrap">
+          <input type="checkbox" name="_remember_me" id="remember_me"/>
+          <span class="checkbox-box">
+            <svg viewBox="0 0 12 12" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="1.5,6 4.5,9 10.5,3"/>
+            </svg>
+          </span>
+        </label>
+        <label class="remember-label" for="remember_me">Keep me signed in</label>
+      </div>
+
+    </div>
+
+    <button type="submit" class="btn-submit" style="margin-top:28px;">SIGN IN</button>
+
+  </form>
+
+  <div class="or-row"><span>or continue with</span></div>
+  <div class="social-row">
+    {# Google — hardcoded /connect/google so it works without path() crashing if bundle not installed #}
+    <a href="/connect/google" class="btn-social" style="text-decoration:none;">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Google
+    </a>
+    <button type="button" class="btn-social" id="faceid-btn" onclick="openFaceModal()">
+      <div class="scan-line"></div>
+      <div class="face-id-rings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+          <path d="M8 2H4a2 2 0 0 0-2 2v4"/><path d="M16 2h4a2 2 0 0 1 2 2v4"/>
+          <path d="M8 22H4a2 2 0 0 1-2-2v-4"/><path d="M16 22h4a2 2 0 0 0 2-2v-4"/>
+          <path d="M9 10v.5"/><path d="M15 10v.5"/>
+          <path d="M9.5 16s.9 1.5 2.5 1.5 2.5-1.5 2.5-1.5"/>
+          <path d="M12 13v-1"/>
+        </svg>
+      </div>
+      Face ID
+    </button>
+  </div>
+
+  <p class="bottom-link">Don't have an account? <a href="{{ path('app_register') }}">Create one</a></p>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
+<script defer src="{{ asset('js/face-login.js') }}"></script>
+
+<!-- Face ID Modal -->
+<div class="modal-backdrop" id="faceModal" onclick="if(event.target === this) closeFaceModal()">
+  <div class="modal" style="text-align:center;">
+    <button class="modal-close" onclick="closeFaceModal()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    
+    <h2>Login with Face ID</h2>
+    <p style="font-size:0.85rem; color:var(--muted); margin-bottom:16px;">Position your face clearly in the frame to authenticate.</p>
+    
+    <div class="face-video-container">
+       <video id="face-video" autoplay muted playsinline></video>
+       <div id="face-loading">Initializing camera...</div>
+    </div>
+    
+    <div id="face-error-msg" style="color:var(--red); font-weight:500; font-size:0.85rem; min-height:20px;"></div>
+    
+    <div class="face-actions" id="face-actions">
+       <button class="btn-modal" onclick="startFaceLogin()">RETRY</button>
+       <button class="btn-modal secondary" onclick="showEnrollForm()">FIRST TIME? ENROLL FACE</button>
+    </div>
+    
+    <div class="face-enroll-container field" id="face-enroll-container">
+       <label for="face-enroll-email">Enter your linked account email</label>
+       <div class="input-wrap">
+           <span class="input-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+           <input type="email" id="face-enroll-email" placeholder="jane@example.com"/>
+       </div>
+       <button class="btn-modal" onclick="enrollFaceSubmit()" style="margin-top:12px;">ENROLL & SAVE</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="resetModal" onclick="handleBackdropClick(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeReset()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="step-indicator" id="stepIndicator">
+      <div class="step-dot active" id="dot-1">1</div>
+      <div class="step-line" id="line-1"></div>
+      <div class="step-dot" id="dot-2">2</div>
+      <div class="step-line" id="line-2"></div>
+      <div class="step-dot" id="dot-3">3</div>
+    </div>
+    <div class="modal-view active" id="step1">
+      <div class="modal-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+      <h2>Reset Password</h2>
+      <p>Enter the email address linked to your account and we'll send you a verification code.</p>
+      <div class="field">
+        <label for="reset-email">Email Address</label>
+        <div class="input-wrap">
+          <span class="input-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+          <input type="email" id="reset-email" placeholder="jane@example.com"/>
+        </div>
+      </div>
+      <button class="btn-modal" onclick="requestReset()">SEND CODE</button>
+      <button class="btn-modal secondary" onclick="closeReset()">CANCEL</button>
+    </div>
+    <div class="modal-view" id="step2">
+      <div class="modal-icon" style="background:rgba(46,207,184,0.1);border-color:rgba(46,207,184,0.25);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <h2>Enter Code</h2>
+      <p>We sent a 4-digit code to <strong id="sent-email" style="color:var(--white);"></strong>. Check your inbox and enter it below.</p>
+      <div class="code-row">
+        <input class="code-input" type="text" maxlength="1" inputmode="numeric" id="c1" onkeyup="moveCode(this,'','c2')"/>
+        <input class="code-input" type="text" maxlength="1" inputmode="numeric" id="c2" onkeyup="moveCode(this,'c1','c3')"/>
+        <input class="code-input" type="text" maxlength="1" inputmode="numeric" id="c3" onkeyup="moveCode(this,'c2','c4')"/>
+        <input class="code-input" type="text" maxlength="1" inputmode="numeric" id="c4" onkeyup="moveCode(this,'c3','')"/>
+      </div>
+      <button class="btn-modal" onclick="verifyResetCode()">VERIFY CODE</button>
+      <button class="btn-modal secondary" onclick="goStep(1)">← BACK</button>
+    </div>
+    <div class="modal-view" id="step3">
+      <div class="modal-icon" style="background:rgba(245,200,66,0.1);border-color:rgba(245,200,66,0.25);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--yellow)" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+      <h2>New Password</h2>
+      <p>Almost there. Choose a strong new password for your account.</p>
+      <div class="modal-steps">
+        <div class="field">
+          <label>New Password</label>
+          <div class="input-wrap">
+            <span class="input-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+            <input type="password" id="new-password" placeholder="Min. 6 characters"/>
+            <button type="button" class="eye" onclick="togglePwd('new-password',this)"><svg id="eye-new-password" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Confirm New Password</label>
+          <div class="input-wrap">
+            <span class="input-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+            <input type="password" id="confirm-new-password" placeholder="Repeat password"/>
+            <button type="button" class="eye" onclick="togglePwd('confirm-new-password',this)"><svg id="eye-confirm-new-password" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+        </div>
+      </div>
+      <button class="btn-modal" onclick="updatePassword()">RESET PASSWORD</button>
+      <button class="btn-modal secondary" onclick="goStep(2)">← BACK</button>
+    </div>
+    <div class="modal-view" id="step-success">
+      <div class="success-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="success-text">
+        <h2>All Set!</h2>
+        <p>Your password has been reset. You can now sign in with your new credentials.</p>
+      </div>
+      <button class="btn-modal" onclick="closeReset()" style="margin-top:28px;">BACK TO SIGN IN</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function togglePwd(id, btn) {
+    const input = document.getElementById(id);
+    const icon  = document.getElementById('eye-' + id);
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.innerHTML = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`;
+    } else {
+      input.type = 'password';
+      icon.innerHTML = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+    }
+  }
+  function triggerFaceId(btn) {
+    btn.classList.add('scanning');
+    setTimeout(() => { btn.classList.remove('scanning'); btn.classList.add('face-active'); setTimeout(() => btn.classList.remove('face-active'), 700); }, 1200);
+  }
+  function openReset(e) { e.preventDefault(); goStep(1); document.getElementById('resetModal').classList.add('open'); }
+  function closeReset() { document.getElementById('resetModal').classList.remove('open'); }
+  function handleBackdropClick(e) { if (e.target === document.getElementById('resetModal')) closeReset(); }
+
+  // BACKEND INTEGRATION
+  async function requestReset() {
+    const email = document.getElementById('reset-email').value;
+    const btn = document.querySelector('#step1 .btn-modal');
+    const originalText = btn.textContent;
+    btn.textContent = 'SENDING...';
+    btn.disabled = true;
+
+    try {
+      const response = await fetch('{{ path("app_forgot_password_request") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        goStep(2);
+      } else {
+        alert(data.error || 'Something went wrong');
+      }
+    } catch (e) {
+      alert('Network error. Please try again.');
+    } finally {
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }
+  }
+
+  async function verifyResetCode() {
+    const code = document.getElementById('c1').value + document.getElementById('c2').value + document.getElementById('c3').value + document.getElementById('c4').value;
+    const btn = document.querySelector('#step2 .btn-modal');
+    btn.textContent = 'VERIFYING...';
+    btn.disabled = true;
+
+    try {
+      const response = await fetch('{{ path("app_forgot_password_verify") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: code })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        goStep(3);
+      } else {
+        alert(data.error || 'Invalid code');
+      }
+    } catch (e) {
+      alert('Network error. Please try again.');
+    } finally {
+      btn.textContent = 'VERIFY CODE';
+      btn.disabled = false;
+    }
+  }
+
+  async function updatePassword() {
+    const password = document.getElementById('new-password').value;
+    const confirm = document.getElementById('confirm-new-password').value;
+    if (password !== confirm) { alert('Passwords do not match'); return; }
+    if (password.length < 6) { alert('Password must be at least 6 characters'); return; }
+
+    const btn = document.querySelector('#step3 .btn-modal');
+    btn.textContent = 'RESETTING...';
+    btn.disabled = true;
+
+    try {
+      const response = await fetch('{{ path("app_forgot_password_reset") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: password })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        goSuccess();
+      } else {
+        alert(data.error || 'Failed to reset password');
+      }
+    } catch (e) {
+      alert('Network error. Please try again.');
+    } finally {
+      btn.textContent = 'RESET PASSWORD';
+      btn.disabled = false;
+    }
+  }
+
+  function goStep(n) {
+    document.querySelectorAll('.modal-view').forEach(v => v.classList.remove('active'));
+    document.getElementById('step' + n).classList.add('active');
+    if (n === 2) { 
+        document.getElementById('sent-email').textContent = document.getElementById('reset-email').value || 'your email'; 
+        setTimeout(() => document.getElementById('c1').focus(), 50); 
+    }
+    const dots = ['dot-1','dot-2','dot-3'].map(id => document.getElementById(id));
+    const lines = ['line-1','line-2'].map(id => document.getElementById(id));
+    dots.forEach((d, i) => { 
+        d.classList.remove('active','done'); 
+        if (i+1 < n) { d.classList.add('done'); d.textContent='✓'; }
+        else if(i+1 === n) { d.classList.add('active'); d.textContent=i+1; }
+        else { d.textContent=i+1; } 
+    });
+    lines.forEach((l, i) => l.classList.toggle('done', i+1 < n));
+    document.getElementById('stepIndicator').style.display = 'flex';
+  }
+  function goSuccess() { 
+    document.querySelectorAll('.modal-view').forEach(v => v.classList.remove('active')); 
+    document.getElementById('step-success').classList.add('active'); 
+    document.getElementById('stepIndicator').style.display = 'none'; 
+  }
+  function moveCode(el, prevId, nextId) { 
+    el.value = el.value.replace(/[^0-9]/g,''); 
+    if (el.value.length === 1 && nextId) document.getElementById(nextId).focus(); 
+    if (el.value === '' && prevId) document.getElementById(prevId).focus(); 
+  }
+  document.addEventListener('keydown', e => { if (e.key==='Escape') closeReset(); });
+
+  // Live countdown timer for brute force bans
+  document.addEventListener("DOMContentLoaded", () => {
+    const errorMsg = document.getElementById('login-error-msg');
+    if (errorMsg && errorMsg.dataset.cooldown) {
+        const cooldownTs = parseInt(errorMsg.dataset.cooldown, 10);
+        if (cooldownTs > 0) {
+            const originalText = errorMsg.innerText;
+            const isBruteForceMsg = originalText.includes('Too many failed attempts') || originalText.includes('temporarily banned');
+            
+            if (isBruteForceMsg) {
+                // Disable login button while counting down
+                const submitBtn = document.querySelector('.btn-submit');
+                if (submitBtn) {
+                  submitBtn.disabled = true;
+                  submitBtn.style.opacity = '0.5';
+                  submitBtn.style.cursor = 'not-allowed';
+                }
+
+                const updateTimer = () => {
+                    const nowTs = Math.floor(Date.now() / 1000);
+                    const diff = cooldownTs - nowTs;
+                    
+                    if (diff > 0) {
+                        const m = Math.floor(diff / 60);
+                        const s = diff % 60;
+                        const timeStr = m > 0 ? `${m}m ${s}s` : `${s} seconds`;
+                        errorMsg.innerHTML = `<svg style="width:12px;height:12px;vertical-align:-2px;margin-right:4px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Too many failed attempts. Try again in <b>${timeStr}</b>.`;
+                    } else {
+                         errorMsg.innerText = "You can now try to sign in again.";
+                         errorMsg.style.color = "var(--teal)";
+                         if (submitBtn) {
+                           submitBtn.disabled = false;
+                           submitBtn.style.opacity = '1';
+                           submitBtn.style.cursor = 'pointer';
+                         }
+                    }
+                };
+                
+                updateTimer();
+                setInterval(updateTimer, 1000);
+            }
+        }
+    }
+  });
+</script>
+{% endblock %}

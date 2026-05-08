@@ -1,0 +1,171 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Event Sponsors{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Event Sponsors</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Dashboard</a></li>
+        <li class="breadcrumb-item active">Event Sponsors</li>
+    </ol>
+
+    <div class="card mb-3">
+        <div class="card-header"><i class="fas fa-filter me-1"></i> Filtres & Recherche</div>
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start gap-3">
+
+                <form method="get" action="{{ path('app_event_sponsor_index') }}" class="row g-2 align-items-end flex-grow-1">
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Niveau</label>
+                        <select name="niveau" class="form-select">
+                            <option value="">Tous</option>
+                            <option value="GOLD"       {{ filters.niveau == 'GOLD'       ? 'selected' : '' }}>🥇 GOLD</option>
+                            <option value="SILVER"     {{ filters.niveau == 'SILVER'     ? 'selected' : '' }}>🥈 SILVER</option>
+                            <option value="BRONZE"     {{ filters.niveau == 'BRONZE'     ? 'selected' : '' }}>🥉 BRONZE</option>
+                            <option value="PARTENAIRE" {{ filters.niveau == 'PARTENAIRE' ? 'selected' : '' }}>🤝 PARTENAIRE</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Montant min</label>
+                        <input type="number" name="montantMin" class="form-control" placeholder="0" value="{{ filters.montantMin }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Montant max</label>
+                        <input type="number" name="montantMax" class="form-control" placeholder="9999" value="{{ filters.montantMax }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Date début</label>
+                        <input type="date" name="dateDebut" class="form-control" value="{{ filters.dateDebut }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Date fin</label>
+                        <input type="date" name="dateFin" class="form-control" value="{{ filters.dateFin }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Trier par</label>
+                        <select name="sort" class="form-select">
+                            <option value="date"    {{ filters.sort == 'date'    ? 'selected' : '' }}>Date</option>
+                            <option value="sponsor" {{ filters.sort == 'sponsor' ? 'selected' : '' }}>Sponsor</option>
+                            <option value="event"   {{ filters.sort == 'event'   ? 'selected' : '' }}>Événement</option>
+                            <option value="niveau"  {{ filters.sort == 'niveau'  ? 'selected' : '' }}>Niveau</option>
+                            <option value="montant" {{ filters.sort == 'montant' ? 'selected' : '' }}>Montant</option>
+                        </select>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label fw-bold">Ordre</label>
+                        <select name="dir" class="form-select">
+                            <option value="asc"  {{ filters.dir == 'asc'  ? 'selected' : '' }}>↑ ASC</option>
+                            <option value="desc" {{ filters.dir == 'desc' ? 'selected' : '' }}>↓ DESC</option>
+                        </select>
+                    </div>
+                    <div class="col-12 d-flex gap-2 mt-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter me-1"></i> Filtrer
+                        </button>
+                        <a href="{{ path('app_event_sponsor_index') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i> Réinitialiser
+                        </a>
+                    </div>
+                </form>
+
+                <div style="min-width: 260px;">
+                    <label class="form-label fw-bold">Recherche</label>
+                    <input type="text" id="liveSearch" class="form-control"
+                           placeholder="Sponsor, événement...">
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div><i class="fas fa-calendar-alt me-1"></i> Liste des Event Sponsors (<span id="countResult">{{ event_sponsors|length }}</span>)</div>
+            <div class="d-flex gap-2">
+                <a href="{{ path('app_event_sponsor_pdf') }}" class="btn btn-danger btn-sm" target="_blank">
+                    <i class="fas fa-file-pdf me-1"></i> Exporter PDF
+                </a>
+                <a href="{{ path('app_event_sponsor_new') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus me-1"></i> Nouveau
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger">{{ message }}</div>
+            {% endfor %}
+
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Événement</th>
+                        <th>Sponsor</th>
+                        <th>Niveau</th>
+                        <th>Montant</th>
+                        <th>Date Association</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="esTableBody">
+                {% for event_sponsor in event_sponsors %}
+                    <tr class="es-row">
+                        <td>{{ event_sponsor.id }}</td>
+                        <td>{{ event_sponsor.event.titre }}</td>
+                        <td>{{ event_sponsor.sponsor.nom }}</td>
+                        <td>
+                            {% if event_sponsor.niveau == 'GOLD' %}
+                                <span class="badge bg-warning text-dark"><i class="fas fa-trophy me-1"></i>GOLD</span>
+                            {% elseif event_sponsor.niveau == 'SILVER' %}
+                                <span class="badge bg-secondary"><i class="fas fa-medal me-1"></i>SILVER</span>
+                            {% elseif event_sponsor.niveau == 'BRONZE' %}
+                                <span class="badge" style="background-color:#cd7f32"><i class="fas fa-award me-1"></i>BRONZE</span>
+                            {% else %}
+                                <span class="badge bg-info"><i class="fas fa-handshake me-1"></i>PARTENAIRE</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ event_sponsor.montant }} DT</td>
+                        <td>{{ event_sponsor.dateAssociation ? event_sponsor.dateAssociation|date('d/m/Y') : '-' }}</td>
+                        <td>
+                            <a href="{{ path('app_event_sponsor_show', {'id': event_sponsor.id}) }}" class="btn btn-info btn-sm">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ path('app_event_sponsor_edit', {'id': event_sponsor.id}) }}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            {{ include('event_sponsor/_delete_form.html.twig') }}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-white-50">Aucun event sponsor trouvé.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <div id="noResultMsg" class="text-center text-white-50 mt-2" style="display:none;">
+                Aucun résultat pour cette recherche.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('liveSearch').addEventListener('input', function () {
+    const term = this.value.toLowerCase().trim();
+    const rows = document.querySelectorAll('#esTableBody .es-row');
+    let visible = 0;
+    rows.forEach(function (row) {
+        const match = row.innerText.toLowerCase().includes(term);
+        row.style.display = match ? '' : 'none';
+        if (match) visible++;
+    });
+    document.getElementById('countResult').textContent = visible;
+    document.getElementById('noResultMsg').style.display = (visible === 0) ? 'block' : 'none';
+});
+</script>
+{% endblock %}

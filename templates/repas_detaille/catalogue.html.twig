@@ -1,0 +1,101 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Catalogue des Repas - LAMMA{% endblock %}
+{% block page_title %}Nos Repas & Plats{% endblock %}
+
+{% block body %}
+<section class="crud-section mt-5 mb-5">
+    <div class="row align-items-center mb-5">
+        <div class="col-md-8 text-center text-md-left">
+            <h2 style="font-family:'Anton',sans-serif; color:var(--scout-navy); text-transform:uppercase;">
+                <i class="fas fa-utensils" style="color:#10b981;"></i> Sélection Gastronomique
+            </h2>
+            <p style="color: #64748b;">Choisissez vos repas pour votre expédition. Ajoutez-les au panier pour un paiement sécurisé.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for item in items %}
+            <div class="col-xl-4 col-lg-6 col-md-6 mb-4">
+                <div class="card glass-panel" style="overflow: hidden; height: 100%; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);">
+                    {# Card Header with Image #}
+                    <div style="height: 200px; background-image: url('{{ item.imageUrl ? item.imageUrl : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000&auto=format&fit=crop' }}'); background-size: cover; background-position: center; position: relative;">
+                        <div style="position: absolute; top: 15px; right: 15px; background: rgba(16, 185, 129, 0.9); color: white; padding: 5px 15px; border-radius: 20px; font-weight: 800; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            {{ item.prix }} €
+                        </div>
+                        {% if item.typeRepas %}
+                            <div style="position: absolute; bottom: 15px; left: 15px; background: rgba(15, 23, 42, 0.8); color: white; padding: 4px 12px; border-radius: 8px; font-weight: 600; font-size: 0.8rem; letter-spacing: 1px;">
+                                {{ item.typeRepas|upper }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# Card Body #}
+                    <div class="card-body d-flex flex-column" style="padding: 25px;">
+                        <h3 style="font-family: 'Anton', sans-serif; font-size: 1.5rem; margin-bottom: 15px;">{{ item.nom }}</h3>
+                        <p style="color: #cbd5e1; font-size: 0.9rem; flex-grow: 1;">{{ item.description|length > 100 ? item.description|slice(0, 100) ~ '...' : item.description }}</p>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-3 pt-3" style="border-top: 1px solid rgba(255,255,255,0.05);">
+                            <div>
+                                <small style="display:block; color:#94a3b8; font-weight:bold;">CALORIES</small>
+                                <span style="color:#f59e0b; font-weight:900;">{{ item.calories ? item.calories : '--' }} kcal</span>
+                            </div>
+                            <!-- ACTIONS UTILISATEURS -->
+                            {% if app.user %}
+                            <div class="d-flex align-items-center gap-2">
+                                <a href="{{ path('app_cart_add', {id: item.id}) }}" class="btn" style="background-color: #10b981; color: white; border-radius: 25px; font-weight: 700; padding: 10px 20px; transition: all 0.3s; box-shadow: 0 4px 15px rgba(16,185,129,0.3);">
+                                    <i class="fa fa-cart-plus mr-1"></i> PANIER
+                                </a>
+                                <button class="btn-favorite" data-type="PLAT" data-id="{{ item.id }}" 
+                                        {% set isFavorite = item.id in (favorite_ids|default([])) %}
+                                        style="background: {{ isFavorite ? 'rgba(255,0,90,0.3)' : 'rgba(255,0,90,0.1)' }}; border: 1px solid rgba(255,0,90,0.3); color: #ff005a; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; transition: 0.3s; padding: 0; cursor: pointer;">
+                                    <i class="fa {{ isFavorite ? 'fa-heart' : 'fa-heart-o' }}"></i>
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <h3 style="color:#94a3b8;">Aucun repas disponible actuellement. Revenez plus tard !</h3>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const favoriteBtns = document.querySelectorAll('.btn-favorite');
+    favoriteBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const type = this.getAttribute('data-type');
+            const id = this.getAttribute('data-id');
+            const icon = this.querySelector('i');
+            
+            fetch("{{ path('app_favori_toggle') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: type, id: id })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.active) {
+                    icon.classList.remove('fa-heart-o');
+                    icon.classList.add('fa-heart');
+                    this.style.background = 'rgba(255,0,90,0.3)';
+                } else {
+                    icon.classList.remove('fa-heart');
+                    icon.classList.add('fa-heart-o');
+                    this.style.background = 'rgba(255,0,90,0.1)';
+                }
+            })
+            .catch(err => console.error("Error toggling favorite:", err));
+        });
+    });
+});
+</script>
+{% endblock %}
