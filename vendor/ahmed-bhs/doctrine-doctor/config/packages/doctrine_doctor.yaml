@@ -1,0 +1,33 @@
+doctrine_doctor:
+    enabled: true
+
+    # Profiler integration (automatically enabled in dev/test environments)
+    profiler:
+        enabled: '%kernel.debug%'
+
+    # Analysis configuration
+    analysis:
+        # Exclude entities from vendor/ directory during analysis
+        # This filters out third-party entities (Symfony, Doctrine, FOSUserBundle, etc.)
+        # to provide cleaner reports focused on your application code
+        # Recommended: true (default)
+        exclude_third_party_entities: true
+
+        # Enable/disable specific analyzer categories
+        categories:
+            performance: true
+            security: true
+            best_practices: true
+            maintenance: true
+
+        # Severity levels to report (debug, info, warning, error, critical)
+        min_severity: 'info'
+
+        # Maximum queries to analyze per request (0 = unlimited)
+        max_queries: 0
+
+    # Suggestions configuration
+    suggestions:
+        enabled: true
+        # Show code examples in suggestions
+        show_examples: true
