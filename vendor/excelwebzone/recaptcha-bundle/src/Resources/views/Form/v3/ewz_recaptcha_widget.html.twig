@@ -1,0 +1,27 @@
+{% block ewz_recaptcha_widget %}
+  {% if form.vars.ewz_recaptcha_enabled %}
+    <script src="{{ form.vars.ewz_recaptcha_api_uri }}?render={{ form.vars.public_key }}"></script>
+
+    {% if form.vars.ewz_recaptcha_hide_badge %}
+      <link rel="stylesheet" href="{{ asset('/bundles/ewzrecaptcha/css/recaptcha.css') }}">
+    {% endif %}
+
+    {{ form_widget(form) }}
+
+    <script{% if form.vars.script_nonce_csp is defined and form.vars.script_nonce_csp is not same as('') %} nonce="{{ form.vars.script_nonce_csp }}"{% endif %}>
+      var grecaptchaInput = document.getElementById('{{ id }}');
+      grecaptchaInput.value = ''; // Always reset the value to get a brand new challenge
+      var grecaptchaForm = grecaptchaInput.form;
+      grecaptchaForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        grecaptcha.ready(function () {
+          grecaptcha.execute('{{ form.vars.public_key }}', { action: '{{ form.vars.action_name|default(constant('EWZ\\Bundle\\RecaptchaBundle\\Form\\Type\\EWZRecaptchaV3Type::DEFAULT_ACTION_NAME')) }}' }).then(function (token) {
+            grecaptchaInput.value = token;
+            HTMLFormElement.prototype.submit.call(grecaptchaForm);
+          });
+        });
+      }, false);
+    </script>
+  {% endif %}
+{% endblock %}
