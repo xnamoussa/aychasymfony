@@ -45,21 +45,20 @@ class ParticipationController extends AbstractController
         $aiInsights = [];
         
         foreach ($participations as $p) {
-            if ($p->getEvenementId() && !isset($eventMap[$p->getEvenementId()])) {
-                $event = $evenementRepo->find($p->getEvenementId());
-                if ($event) {
-                    $eventMap[$p->getEvenementId()] = $event;
-                    // AI Insight for this event
-                    $aiInsights[$p->getEvenementId()] = [
-                        'popularity' => $aiService->calculatePopularity($event),
-                        'analysis' => $aiService->analyzeEvent($event->getTitre(), $event->getDescription())
-                    ];
-                }
+            $event = $p->getEvenement();
+            if ($event && !isset($eventMap[$event->getIdEvent()])) {
+                $eventId = $event->getIdEvent();
+                $eventMap[$eventId] = $event;
+                // AI Insight for this event
+                $aiInsights[$eventId] = [
+                    'popularity' => $aiService->calculatePopularity($event),
+                    'analysis' => $aiService->analyzeEvent($event->getTitre(), $event->getDescription())
+                ];
             }
             if ($p->getUserId() && !isset($userMap[$p->getUserId()])) {
                 $userObj = $userRepo->find($p->getUserId());
                 if ($userObj) {
-                    $userMap[$p->getUserId()] = $userObj->getName(); // Assuming getName() exists
+                    $userMap[$p->getUserId()] = $userObj->getName();
                 }
             }
         }
@@ -180,11 +179,7 @@ class ParticipationController extends AbstractController
         }
 
         // Fetch event name for display
-        $evenement = null;
-        if ($participation->getEvenementId()) {
-            $evenementRepo = $this->em->getRepository(\App\Entity\Evenement::class);
-            $evenement = $evenementRepo->find($participation->getEvenementId());
-        }
+        $evenement = $participation->getEvenement();
 
         return $this->render('participation/show.html.twig', [
             'item' => $participation,

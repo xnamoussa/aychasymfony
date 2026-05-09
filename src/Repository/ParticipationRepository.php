@@ -64,7 +64,7 @@ class ParticipationRepository
         // On récupère le nombre total de participants confirmés
         $qb = $this->createQueryBuilder('p')
             ->select("NEW App\Dto\StatsDto('total', COALESCE(SUM(p.totalParticipants), 0))")
-            ->where('p.evenementId = :evenementId')
+            ->where('p.evenement = :evenementId')
             ->andWhere('p.statut = :statut')
             ->setParameter('evenementId', $evenementId)
             ->setParameter('statut', Participation::STATUT_CONFIRME);

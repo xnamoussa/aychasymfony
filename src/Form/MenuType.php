@@ -27,17 +27,10 @@ class MenuType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        // Construire la liste des restaurants pour le select
-        $restaurants = $this->restaurantRepo->findBy(['actif' => true], ['nom' => 'ASC']);
-        $choices = [];
-        foreach ($restaurants as $r) {
-            $choices[$r->getNom()] = $r->getId();
-        }
-
-        $builder
-            ->add('restaurantId', ChoiceType::class, [
+            ->add('restaurant', \Symfony\Bridge\Doctrine\Form\Type\EntityType::class, [
+                'class'       => Restaurant::class,
+                'choice_label' => 'nom',
                 'label'       => 'Restaurant *',
-                'choices'     => $choices,
                 'placeholder' => '-- Sélectionner un restaurant --',
                 'attr'        => ['class' => 'form-control'],
                 'constraints' => [

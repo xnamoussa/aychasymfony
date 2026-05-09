@@ -54,8 +54,11 @@ class MenuController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Synchroniser restaurantNom depuis restaurantId
-            $this->syncRestaurantNom($menu);
+            // Synchroniser restaurantNom
+            $restaurant = $menu->getRestaurant();
+            if ($restaurant) {
+                $menu->setRestaurantNom($restaurant->getNom());
+            }
 
             // Handle dishesIds from custom checkbox list in template
             $dishes = $request->request->all('dishes');
@@ -101,8 +104,11 @@ class MenuController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Synchroniser restaurantNom depuis restaurantId
-            $this->syncRestaurantNom($menu);
+            // Synchroniser restaurantNom
+            $restaurant = $menu->getRestaurant();
+            if ($restaurant) {
+                $menu->setRestaurantNom($restaurant->getNom());
+            }
 
             // Handle dishesIds
             $dishes = $request->request->all('dishes');
@@ -154,20 +160,11 @@ class MenuController extends AbstractController
         return new JsonResponse([
             'id'            => $menu->getId(),
             'nom'           => $menu->getNom(),
-            'restaurantId'  => $menu->getRestaurantId(),
+            'restaurantId'  => $menu->getRestaurant() ? $menu->getRestaurant()->getId() : null,
+            'restaurant'    => $menu->getRestaurant() ? $menu->getRestaurant()->getNom() : null,
             'restaurantNom' => $menu->getRestaurantNom(),
             'prix'          => $menu->getPrix(),
             'description'   => $menu->getDescription(),
         ]);
-    }
-
-    // ─── HELPERS ────────────────────────────────────────────────────────────
-
-    private function syncRestaurantNom(Menu $menu): void
-    {
-        $restaurant = $this->restaurantRepo->find($menu->getRestaurantId());
-        if ($restaurant) {
-            $menu->setRestaurantNom($restaurant->getNom());
-        }
     }
 }

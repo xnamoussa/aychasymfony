@@ -91,10 +91,12 @@ class RepasDetailleController extends AbstractController {
                 $this->calculateNutrition($e, $ir);
 
                 if (!empty($dat['restaurantId'])) {
-                    $e->setRestaurantId((int)$dat['restaurantId']);
+                    $rest = $em->getRepository(\App\Entity\Restaurant::class)->find((int)$dat['restaurantId']);
+                    if ($rest) $e->setRestaurant($rest);
                 }
                 if (!empty($dat['menuId'])) {
-                    $e->setMenuId((int)$dat['menuId']);
+                    $men = $em->getRepository(\App\Entity\Menu::class)->find((int)$dat['menuId']);
+                    if ($men) $e->setMenu($men);
                 }
                 if (!empty($dat['tempsPreparation'])) {
                     $e->setTempsPreparation((int)$dat['tempsPreparation']);
@@ -150,10 +152,12 @@ class RepasDetailleController extends AbstractController {
                 $this->calculateNutrition($e, $ir);
 
                 if (!empty($dat['restaurantId'])) {
-                    $e->setRestaurantId((int)$dat['restaurantId']);
+                    $rest = $em->getRepository(\App\Entity\Restaurant::class)->find((int)$dat['restaurantId']);
+                    if ($rest) $e->setRestaurant($rest);
                 }
                 if (!empty($dat['menuId'])) {
-                    $e->setMenuId((int)$dat['menuId']);
+                    $men = $em->getRepository(\App\Entity\Menu::class)->find((int)$dat['menuId']);
+                    if ($men) $e->setMenu($men);
                 }
                 if (!empty($dat['tempsPreparation'])) {
                     $e->setTempsPreparation((int)$dat['tempsPreparation']);
