@@ -39,9 +39,8 @@ class AbonnementController extends AbstractController
 
         if (!$this->isGranted('ROLE_ADMIN')) {
             $user = $this->getUser();
-            $uid = method_exists($user, 'getId') ? $user->getId() : 0;
-            $qb->andWhere('a.userId = :uid')
-               ->setParameter('uid', $uid);
+            $qb->andWhere('a.user = :user')
+               ->setParameter('user', $user);
         }
 
         return $this->render('abonnement/index.html.twig', [
@@ -66,12 +65,11 @@ class AbonnementController extends AbstractController
         $userAbonnements = [];
         if (!$this->isGranted('ROLE_ADMIN')) {
             $user = $this->getUser();
-            $userId = method_exists($user, 'getId') ? $user->getId() : 0;
             $subs = $this->repository->createQueryBuilder('a')
                 ->andWhere('a.isTemplate = :f')
-                ->andWhere('a.userId = :uid')
+                ->andWhere('a.user = :user')
                 ->setParameter('f', false)
-                ->setParameter('uid', $userId)
+                ->setParameter('user', $user)
                 ->getQuery()
                 ->getResult();
             foreach ($subs as $sub) {
@@ -108,15 +106,14 @@ class AbonnementController extends AbstractController
         }
 
         $user   = $this->getUser();
-        $userId = method_exists($user, 'getId') ? $user->getId() : 0;
 
         // Vérifier si l'utilisateur a déjà souscrit à ce plan
         $qb = $this->repository->createQueryBuilder('a')
             ->andWhere('a.isTemplate = :f')
-            ->andWhere('a.userId = :uid')
+            ->andWhere('a.user = :user')
             ->andWhere('a.planSourceId = :planId')
             ->setParameter('f', false)
-            ->setParameter('uid', $userId)
+            ->setParameter('user', $user)
             ->setParameter('planId', $planId)
             ->setMaxResults(1);
 
@@ -134,8 +131,10 @@ class AbonnementController extends AbstractController
 
         // Créer la souscription à partir du plan
         $abonnement = new Abonnement();
-        $abonnement->setUserId($userId);
-        $abonnement->setUserName($user ? $user->getUserIdentifier() : (string)$userId);
+        if ($user instanceof \App\Entity\Users) {
+            $abonnement->setUser($user);
+        }
+        $abonnement->setUserName($user ? $user->getUserIdentifier() : 'Unknown');
         $abonnement->setNom($plan->getNom());
         $abonnement->setType($plan->getType());
         $abonnement->setPrix($plan->getPrix());
@@ -216,8 +215,8 @@ class AbonnementController extends AbstractController
                 
                 // Générer un ticket
                 $ticket = new \App\Entity\Ticket();
-                $ticket->setAbonnementId($abonnement->getId());
-                $ticket->setUserId($abonnement->getUserId());
+                $ticket->setAbonnement($abonnement);
+                $ticket->setUser($abonnement->getUser());
                 $ticket->setType('TICKET');
                 $ticket->setQrCode('TICKET-' . uniqid());
                 
@@ -272,8 +271,7 @@ class AbonnementController extends AbstractController
         // Ownership check
         $user = $this->getUser();
         if (!$this->isGranted('ROLE_ADMIN')) {
-            $userId = method_exists($user, 'getId') ? $user->getId() : 0;
-            if ($abonnement->getUserId() !== $userId) {
+            if ($abonnement->getUser() !== $user) {
                 throw $this->createAccessDeniedException('Accès refusé à la facture.');
             }
         }
@@ -320,7 +318,13 @@ class AbonnementController extends AbstractController
     {
         $plan = new Abonnement();
         $plan->setIsTemplate(true);
-        $plan->setUserId(0);
+        // Templates don't necessarily need a user, but the column is nullable:false in some cases
+        // Actually, let's see if we can find an admin user or leave it null if allowed.
+        // For templates, we might need a dummy user if it's not nullable.
+        $admin = $this->getUser();
+        if ($admin instanceof \App\Entity\Users) {
+            $plan->setUser($admin);
+        }
         $plan->setStatut(Abonnement::STATUT_ACTIF);
 
         $form = $this->createForm(\App\Form\AbonnementPlanType::class, $plan);
@@ -413,8 +417,7 @@ class AbonnementController extends AbstractController
         // Ownership check
         $user = $this->getUser();
         if (!$this->isGranted('ROLE_ADMIN')) {
-            $userId = method_exists($user, 'getId') ? $user->getId() : 0;
-            if ($abonnement->getUserId() !== $userId) {
+            if ($abonnement->getUser() !== $user) {
                 throw $this->createAccessDeniedException('Accès refusé au badge.');
             }
         }
@@ -472,8 +475,7 @@ class AbonnementController extends AbstractController
 
         if (!$this->isGranted('ROLE_ADMIN')) {
             $user   = $this->getUser();
-            $userId = method_exists($user, 'getId') ? $user->getId() : 0;
-            if ($abonnement->getUserId() !== $userId) {
+            if ($abonnement->getUser() !== $user) {
                 throw $this->createAccessDeniedException('Accès refusé.');
             }
         }

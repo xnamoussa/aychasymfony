@@ -25,7 +25,7 @@ class FavoriRepository
      */
     public function findByUser(int $userId): array
     {
-        return $this->em->getRepository($this->entityClass)->findBy(['userId' => $userId], ['createdAt' => 'DESC']);
+        return $this->em->getRepository($this->entityClass)->findBy(['user' => $userId], ['createdAt' => 'DESC']);
     }
 
     /**

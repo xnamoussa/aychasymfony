@@ -30,6 +30,6 @@ class TicketService extends GenericService {
      */
     public function findByUserId(int $userId): array
     {
-        return $this->repo->findBy(['userId' => $userId]);
+        return $this->repo->findBy(['user' => $userId]);
     }
 }
