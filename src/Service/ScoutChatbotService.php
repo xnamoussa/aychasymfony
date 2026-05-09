@@ -104,7 +104,7 @@ INSTRUCTIONS :
                 'nom' => $m->getNom(),
                 'prix' => $m->getPrix(),
                 'description' => $m->getDescription(),
-                'restaurant' => $this->getRestaurantName($m->getRestaurantId(), $restaurants),
+                'restaurant' => $m->getRestaurant() ? $this->getRestaurantName($m->getRestaurant()->getId(), $restaurants) : 'N/A',
                 'calories' => $m->getCalories(),
                 'proteines' => $m->getProteines(),
                 'allergenes' => $m->getAllergenes(),
