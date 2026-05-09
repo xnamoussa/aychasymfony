@@ -22,6 +22,9 @@ use Symfony\Component\Validator\Constraints\Regex;
 
 
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
+use Symfony\Component\Form\CallbackTransformer;
+use App\Entity\Email;
+use App\Entity\Phone;
 
 /**
  * @extends AbstractType<Users>
@@ -44,6 +47,25 @@ class RegistrationFormType extends AbstractType
                 'attr'     => ['placeholder' => '12345678'],
             ])
 
+            ->get('email')->addModelTransformer(new CallbackTransformer(
+                function ($emailAsObject) {
+                    return $emailAsObject instanceof Email ? $emailAsObject->getValue() : '';
+                },
+                function ($emailAsString) {
+                    return new Email($emailAsString);
+                }
+            ));
+
+        $builder->get('phone')->addModelTransformer(new CallbackTransformer(
+            function ($phoneAsObject) {
+                return $phoneAsObject instanceof Phone ? $phoneAsObject->getNumber() : '';
+            },
+            function ($phoneAsString) {
+                return new Phone($phoneAsString);
+            }
+        ));
+
+        $builder
             ->add('motorized', ChoiceType::class, [
                 'choices' => [
                     'Select' => null,
